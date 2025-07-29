@@ -1,0 +1,179 @@
+import { Router } from 'express';
+import { AuthService } from '../services/authservice.ts';
+import { UserService } from '../services/userService.js';
+import { requireAuth } from '../middleware/auth.js';
+
+const router = Router();
+const authService = new AuthService();
+const userService = new UserService();
+
+// Google OAuth routes
+router.get('/google', (req, res) => {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const domain = process.env.DOMAIN || 'localhost:8000';
+  const protocol = domain.includes('localhost') ? 'http' : 'https';
+  const redirectUri = `${protocol}://${domain}/auth/google/callback`;
+  
+  const googleAuthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+  googleAuthUrl.searchParams.set('client_id', clientId!);
+  googleAuthUrl.searchParams.set('redirect_uri', redirectUri);
+  googleAuthUrl.searchParams.set('response_type', 'code');
+  googleAuthUrl.searchParams.set('scope', 'email profile');
+  googleAuthUrl.searchParams.set('access_type', 'offline');
+  
+  res.redirect(googleAuthUrl.toString());
+});
+
+router.get('/google/callback', async (req, res) => {
+  try {
+    const { code } = req.query;
+    
+    if (!code) {
+      return res.status(400).json({ error: 'Authorization code required' });
+    }
+
+    // Exchange code for access token
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: process.env.GOOGLE_CLIENT_ID!,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+        code: code as string,
+        grant_type: 'authorization_code',
+        redirect_uri: `${req.protocol}://${req.get('host')}/auth/google/callback`,
+      }),
+    });
+
+    const tokens = await tokenResponse.json();
+    
+    if (!tokens.access_token) {
+      return res.status(400).json({ error: 'Failed to get access token' });
+    }
+
+    // Get user profile from Google
+    const profileResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: `Bearer ${tokens.access_token}` },
+    });
+
+    const profile = await profileResponse.json();
+
+    // Handle user creation/login
+    const { user, isNewUser } = await authService.handleGoogleCallback({
+      id: profile.id,
+      emails: [{ value: profile.email, verified: true }],
+      name: { givenName: profile.given_name, familyName: profile.family_name },
+      photos: [{ value: profile.picture }],
+    });
+
+    // Generate JWT
+    const token = authService.generateToken(user);
+
+    // For now, return JSON. In production, you might redirect to frontend with token
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        displayName: user.displayName,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+        actorId: user.actorId,
+      },
+      isNewUser,
+    });
+  } catch (error) {
+    console.error('Google OAuth error:', error);
+    res.status(500).json({ error: 'Authentication failed' });
+  }
+});
+
+// Check username availability
+router.get('/check-username/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    
+    const validation = userService.validateUsername(username);
+    if (!validation.valid) {
+      return res.json({ available: false, error: validation.error });
+    }
+    
+    const available = await userService.isUsernameAvailable(username);
+    res.json({ available });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to check username' });
+  }
+});
+
+// Update username (for new users who want to change from auto-generated)
+router.put('/username', requireAuth, async (req, res) => {
+  try {
+    const { username } = req.body;
+    const user = req.user;
+    
+    if (!username) {
+      return res.status(400).json({ error: 'Username is required' });
+    }
+    
+    const validation = userService.validateUsername(username);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
+    }
+    
+    const available = await userService.isUsernameAvailable(username);
+    if (!available) {
+      return res.status(400).json({ error: 'Username is not available' });
+    }
+    
+    // Update username and regenerate ActivityPub URLs
+    const domain = process.env.DOMAIN || 'localhost:8000';
+    const protocol = domain.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${domain}`;
+    
+    const updatedUser = await userService.updateUser(user._id.toString(), {
+      username,
+      actorId: `${baseUrl}/users/${username}`,
+      inboxUrl: `${baseUrl}/users/${username}/inbox`,
+      outboxUrl: `${baseUrl}/users/${username}/outbox`,
+      followersUrl: `${baseUrl}/users/${username}/followers`,
+      followingUrl: `${baseUrl}/users/${username}/following`,
+    });
+    
+    res.json({ 
+      success: true, 
+      user: {
+        id: updatedUser?._id,
+        username: updatedUser?.username,
+        displayName: updatedUser?.displayName,
+        actorId: updatedUser?.actorId,
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update username' });
+  }
+});
+
+// Get current user
+router.get('/me', requireAuth, (req, res) => {
+  const user = req.user;
+  res.json({
+    id: user._id,
+    username: user.username,
+    displayName: user.displayName,
+    email: user.email,
+    bio: user.bio,
+    avatarUrl: user.avatarUrl,
+    actorId: user.actorId,
+    followersCount: 0, // TODO: implement when we add following
+    followingCount: 0,
+    postsCount: 0,     // TODO: implement when we add posts
+  });
+});
+
+// Logout (client-side token removal, but endpoint for consistency)
+router.post('/logout', (req, res) => {
+  res.json({ success: true, message: 'Logged out successfully' });
+});
+
+export default router;
