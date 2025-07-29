@@ -7,7 +7,6 @@ const router = Router();
 const authService = new AuthService();
 const userService = new UserService();
 
-// Google OAuth routes
 router.get('/google', (req, res) => {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const domain = process.env.DOMAIN || 'localhost:8000';
@@ -32,7 +31,6 @@ router.get('/google/callback', async (req, res) => {
       return res.status(400).json({ error: 'Authorization code required' });
     }
 
-    // Exchange code for access token
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -51,14 +49,12 @@ router.get('/google/callback', async (req, res) => {
       return res.status(400).json({ error: 'Failed to get access token' });
     }
 
-    // Get user profile from Google
     const profileResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
       headers: { Authorization: `Bearer ${tokens.access_token}` },
     });
 
     const profile = await profileResponse.json();
 
-    // Handle user creation/login
     const { user, isNewUser } = await authService.handleGoogleCallback({
       id: profile.id,
       emails: [{ value: profile.email, verified: true }],
@@ -66,10 +62,8 @@ router.get('/google/callback', async (req, res) => {
       photos: [{ value: profile.picture }],
     });
 
-    // Generate JWT
     const token = authService.generateToken(user);
 
-    // For now, return JSON. In production, you might redirect to frontend with token
     res.json({
       success: true,
       token,
@@ -89,7 +83,6 @@ router.get('/google/callback', async (req, res) => {
   }
 });
 
-// Check username availability
 router.get('/check-username/:username', async (req, res) => {
   try {
     const { username } = req.params;
@@ -106,7 +99,6 @@ router.get('/check-username/:username', async (req, res) => {
   }
 });
 
-// Update username (for new users who want to change from auto-generated)
 router.put('/username', requireAuth, async (req, res) => {
   try {
     const { username } = req.body;
@@ -126,7 +118,6 @@ router.put('/username', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Username is not available' });
     }
     
-    // Update username and regenerate ActivityPub URLs
     const domain = process.env.DOMAIN || 'localhost:8000';
     const protocol = domain.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${domain}`;
@@ -154,7 +145,6 @@ router.put('/username', requireAuth, async (req, res) => {
   }
 });
 
-// Get current user
 router.get('/me', requireAuth, (req, res) => {
   const user = req.user;
   res.json({
@@ -165,13 +155,12 @@ router.get('/me', requireAuth, (req, res) => {
     bio: user.bio,
     avatarUrl: user.avatarUrl,
     actorId: user.actorId,
-    followersCount: 0, // TODO: implement when we add following
+    followersCount: 0,
     followingCount: 0,
-    postsCount: 0,     // TODO: implement when we add posts
+    postsCount: 0,
   });
 });
 
-// Logout (client-side token removal, but endpoint for consistency)
 router.post('/logout', (req, res) => {
   res.json({ success: true, message: 'Logged out successfully' });
 });

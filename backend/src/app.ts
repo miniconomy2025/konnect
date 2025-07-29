@@ -4,21 +4,18 @@ import { getLogger } from "@logtape/logtape";
 import federation from "./federation.js";
 import { connectToDatabase } from './database/connection.js';
 
-// Routes
 import authRoutes from './routes/auth.js';
 import webfingerRoutes from './routes/webfinger.js';
-import activitypubRoutes from './routes/activitypub.js';
+import userRoutes from './routes/users.js';
 
 const logger = getLogger("backend");
 
 export const app = express();
 
-// Middleware
 app.set("trust proxy", true);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS for development (adjust for production)
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -31,18 +28,15 @@ app.use((req, res, next) => {
   }
 });
 
-// Initialize database connection
 await connectToDatabase();
 
-// Mount routes
-app.use('/auth', authRoutes);
-app.use('', webfingerRoutes); // WebFinger needs to be at root level
-app.use('', activitypubRoutes); // ActivityPub actor endpoints
-
-// Fedify integration (this will handle ActivityPub federation later)
 app.use(integrateFederation(federation, (req) => undefined));
 
-// Basic routes
+app.use('/auth', authRoutes);
+app.use('', webfingerRoutes);
+app.use('', userRoutes);
+
+
 app.get("/", (req, res) => {
   res.json({ 
     message: "Instagram Clone API",
@@ -55,7 +49,6 @@ app.get("/", (req, res) => {
   });
 });
 
-// Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
 });

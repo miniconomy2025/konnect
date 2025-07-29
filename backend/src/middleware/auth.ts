@@ -37,7 +37,6 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
 }
 
 export function optionalAuth(req: Request, res: Response, next: NextFunction) {
-  // Try to authenticate, but don't fail if no token
   const authHeader = req.headers.authorization;
   
   if (authHeader && authHeader.startsWith('Bearer ')) {

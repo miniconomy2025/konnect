@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { UserService } from './userService.ts';
+import { UserService } from './userService.js';
 import type { User } from '../types/user.js';
 
 export interface GoogleProfile {
@@ -39,27 +39,22 @@ export class AuthService {
   }
 
   async handleGoogleCallback(profile: GoogleProfile): Promise<{ user: User; isNewUser: boolean }> {
-    // Check if user already exists
     let user = await this.userService.findByGoogleId(profile.id);
     
     if (user) {
       return { user, isNewUser: false };
     }
 
-    // Check if email already exists (shouldn't happen with Google OAuth but just in case)
     const emailExists = await this.userService.findByEmail(profile.emails[0].value);
     if (emailExists) {
       throw new Error('An account with this email already exists');
     }
 
-    // Generate suggested username from Google profile
     const suggestedUsername = this.generateUsername(
       profile.name.givenName,
       profile.name.familyName
     );
 
-    // For now, create user with suggested username
-    // In a real app, you might want to redirect to username selection
     const finalUsername = await this.ensureUniqueUsername(suggestedUsername);
 
     user = await this.userService.createUser({
@@ -89,7 +84,6 @@ export class AuthService {
       username = `${baseUsername}${counter}`;
       counter++;
       
-      // Prevent infinite loops
       if (counter > 9999) {
         username = `user${Date.now()}`;
         break;

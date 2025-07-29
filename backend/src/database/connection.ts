@@ -16,19 +16,19 @@ export async function connectToDatabase(): Promise<Db> {
     await client.connect();
     db = client.db();
     
-    // Create indexes
     await createIndexes();
     
     logger.info('Connected to MongoDB');
     return db;
   } catch (error) {
-    //logger.error('Failed to connect to MongoDB:', error);
+    logger.error('Failed to connect to MongoDB:');
     throw error;
   }
 }
 
 async function createIndexes() {
   const users = db.collection('users');
+  
   await users.createIndex({ username: 1 }, { unique: true });
   await users.createIndex({ googleId: 1 }, { unique: true });
   await users.createIndex({ email: 1 }, { unique: true });
