@@ -37,17 +37,7 @@ app.use('', webfingerRoutes);
 app.use('', userRoutes);
 
 
-app.get("/", (req, res) => {
-  res.json({ 
-    message: "Instagram Clone API",
-    version: "1.0.0",
-    endpoints: {
-      auth: "/auth/google",
-      webfinger: "/.well-known/webfinger?resource=acct:username@" + (process.env.DOMAIN || 'localhost:8000'),
-      users: "/users/:username"
-    }
-  });
-});
+app.get("/", (req, res) => res.send("Hello, Fedify!"));
 
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
