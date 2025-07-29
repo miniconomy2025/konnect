@@ -2,6 +2,14 @@ import express from "express";
 import { integrateFederation } from "@fedify/express";
 import { getLogger } from "@logtape/logtape";
 import federation from "./federation.ts";
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const MONGO_URL = process.env.MONGO_URL || '';
+
+mongoose.connect(MONGO_URL);
 
 const logger = getLogger("backend");
 

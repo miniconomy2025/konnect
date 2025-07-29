@@ -6,14 +6,17 @@
     "@fedify/fedify": "^1.7.7",
     "@logtape/logtape": "^0.8.2",
     "express": "^4.19.2",
+    "mongoose": "^8.16.5",
     "tsx": "^4.17.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
-    "@types/express": "^4.17.21"
+    "@types/express": "^4.17.21",
+    "@types/mongoose": "^5.11.96",
+    "dotenv": "^17.2.1"
   },
   "scripts": {
-    "dev": "dotenvx run -- tsx watch ./src/index.ts",
+    "dev": "dotenvx run -- tsx watch ./src/config/index.ts",
     "prod": "dotenvx run -- node --import tsx ./src/index.ts"
   }
 }
