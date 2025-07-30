@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
+import type { IUser } from './user.js';
 
 export interface IPost extends Document {
   _id: Types.ObjectId;
@@ -11,6 +12,9 @@ export interface IPost extends Document {
   likesCount: number;
   createdAt: Date;
   updatedAt: Date;
+}
+export interface IPostPopulated extends Omit<IPost, 'author'> {
+  author: IUser;
 }
 
 const postSchema = new Schema<IPost>({

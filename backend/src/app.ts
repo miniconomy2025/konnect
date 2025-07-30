@@ -6,6 +6,7 @@ import federation from "./federation/federation.ts";
 import authRoutes from './routes/auth.js';
 import webfingerRoutes from './routes/webfinger.js';
 import userRoutes from './routes/users.js';
+import postRoutes from './routes/posts.js';
 import dotenv from 'dotenv';
 import { mongoConnect } from "./config/mongoose.js";
 
@@ -34,6 +35,7 @@ app.use((req, res, next) => {
 await mongoConnect();
 
 app.use('/auth', authRoutes);
+app.use('/posts', postRoutes);
 
 app.use(integrateFederation(federation, (req) => undefined));
 
