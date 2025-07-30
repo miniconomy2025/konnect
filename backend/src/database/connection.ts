@@ -9,7 +9,7 @@ let db: Db;
 export async function connectToDatabase(): Promise<Db> {
   if (db) return db;
   
-  const url = process.env.DATABASE_URL || 'mongodb://localhost:27017/insta-clone';
+  const url = process.env.MONGOOSE_URL || 'mongodb://localhost:27017/insta-clone';
   
   try {
     client = new MongoClient(url);

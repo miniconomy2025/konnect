@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGO_URL = process.env.MONGO_URL || '';
+const MONGO_URL = process.env.MONGOOSE_URL || '';
 
 export const mongoConnect = async (): Promise<typeof mongoose> => {
   try {
