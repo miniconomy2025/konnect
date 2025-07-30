@@ -1,7 +1,7 @@
 import { createFederation, Person, Image } from "@fedify/fedify";
 import { getLogger } from "@logtape/logtape";
 import { MemoryKvStore, InProcessMessageQueue } from "@fedify/fedify";
-import { UserService } from "./services/userService.js";
+import { UserService } from "../services/userService.ts";
 
 const logger = getLogger("federation");
 const userService = new UserService();

@@ -1,7 +1,7 @@
 import express from "express";
 import { integrateFederation } from "@fedify/express";
 import { getLogger } from "@logtape/logtape";
-import federation from "./federation.js";
+import federation from "./federation/federation.ts";
 import { connectToDatabase } from './database/connection.js';
 
 import authRoutes from './routes/auth.js';
