@@ -41,10 +41,6 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
             <Heart size={20} style={{ fill: 'currentColor' }} />
             <section style={{ fontWeight: '600' }}>{post.likes}</section>
           </section>
-          <section style={styles.overlayStat}>
-            <MessageCircle size={20} style={{ fill: 'currentColor' }} />
-            <section style={{ fontWeight: '600' }}>{post.comments}</section>
-          </section>
         </section>
       </section>
     </section>
