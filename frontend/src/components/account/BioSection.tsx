@@ -26,34 +26,34 @@ const BioSection: React.FC<BioSectionProps> = ({
   onCancelBio 
 }) => {
   return (
-    <div style={styles.bioSection}>
+    <section style={styles.bioSection}>
       <h3 style={styles.bioName}>{displayName}</h3>
       {isEditingBio ? (
-        <div style={styles.bioEditContainer}>
+        <section style={styles.bioEditContainer}>
           <textarea
             value={tempBio}
             onChange={(e) => setTempBio(e.target.value)}
             style={styles.bioTextarea}
             placeholder="Write a bio..."
           />
-          <div>
+          <section>
             <button onClick={onSaveBio} style={styles.saveButton}>
               <Check size={16} />
             </button>
             <button onClick={onCancelBio} style={styles.cancelButton}>
               <X size={16} />
             </button>
-          </div>
-        </div>
+          </section>
+        </section>
       ) : (
-        <div style={styles.bioEditContainer}>
+        <section style={styles.bioEditContainer}>
           <p style={styles.bioText}>{bio}</p>
           <button onClick={onEditBio} style={styles.editButton}>
             <Edit2 size={16} />
           </button>
-        </div>
+        </section>
       )}
-    </div>
+    </section>
   );
 };
 

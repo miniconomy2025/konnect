@@ -6,9 +6,9 @@ import { UserProfile, User, Post } from '@/types/account';
 import  Header  from '@/components/account/Header';
 import ProfileSection from '@/components/account/ProfileSection';
 import PostsGrid from '@/components/account/PostsGrid';
-// import Modal from '../components/Modal';
-// import UserListItem from '../components/UserListItem';
-// import SettingsModalContent from '../components/SettingsModalContent';
+import Modal from '@/components/account/Modal';
+import UserListItem from '@/components/account/UserListItem';
+import SettingsModal from '@/components/account/SettingsModal';
 
 const ProfilePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('posts');
@@ -100,7 +100,7 @@ const ProfilePage: React.FC = () => {
       />
 
       {/* Modals */}
-      {/* <Modal 
+      <Modal 
         isOpen={showFollowers} 
         onClose={() => setShowFollowers(false)}
         title="Followers"
@@ -125,7 +125,7 @@ const ProfilePage: React.FC = () => {
         onClose={() => setShowSettings(false)}
         title="Settings"
       >
-        <SettingsModalContent 
+        <SettingsModal 
           displayName={displayName}
           isEditingName={isEditingName}
           tempName={tempName}
@@ -134,7 +134,7 @@ const ProfilePage: React.FC = () => {
           onSaveName={handleNameSave}
           onCancelName={handleNameCancel}
         />
-      </Modal> */}
+      </Modal>
     </div>
   );
 };

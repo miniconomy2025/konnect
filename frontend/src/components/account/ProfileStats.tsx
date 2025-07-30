@@ -19,17 +19,17 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({
   onFollowingClick 
 }) => {
   return (
-    <div style={styles.stats}>
-      <span>
+    <section style={styles.stats}>
+      <section>
         <strong>{postsCount}</strong> posts
-      </span>
+      </section>
       <button onClick={onFollowersClick} style={styles.statButton}>
         <strong>{followersCount}</strong> followers
       </button>
       <button onClick={onFollowingClick} style={styles.statButton}>
         <strong>{followingCount}</strong> following
       </button>
-    </div>
+    </section>
   );
 };
 

@@ -30,18 +30,18 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
   onFollowingClick
 }) => {
   return (
-    <div style={styles.profileSection}>
-      <div style={styles.profileHeader}>
+    <section style={styles.profileSection}>
+      <section style={styles.profileHeader}>
         <img 
           src={userProfile.avatar} 
           alt={userProfile.displayName}
           style={styles.avatar}
         />
         
-        <div style={styles.profileInfo}>
-          <div style={styles.profileTopRow}>
+        <section style={styles.profileInfo}>
+          <section style={styles.profileTopRow}>
             <h2 style={styles.username}>{userProfile.username}</h2>
-          </div>
+          </section>
           
           <ProfileStats 
             postsCount={userProfile.postsCount}
@@ -50,8 +50,8 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
             onFollowersClick={onFollowersClick}
             onFollowingClick={onFollowingClick}
           />
-        </div>
-      </div>
+        </section>
+      </section>
 
       <BioSection 
         displayName={userProfile.displayName}
@@ -63,7 +63,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
         onSaveBio={onSaveBio}
         onCancelBio={onCancelBio}
       />
-    </div>
+    </section>
   );
 };
 

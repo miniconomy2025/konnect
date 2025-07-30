@@ -12,16 +12,16 @@ interface PostsGridProps {
 
 const PostsGrid: React.FC<PostsGridProps> = ({ activeTab, posts }) => {
   return (
-    <div style={styles.postsGrid}>
+    <section style={styles.postsGrid}>
       {activeTab === 'posts' && posts.map((post) => (
         <PostItem key={post.id} post={post} />
       ))}
       {activeTab === 'reels' && (
-        <div style={styles.emptyState}>
+        <section style={styles.emptyState}>
           No reels yet
-        </div>
+        </section>
       )}
-    </div>
+    </section>
   );
 };
 

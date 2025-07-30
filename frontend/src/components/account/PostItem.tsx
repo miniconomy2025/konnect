@@ -25,7 +25,7 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
   };
 
   return (
-    <div 
+    <section 
       style={styles.postItem}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -35,19 +35,19 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
         alt={`Post ${post.id}`}
         style={styles.postImage}
       />
-      <div className="overlay" style={styles.postOverlay}>
-        <div style={styles.overlayStats}>
-          <div style={styles.overlayStat}>
+      <section className="overlay" style={styles.postOverlay}>
+        <section style={styles.overlayStats}>
+          <section style={styles.overlayStat}>
             <Heart size={20} style={{ fill: 'currentColor' }} />
-            <span style={{ fontWeight: '600' }}>{post.likes}</span>
-          </div>
-          <div style={styles.overlayStat}>
+            <section style={{ fontWeight: '600' }}>{post.likes}</section>
+          </section>
+          <section style={styles.overlayStat}>
             <MessageCircle size={20} style={{ fill: 'currentColor' }} />
-            <span style={{ fontWeight: '600' }}>{post.comments}</span>
-          </div>
-        </div>
-      </div>
-    </div>
+            <section style={{ fontWeight: '600' }}>{post.comments}</section>
+          </section>
+        </section>
+      </section>
+    </section>
   );
 };
 
