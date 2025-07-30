@@ -168,34 +168,10 @@ export const styles: { [key: string]: CSSProperties } = {
     cursor: 'pointer',
     color: '#ef4444'
   },
-  tabNavigation: {
-    borderTop: '1px solid #e5e7eb',
-    backgroundColor: 'white'
-  },
-  tabContainer: {
-    display: 'flex'
-  },
-  tab: {
-    flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '0.75rem',
-    fontSize: '0.75rem',
-    fontWeight: '500',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    border: 'none',
-    backgroundColor: 'white',
-    cursor: 'pointer',
-    color: '#6b7280'
-  },
-  activeTab: {
-    borderTop: '2px solid black',
-    color: 'black'
-  },
   postsGrid: {
     display: 'grid',
+    marginLeft: 'auto',
+    marginRight: 'auto',
     gridTemplateColumns: 'repeat(3, 1fr)',
     gap: '1px',
     padding: '1px'
