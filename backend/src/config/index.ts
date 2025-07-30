@@ -1,3 +1,5 @@
+import "@js-temporal/polyfill";
+
 import app from "../app.ts";
 import "../logging.ts";
 import { mongoConnect } from './mongoose.ts'
