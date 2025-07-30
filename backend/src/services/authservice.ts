@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { UserService } from './userService.js';
-import type { User } from '../types/user.js';
+import type { IUser } from '../models/user.ts';
 
 export interface GoogleProfile {
   id: string;
@@ -12,7 +12,7 @@ export interface GoogleProfile {
 export class AuthService {
   private userService = new UserService();
 
-  generateToken(user: User): string {
+  generateToken(user: IUser): string {
     const secret = process.env.JWT_SECRET;
     if (!secret) {
       throw new Error('JWT_SECRET not configured');
@@ -38,7 +38,7 @@ export class AuthService {
     return jwt.verify(token, secret);
   }
 
-  async handleGoogleCallback(profile: GoogleProfile): Promise<{ user: User; isNewUser: boolean }> {
+  async handleGoogleCallback(profile: GoogleProfile): Promise<{ user: IUser; isNewUser: boolean }> {
     let user = await this.userService.findByGoogleId(profile.id);
     
     if (user) {

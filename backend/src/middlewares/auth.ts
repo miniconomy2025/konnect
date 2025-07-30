@@ -1,11 +1,12 @@
 import type { Request, Response, NextFunction } from 'express';
-import { AuthService } from '../services/authservice.ts';
+import { AuthService } from '../services/authservice.js';
 import { UserService } from '../services/userService.js';
+import type { IUser } from '../models/user.ts';
 
 declare global {
   namespace Express {
     interface Request {
-      user?: any;
+      user?: IUser;
     }
   }
 }

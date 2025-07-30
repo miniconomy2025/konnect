@@ -2,17 +2,14 @@ import express from "express";
 import { integrateFederation } from "@fedify/express";
 import { getLogger } from "@logtape/logtape";
 import federation from "./federation/federation.ts";
-import { connectToDatabase } from './database/connection.js';
 
 import authRoutes from './routes/auth.js';
 import webfingerRoutes from './routes/webfinger.js';
 import userRoutes from './routes/users.js';
 import dotenv from 'dotenv';
-import { mongoConnect } from "./config/mongoose.ts";
+import { mongoConnect } from "./config/mongoose.js";
 
 dotenv.config();
-
-mongoConnect()
 
 const logger = getLogger("backend");
 
@@ -34,14 +31,14 @@ app.use((req, res, next) => {
   }
 });
 
-await connectToDatabase();
+await mongoConnect();
+
+app.use('/auth', authRoutes);
 
 app.use(integrateFederation(federation, (req) => undefined));
 
-app.use('/auth', authRoutes);
 app.use('', webfingerRoutes);
 app.use('', userRoutes);
-
 
 app.get("/", (req, res) => res.send("Hello, Fedify!"));
 

@@ -1,6 +1,5 @@
-import { getDatabase } from '../database/connection.js';
-import type { User, CreateUserData } from '../types/user.js';
-import { ObjectId } from 'mongodb';
+import { User, type IUser } from '../models/user.ts';
+import type { CreateUserData } from '../types/user.js';
 
 const RESERVED_USERNAMES = [
   'admin', 'api', 'www', 'mail', 'ftp', 'localhost', 'inbox', 'outbox',
@@ -8,24 +7,20 @@ const RESERVED_USERNAMES = [
 ];
 
 export class UserService {
-  private get collection() {
-    return getDatabase().collection<User>('users');
+  async findByGoogleId(googleId: string): Promise<IUser | null> {
+    return await User.findOne({ googleId });
   }
 
-  async findByGoogleId(googleId: string): Promise<User | null> {
-    return await this.collection.findOne({ googleId });
+  async findByUsername(username: string): Promise<IUser | null> {
+    return await User.findOne({ username, isLocal: true });
   }
 
-  async findByUsername(username: string): Promise<User | null> {
-    return await this.collection.findOne({ username, isLocal: true });
+  async findByEmail(email: string): Promise<IUser | null> {
+    return await User.findOne({ email });
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    return await this.collection.findOne({ email });
-  }
-
-  async findById(id: string): Promise<User | null> {
-    return await this.collection.findOne({ _id: new ObjectId(id) });
+  async findById(id: string): Promise<IUser | null> {
+    return await User.findById(id);
   }
 
   async isUsernameAvailable(username: string): Promise<boolean> {
@@ -33,7 +28,7 @@ export class UserService {
       return false;
     }
     
-    const existing = await this.collection.findOne({ username, isLocal: true });
+    const existing = await User.findOne({ username, isLocal: true });
     return !existing;
   }
 
@@ -57,12 +52,12 @@ export class UserService {
     return { valid: true };
   }
 
-  async createUser(userData: CreateUserData): Promise<User> {
+  async createUser(userData: CreateUserData): Promise<IUser> {
     const domain = process.env.DOMAIN || 'localhost:8000';
     const protocol = domain.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${domain}`;
     
-    const user: User = {
+    const user = new User({
       ...userData,
       domain,
       actorId: `${baseUrl}/users/${userData.username}`,
@@ -73,26 +68,16 @@ export class UserService {
       isLocal: true,
       isPrivate: false,
       bio: '',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    });
 
-    const result = await this.collection.insertOne(user);
-    return { ...user, _id: result.insertedId };
+    return await user.save();
   }
 
-  async updateUser(id: string, updates: Partial<User>): Promise<User | null> {
-    const result = await this.collection.findOneAndUpdate(
-      { _id: new ObjectId(id) },
-      { 
-        $set: { 
-          ...updates, 
-          updatedAt: new Date() 
-        } 
-      },
-      { returnDocument: 'after' }
+  async updateUser(id: string, updates: Partial<IUser>): Promise<IUser | null> {
+    return await User.findByIdAndUpdate(
+      id,
+      updates,
+      { new: true }
     );
-    
-    return result;
   }
 }

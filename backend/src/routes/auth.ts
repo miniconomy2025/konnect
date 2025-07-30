@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { AuthService } from '../services/authservice.ts';
+import { AuthService } from '../services/authservice.js';
 import { UserService } from '../services/userService.js';
 import { requireAuth } from '../middlewares/auth.js';
 
@@ -68,7 +68,7 @@ router.get('/google/callback', async (req, res) => {
       success: true,
       token,
       user: {
-        id: user._id,
+        id: user._id?.toString(),
         username: user.username,
         displayName: user.displayName,
         email: user.email,
@@ -122,7 +122,7 @@ router.put('/username', requireAuth, async (req, res) => {
     const protocol = domain.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${domain}`;
     
-    const updatedUser = await userService.updateUser(user._id.toString(), {
+    const updatedUser = await userService.updateUser(user!._id?.toString()!, {
       username,
       actorId: `${baseUrl}/users/${username}`,
       inboxUrl: `${baseUrl}/users/${username}/inbox`,
@@ -134,7 +134,7 @@ router.put('/username', requireAuth, async (req, res) => {
     res.json({ 
       success: true, 
       user: {
-        id: updatedUser?._id,
+        id: updatedUser?._id?.toString(),
         username: updatedUser?.username,
         displayName: updatedUser?.displayName,
         actorId: updatedUser?.actorId,
@@ -148,13 +148,13 @@ router.put('/username', requireAuth, async (req, res) => {
 router.get('/me', requireAuth, (req, res) => {
   const user = req.user;
   res.json({
-    id: user._id,
-    username: user.username,
-    displayName: user.displayName,
-    email: user.email,
-    bio: user.bio,
-    avatarUrl: user.avatarUrl,
-    actorId: user.actorId,
+    id: user!._id?.toString(),
+    username: user!.username,
+    displayName: user!.displayName,
+    email: user!.email,
+    bio: user!.bio,
+    avatarUrl: user!.avatarUrl,
+    actorId: user!.actorId,
     followersCount: 0,
     followingCount: 0,
     postsCount: 0,
