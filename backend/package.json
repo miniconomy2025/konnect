@@ -3,6 +3,8 @@
   "dependencies": {
     "@dotenvx/dotenvx": "^1.14.1",
     "@fedify/express": "^0.2.1",
+    "@aws-sdk/client-s3": "^3.490.0",
+    "@aws-sdk/s3-request-presigner": "^3.490.0",
     "@fedify/fedify": "^1.7.7",
     "@logtape/logtape": "^0.8.2",
     "express": "^4.21.2",
