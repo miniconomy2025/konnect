@@ -7,6 +7,14 @@ import { connectToDatabase } from './database/connection.js';
 import authRoutes from './routes/auth.js';
 import webfingerRoutes from './routes/webfinger.js';
 import userRoutes from './routes/users.js';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const MONGO_URL = process.env.MONGO_URL || '';
+
+mongoose.connect(MONGO_URL);
 
 const logger = getLogger("backend");
 
