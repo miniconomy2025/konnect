@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import type { Post } from '@/types/post';
 import { Post as PostContainer } from './Post';
+import { Spacing } from '@/lib/presentation';
 
 interface ImagePostProps {
   post: Post;
@@ -15,7 +16,13 @@ export function ImagePost({ post }: ImagePostProps) {
           alt={post.caption || 'Image post'}
           width={800}
           height={480}
-          style={{ width: '100%', display: 'block', maxHeight: 480, objectFit: 'cover' }}
+          style={{
+            width: '100%',
+            display: 'block',
+            maxHeight: 480,
+            objectFit: 'cover',
+            marginBottom: Spacing.Small
+          }}
         />
     </PostContainer>
   );
