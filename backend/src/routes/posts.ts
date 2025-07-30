@@ -14,11 +14,10 @@ function hasPopulatedAuthor(post: IPost): post is IPost & { author: IUser } {
   return post.author && !(post.author instanceof Types.ObjectId) && 'username' in post.author;
 }
 
-// Configure multer for image uploads
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
+    fileSize: 10 * 1024 * 1024, 
   },
   fileFilter: (req, file, cb) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -30,89 +29,57 @@ const upload = multer({
   },
 });
 
-// Get presigned URL for direct upload to S3
-router.post('/upload-url', requireAuth, async (req, res) => {
+router.post('/', requireAuth, upload.single('image'), async (req, res) => {
   try {
-    const { mimeType } = req.body;
+    const { caption } = req.body;
     
-    if (!mimeType) {
-      return res.status(400).json({ error: 'mimeType is required' });
+    if (!caption) {
+      return res.status(400).json({ error: 'Caption is required' });
     }
 
-    const { uploadUrl, imageUrl } = await postService.getPresignedUploadUrl(
-      mimeType,
-      req.user!._id!.toString()
-    );
-
-    res.json({ uploadUrl, imageUrl });
-  } catch (error) {
-    console.error('Upload URL generation error:', error);
-    res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to generate upload URL' });
-  }
-});
-
-// Upload image through backend (alternative to presigned URL)
-router.post('/upload', requireAuth, upload.single('image'), async (req, res) => {
-  try {
     if (!req.file) {
-      return res.status(400).json({ error: 'No image file provided' });
-    }
-
-    const imageUrl = await postService.uploadImage(
-      req.file.buffer,
-      req.file.mimetype,
-      req.user!._id!.toString()
-    );
-
-    res.json({ imageUrl });
-  } catch (error) {
-    console.error('Image upload error:', error);
-    res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to upload image' });
-  }
-});
-
-// Create a new post
-router.post('/', requireAuth, async (req, res) => {
-  try {
-    const { caption, mediaUrl, mediaType } = req.body;
-    
-    if (!caption || !mediaUrl || !mediaType) {
-      return res.status(400).json({ error: 'caption, mediaUrl, and mediaType are required' });
+      return res.status(400).json({ error: 'Image is required' });
     }
 
     if (caption.length > 2200) {
       return res.status(400).json({ error: 'Caption must be 2200 characters or less' });
     }
 
+    const mediaUrl = await postService.uploadImage(
+      req.file.buffer,
+      req.file.mimetype,
+      req.user!._id!.toString()
+    );
+
     const post = await postService.createPost({
       authorId: req.user!._id!.toString(),
       caption,
       mediaUrl,
-      mediaType,
+      mediaType: req.file.mimetype,
     });
 
     const populatedPost = await postService.getPostById(post._id.toString());
-
+    
     if (!populatedPost || !hasPopulatedAuthor(populatedPost)) {
       return res.status(500).json({ error: 'Failed to retrieve created post' });
     }
-    
+
     const response: PostResponse = {
-      id: populatedPost!._id.toString(),
+      id: populatedPost._id.toString(),
       author: {
-        id: populatedPost!.author._id.toString(),
-        username: populatedPost!.author.username,
-        displayName: populatedPost!.author.displayName,
-        avatarUrl: populatedPost!.author.avatarUrl,
+        id: populatedPost.author._id.toString(),
+        username: populatedPost.author.username,
+        displayName: populatedPost.author.displayName,
+        avatarUrl: populatedPost.author.avatarUrl,
       },
-      caption: populatedPost!.caption,
-      mediaUrl: populatedPost!.mediaUrl,
-      mediaType: populatedPost!.mediaType,
-      activityId: populatedPost!.activityId,
-      likesCount: populatedPost!.likesCount,
-      isLiked: false, // User just created it, so not liked yet
-      createdAt: populatedPost!.createdAt,
-      updatedAt: populatedPost!.updatedAt,
+      caption: populatedPost.caption,
+      mediaUrl: populatedPost.mediaUrl,
+      mediaType: populatedPost.mediaType,
+      activityId: populatedPost.activityId,
+      likesCount: populatedPost.likesCount,
+      isLiked: false,
+      createdAt: populatedPost.createdAt,
+      updatedAt: populatedPost.updatedAt,
     };
 
     res.status(201).json(response);
@@ -122,7 +89,7 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
-// Get a specific post
+// get a specific post
 router.get('/:id', optionalAuth, async (req, res) => {
   try {
     const { id } = req.params;
@@ -137,7 +104,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
       false;
     
     if (!hasPopulatedAuthor(post)) {
-      return res.status(500).json({ error: 'Something went wrong retrieving post' });
+      return res.status(500).json({ error: 'Something went wrong' });
     }
 
     const response: PostResponse = {
@@ -165,14 +132,13 @@ router.get('/:id', optionalAuth, async (req, res) => {
   }
 });
 
-// Get user's posts
+// Get users posts
 router.get('/user/:username', optionalAuth, async (req, res) => {
   try {
     const { username } = req.params;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
 
-    // First find the user by username
     const { UserService } = await import('../services/userService.js');
     const userService = new UserService();
     const user = await userService.findByUsername(username);
@@ -226,7 +192,7 @@ router.get('/', optionalAuth, async (req, res) => {
   }
 });
 
-// Like/unlike a post
+// Like/unlike a post, depends on state so only one endpoint
 router.post('/:id/like', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
@@ -244,7 +210,6 @@ router.post('/:id/like', requireAuth, async (req, res) => {
   }
 });
 
-// Delete a post
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;

@@ -1,14 +1,13 @@
-import "@js-temporal/polyfill/global";
+import { Temporal } from "@js-temporal/polyfill";
 
-export function dateToTemporal(date: Date): any {
-  // Use globalThis to access the polyfilled Temporal
-  return (globalThis as any).Temporal.Instant.fromEpochMilliseconds(date.getTime());
+export function dateToTemporal(date: Date): Temporal.Instant {
+  return Temporal.Instant.fromEpochMilliseconds(date.getTime());
 }
 
-export function nowAsTemporal(): any {
-  return (globalThis as any).Temporal.Instant.fromEpochMilliseconds(Date.now());
+export function nowAsTemporal(): Temporal.Instant {
+  return Temporal.Instant.fromEpochMilliseconds(Date.now());
 }
 
-export function temporalToDate(temporal: any): Date {
+export function temporalToDate(temporal: Temporal.Instant): Date {
   return new Date(temporal.epochMilliseconds);
 }

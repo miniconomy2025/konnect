@@ -1,9 +1,9 @@
 import { createFederation, Person, Image, Create, Note } from "@fedify/fedify";
 import { getLogger } from "@logtape/logtape";
 import { MemoryKvStore, InProcessMessageQueue } from "@fedify/fedify";
-import { dateToTemporal } from "../utils/temporal.ts";
 import { UserService } from "../services/userService.ts";
 import { PostService } from "../services/postserivce.ts";
+import { dateToTemporal } from "../utils/temporal.ts";
 
 const logger = getLogger("federation");
 const userService = new UserService();
@@ -106,7 +106,6 @@ federation.setFollowingDispatcher("/users/{identifier}/following", async (ctx, i
   };
 });
 
-// Handle individual post objects
 federation.setObjectDispatcher(
   Note,
   "/posts/{id}",

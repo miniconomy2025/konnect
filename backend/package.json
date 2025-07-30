@@ -6,6 +6,7 @@
     "@dotenvx/dotenvx": "^1.14.1",
     "@fedify/express": "^0.2.1",
     "@fedify/fedify": "^1.7.7",
+    "@js-temporal/polyfill": "^0.5.1",
     "@logtape/logtape": "^0.8.2",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",

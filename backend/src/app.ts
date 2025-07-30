@@ -1,3 +1,5 @@
+import "@js-temporal/polyfill";
+
 import express from "express";
 import { integrateFederation } from "@fedify/express";
 import { getLogger } from "@logtape/logtape";

@@ -18,19 +18,18 @@ export class ActivityService {
         {}
       );
 
-      // The federation middleware will handle the actual activity creation
-      // when the outbox is requested. This is just for logging.
+      // The federation middleware handles the actual activity creation
+      // when the outbox is requested, current this just logs and then sending to followers TODO
       
       logger.info(`Post created: ${post.activityId} by ${author.username}`);
       
-      // In a real implementation, you might want to:
+      // Todo
       // 1. Send activities to followers' inboxes
       // 2. Update activity counts
       // 3. Cache the activity
       
     } catch (error) {
       logger.error("Failed to publish create activity:");
-      // Don't throw - post creation should succeed even if federation fails
     }
   }
 
@@ -38,13 +37,12 @@ export class ActivityService {
     try {
       logger.info(`${isLike ? 'Like' : 'Unlike'} activity: ${post.activityId} by ${user.username}`);
       
-      // TODO: Implement actual Like/Undo activity federation
+      // TODO actual Like/Undo activity federation
       // This would involve creating Like or Undo activities and sending them
       // to the post author's inbox if they're on a remote server
       
     } catch (error) {
       logger.error(`Failed to publish ${isLike ? 'like' : 'unlike'} activity:`);
-      // Don't throw - like operation should succeed even if federation fails
     }
   }
 
@@ -57,7 +55,6 @@ export class ActivityService {
       
     } catch (error) {
       logger.error("Failed to publish delete activity:");
-      // Don't throw - deletion should succeed even if federation fails
     }
   }
 }

@@ -60,7 +60,7 @@ export class PostService {
   async getFeedPosts(userId: string, page = 1, limit = 20): Promise<IPost[]> {
     const skip = (page - 1) * limit;
     
-    // For now, just return all posts. Later you can implement following logic
+    // For now, just return all posts
     return await Post.find()
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -78,11 +78,9 @@ export class PostService {
     const isAlreadyLiked = post.likes.includes(userObjectId);
 
     if (isAlreadyLiked) {
-      // Unlike the post
       post.likes = post.likes.filter(id => !id.equals(userObjectId));
       post.likesCount = Math.max(0, post.likesCount - 1);
     } else {
-      // Like the post
       post.likes.push(userObjectId);
       post.likesCount += 1;
     }
@@ -108,15 +106,12 @@ export class PostService {
       return false;
     }
 
-    // Get author for activity publishing
     const author = await User.findById(userId);
 
-    // Delete image from S3
     try {
       await this.s3Service.deleteImage(post.mediaUrl);
     } catch (error) {
       console.error('Failed to delete image from S3:', error);
-      // Continue with post deletion even if S3 deletion fails
     }
 
     // Publish delete activity before deleting the post
