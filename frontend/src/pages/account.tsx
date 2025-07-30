@@ -5,8 +5,7 @@ import { styles } from '@/styles/account';
 import { UserProfile, User, Post } from '@/types/account';
 import  Header  from '@/components/account/Header';
 import ProfileSection from '@/components/account/ProfileSection';
-// import TabNavigation from '../components/TabNavigation';
-// import PostsGrid from '../components/PostsGrid';
+import PostsGrid from '@/components/account/PostsGrid';
 // import Modal from '../components/Modal';
 // import UserListItem from '../components/UserListItem';
 // import SettingsModalContent from '../components/SettingsModalContent';
@@ -95,15 +94,10 @@ const ProfilePage: React.FC = () => {
         onFollowingClick={() => setShowFollowing(true)}
       />
 
-      {/* <TabNavigation 
-        activeTab={activeTab} 
-        onTabChange={setActiveTab} 
-      /> */}
-
-      {/* <PostsGrid 
+      <PostsGrid 
         activeTab={activeTab} 
         posts={posts} 
-      /> */}
+      />
 
       {/* Modals */}
       {/* <Modal 
