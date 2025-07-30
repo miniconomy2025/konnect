@@ -1,6 +1,6 @@
 export const userProfileMock = {
   username: 'johndoe',
-  profileImage: 'https://via.placeholder.com/150',
+  profileImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
   posts: 12,
   followers: 240,
   following: 180,

@@ -1,146 +1,367 @@
-const styles: { [key: string]: React.CSSProperties } = {
+import { CSSProperties } from 'react';
+
+export const styles: { [key: string]: CSSProperties } = {
   container: {
     width: '100%',
-    maxWidth: '935px',
-    margin: '0 auto',
-    padding: '30px 20px',
+    minWidth: '100vw',
+    backgroundColor: 'white',
+    minHeight: '100vh',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    color: 'black',
+    colorScheme: 'light'
   },
   header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '30px',
+    borderBottom: '1px solid #e5e7eb',
+    backgroundColor: 'white',
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+    color: 'black'
   },
   headerContent: {
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '1rem'
   },
   headerTitle: {
-    fontSize: '28px',
+    fontSize: '1.25rem',
     fontWeight: 'bold',
-    marginRight: '20px',
+    margin: 0,
+    color: 'black'
   },
   iconButton: {
-    background: 'none',
+    padding: '0.5rem',
     border: 'none',
+    backgroundColor: 'transparent',
+    borderRadius: '4px',
     cursor: 'pointer',
-    padding: '5px',
-  },
-  profile: {
     display: 'flex',
-    flexDirection: 'column',
     alignItems: 'center',
-    marginBottom: '20px',
+    justifyContent: 'center',
+    color: 'black'
   },
-  profilePicture: {
-    width: '100px',
-    height: '100px',
+  profileSection: {
+    padding: '1rem',
+    backgroundColor: 'white',
+    color: 'black'
+  },
+  profileHeader: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '1rem',
+    marginBottom: '1rem'
+  },
+  avatar: {
+    width: '80px',
+    height: '80px',
     borderRadius: '50%',
     objectFit: 'cover',
-    marginBottom: '10px',
+    flexShrink: 0
   },
-  bioText: {
-    fontSize: '14px',
-    color: '#333',
-    textAlign: 'center',
-    whiteSpace: 'pre-wrap',
+  profileInfo: {
+    flex: 1,
+    minWidth: 0
+  },
+  profileTopRow: {
+    display: 'flex',
+    flexDirection: 'column',
+    marginBottom: '0.5rem'
+  },
+  username: {
+    fontSize: '1.25rem',
+    fontWeight: '300',
+    margin: '0 0 0.5rem 0',
+    color: 'black'
+  },
+  buttonGroup: {
+    display: 'flex',
+    gap: '0.5rem',
+    marginTop: '0.5rem'
+  },
+  followButton: {
+    padding: '0.25rem 1rem',
+    backgroundColor: '#3b82f6',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    fontWeight: '500',
+    cursor: 'pointer'
+  },
+  messageButton: {
+    padding: '0.25rem 1rem',
+    backgroundColor: 'white',
+    border: '1px solid #d1d5db',
+    borderRadius: '4px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    color: 'black'
   },
   stats: {
     display: 'flex',
-    justifyContent: 'center',
-    gap: '20px',
-    marginBottom: '20px',
+    gap: '1.5rem',
+    marginBottom: '1rem',
+    fontSize: '0.875rem'
   },
-  statItem: {
-    textAlign: 'center',
+  statButton: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '0.875rem',
+    padding: 0,
+    color: 'black'
   },
-  statValue: {
-    fontWeight: 'bold',
-    fontSize: '16px',
+  bioSection: {
+    marginBottom: '1rem'
   },
-  statLabel: {
-    fontSize: '14px',
-    color: '#777',
+  bioName: {
+    fontWeight: '600',
+    margin: '0 0 0.25rem 0',
+    color: 'black'
   },
-  tabs: {
+  bioText: {
+    fontSize: '0.875rem',
+    whiteSpace: 'pre-line',
+    margin: 0,
+    lineHeight: '1.4',
+    color: 'black'
+  },
+  bioEditContainer: {
     display: 'flex',
-    justifyContent: 'space-around',
-    marginBottom: '20px',
-    borderTop: '1px solid #dbdbdb',
-    borderBottom: '1px solid #dbdbdb',
+    alignItems: 'flex-start',
+    gap: '0.5rem',
+    marginTop: '0.5rem'
+  },
+  bioTextarea: {
+    flex: 1,
+    padding: '0.5rem',
+    border: '1px solid #d1d5db',
+    borderRadius: '4px',
+    fontSize: '0.875rem',
+    fontFamily: 'inherit',
+    resize: 'vertical',
+    minHeight: '60px',
+    backgroundColor: 'white',
+    color: 'black'
+  },
+  editButton: {
+    padding: '0.5rem',
+    border: 'none',
+    backgroundColor: 'transparent',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    color: '#6b7280'
+  },
+  saveButton: {
+    padding: '0.5rem',
+    border: 'none',
+    backgroundColor: 'transparent',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    color: '#10b981'
+  },
+  cancelButton: {
+    padding: '0.5rem',
+    border: 'none',
+    backgroundColor: 'transparent',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    color: '#ef4444'
+  },
+  tabNavigation: {
+    borderTop: '1px solid #e5e7eb',
+    backgroundColor: 'white'
+  },
+  tabContainer: {
+    display: 'flex'
   },
   tab: {
-    padding: '10px 0',
-    cursor: 'pointer',
-    fontWeight: 'bold',
     flex: 1,
-    textAlign: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '0.75rem',
+    fontSize: '0.75rem',
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    border: 'none',
+    backgroundColor: 'white',
+    cursor: 'pointer',
+    color: '#6b7280'
   },
-  tabActive: {
-    borderBottom: '2px solid #000',
+  activeTab: {
+    borderTop: '2px solid black',
+    color: 'black'
   },
-  grid: {
+  postsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-    gap: '10px',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '1px',
+    padding: '1px'
+  },
+  postItem: {
+    position: 'relative',
+    aspectRatio: '1',
+    cursor: 'pointer'
   },
   postImage: {
     width: '100%',
-    aspectRatio: '1 / 1',
-    objectFit: 'cover',
-    borderRadius: '8px',
-    cursor: 'pointer',
+    height: '100%',
+    objectFit: 'cover'
   },
-  modalOverlay: {
-    position: 'fixed',
+  postOverlay: {
+    position: 'absolute',
     top: 0,
     left: 0,
-    width: '100vw',
-    height: '100vh',
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 999,
+    opacity: 0,
+    transition: 'opacity 0.2s'
+  },
+  overlayStats: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    color: 'white'
+  },
+  overlayStat: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.25rem'
+  },
+  modal: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 50,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)'
   },
   modalContent: {
-    background: '#fff',
-    padding: '20px',
+    backgroundColor: 'white',
     borderRadius: '8px',
-    width: '90%',
-    maxWidth: '400px',
+    width: '100%',
+    maxWidth: '24rem',
+    margin: '1rem',
+    maxHeight: '24rem',
+    overflow: 'hidden'
+  },
+  modalHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '1rem',
+    borderBottom: '1px solid #e5e7eb'
+  },
+  modalTitle: {
+    fontSize: '1.125rem',
+    fontWeight: '600',
+    margin: 0,
+    color: 'black'
+  },
+  modalBody: {
+    overflowY: 'auto',
+    maxHeight: '20rem'
   },
   userListItem: {
     display: 'flex',
     alignItems: 'center',
-    padding: '10px 0',
-    borderBottom: '1px solid #eee',
-  },
-  userAvatar: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    objectFit: 'cover',
-    marginRight: '10px',
+    justifyContent: 'space-between',
+    padding: '0.75rem'
   },
   userInfo: {
     display: 'flex',
-    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '0.75rem'
   },
-  username: {
-    fontWeight: 'bold',
-    fontSize: '14px',
+  userAvatar: {
+    width: '2.5rem',
+    height: '2.5rem',
+    borderRadius: '50%',
+    objectFit: 'cover'
   },
-  fullName: {
-    fontSize: '12px',
-    color: '#666',
+  userDetails: {
+    display: 'flex',
+    flexDirection: 'column'
   },
-  settingsOption: {
-    padding: '10px',
+  userUsername: {
+    fontWeight: '600',
+    fontSize: '0.875rem',
+    margin: 0,
+    color: 'black'
+  },
+  userDisplayName: {
+    color: '#6b7280',
+    fontSize: '0.75rem',
+    margin: 0
+  },
+  settingsContent: {
+    padding: '1rem',
+    backgroundColor: 'white',
+    color: 'black'
+  },
+  settingItem: {
+    marginBottom: '1rem'
+  },
+  settingLabel: {
+    display: 'block',
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: '0.5rem'
+  },
+  settingRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  settingInput: {
+    flex: 1,
+    padding: '0.5rem 0.75rem',
+    border: '1px solid #d1d5db',
+    borderRadius: '4px',
+    fontSize: '0.875rem',
+    backgroundColor: 'white',
+    color: 'black'
+  },
+  settingInputGroup: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem'
+  },
+  settingText: {
+    color: 'black'
+  },
+  settingsMenu: {
+    borderTop: '1px solid #e5e7eb',
+    paddingTop: '1rem'
+  },
+  settingMenuButton: {
+    width: '100%',
+    textAlign: 'left',
+    padding: '0.5rem 0.75rem',
+    borderRadius: '4px',
+    border: 'none',
+    backgroundColor: 'white',
     cursor: 'pointer',
-    borderBottom: '1px solid #eee',
-    textAlign: 'center',
+    color: 'black'
   },
+  settingMenuButtonDanger: {
+    color: '#ef4444'
+  },
+  emptyState: {
+    gridColumn: '1 / -1',
+    padding: '5rem 0',
+    textAlign: 'center',
+    color: '#6b7280'
+  }
 };
-
-export default styles;
