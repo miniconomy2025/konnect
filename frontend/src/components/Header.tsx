@@ -1,5 +1,5 @@
 import React from 'react';
-import { Color, Spacing, FontSize, Radius } from '@/lib/presentation';
+import { Color, Spacing, FontSize, Radius, FontFamily } from '@/lib/presentation';
 
 export function Header() {
   return (
@@ -15,33 +15,20 @@ export function Header() {
       alignItems: 'center',
     }}>
       <section style={{
+        position: 'absolute',
+        left: 0,
+        right: 0,
         display: 'flex',
+        justifyContent: 'center',
         alignItems: 'center',
-        gap: Spacing.Small,
+        pointerEvents: 'none',
       }}>
-        <figure style={{
-          width: 32,
-          height: 32,
-          borderRadius: Radius.Medium,
-          background: Color.Primary,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: 0,
-        }}>
-          <strong style={{
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: FontSize.Large,
-          }}>
-            K
-          </strong>
-        </figure>
         <h1 style={{
           margin: 0,
-          fontSize: FontSize.Large,
-          fontWeight: 'bold',
+          fontSize: FontSize.XLarge,
+          fontWeight: 400,
           color: Color.Text,
+          fontFamily: FontFamily.Playwrite,
         }}>
           Konnect
         </h1>
@@ -51,20 +38,8 @@ export function Header() {
         display: 'flex',
         alignItems: 'center',
         gap: Spacing.Medium,
+        marginLeft: 'auto',
       }}>
-        <button style={{
-          padding: `${Spacing.Small} ${Spacing.Medium}`,
-          borderRadius: Radius.Medium,
-          border: `1px solid ${Color.Border}`,
-          background: Color.Surface,
-          color: Color.Text,
-          fontSize: FontSize.Base,
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-          fontFamily: 'inherit',
-        }}>
-          Search
-        </button>
         <button style={{
           width: 40,
           height: 40,
@@ -76,8 +51,14 @@ export function Header() {
           alignItems: 'center',
           justifyContent: 'center',
           transition: 'all 0.2s ease',
+          overflow: 'hidden',
+          pointerEvents: 'auto',
         }}>
-          <strong style={{ fontSize: 20 }}>👤</strong>
+          <img 
+            src="/assets/images/missingAvatar.jpg" 
+            alt="User avatar"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
         </button>
       </nav>
     </header>

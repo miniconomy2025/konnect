@@ -18,9 +18,10 @@ export function ImagePost({ post }: ImagePostProps) {
           height={480}
           style={{
             width: '100%',
+            height: 'auto',
             display: 'block',
-            maxHeight: 480,
-            objectFit: 'cover',
+            maxHeight: 'none',
+            objectFit: 'contain',
           }}
         />
       </figure>

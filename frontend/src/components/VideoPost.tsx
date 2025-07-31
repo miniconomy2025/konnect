@@ -10,7 +10,13 @@ export function VideoPost({ post }: VideoPostProps) {
   return (
     <PostContainer post={post}>
       <figure style={{ margin: 0 }}>
-        <video controls style={{ width: '100%', maxHeight: 480, display: 'block', background: '#000' }}>
+        <video controls style={{ 
+          width: '100%', 
+          height: 'auto', 
+          display: 'block', 
+          background: '#000',
+          maxHeight: 'none',
+        }}>
           <source src={post.mediaUrl} type="video/mp4" />
           <p>Sorry, your browser does not support embedded videos.</p>
         </video>

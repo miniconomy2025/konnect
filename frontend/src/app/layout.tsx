@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
+import { Playwrite_HU } from "next/font/google";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -7,6 +8,12 @@ const nunito = Nunito({
   variable: "--font-nunito",
   display: "swap",
   weight: ["400", "700"],
+});
+
+const playwriteHU = Playwrite_HU({
+  variable: "--font-playwrite",
+  display: "swap",
+  weight: ["400"],
 });
 
 export const metadata: Metadata = {
@@ -21,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={nunito.variable}>
+      <body className={`${nunito.variable} ${playwriteHU.variable}`}>
         {children}
       </body>
     </html>
