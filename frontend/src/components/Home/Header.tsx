@@ -1,9 +1,19 @@
 import React from 'react';
 import { Color, Spacing, FontSize, FontFamily } from '@/lib/presentation';
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export function Header() {
+    const router = useRouter()
+
+    const goToProfile = () => {
+        router.push('/account')
+    }
+
   return (
-    <header style={{
+    <header
+    onClick={goToProfile} 
+    style={{
       position: 'sticky',
       top: 0,
       zIndex: 200,

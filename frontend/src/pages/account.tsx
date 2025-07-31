@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { styles } from '@/styles/account';
 import { UserProfile, User, Post } from '@/types/account';
-import  Header  from '@/components/account/Header';
+import { Header } from '@/components/Home/Header';
 import ProfileSection from '@/components/account/ProfileSection';
 import PostsGrid from '@/components/account/PostsGrid';
 import Modal from '@/components/account/Modal';
@@ -11,7 +11,7 @@ import UserListItem from '@/components/account/UserListItem';
 import SettingsModal from '@/components/account/SettingsModal';
 
 const ProfilePage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>('posts');
+  const [activeTab] = useState<string>('posts');
   const [showFollowers, setShowFollowers] = useState<boolean>(false);
   const [showFollowing, setShowFollowing] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
@@ -77,10 +77,7 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div style={styles.container}>
-      <Header 
-        username={"Konnect"} 
-        onSettingsClick={() => setShowSettings(true)} 
-      />
+      <Header/>
 
       <ProfileSection 
         userProfile={userProfile}
