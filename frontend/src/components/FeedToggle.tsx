@@ -12,9 +12,8 @@ export function FeedToggle({ mode, onModeChange }: FeedToggleProps) {
       position: 'sticky',
       top: 0,
       zIndex: 100,
-      background: Color.Surface,
-      borderBottom: `1px solid ${Color.Border}`,
-      padding: `${Spacing.Medium} ${Spacing.Large}`,
+      background: Color.Background,
+      paddingTop: Spacing.Medium,
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
@@ -31,7 +30,7 @@ export function FeedToggle({ mode, onModeChange }: FeedToggleProps) {
           onClick={() => onModeChange('discover')}
           style={{
             padding: `${Spacing.Small} ${Spacing.Large}`,
-            borderRadius: Radius.Medium,
+            borderRadius: '12px',
             border: 'none',
             background: mode === 'discover' ? Color.Primary : 'transparent',
             color: mode === 'discover' ? 'white' : Color.Text,
@@ -49,7 +48,7 @@ export function FeedToggle({ mode, onModeChange }: FeedToggleProps) {
           onClick={() => onModeChange('following')}
           style={{
             padding: `${Spacing.Small} ${Spacing.Large}`,
-            borderRadius: Radius.Medium,
+            borderRadius: '12px',
             border: 'none',
             background: mode === 'following' ? Color.Primary : 'transparent',
             color: mode === 'following' ? 'white' : Color.Text,
