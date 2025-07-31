@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import type { Post } from '@/types/post';
 import { Color, Spacing, FontSize, Radius, FontFamily } from '@/lib/presentation';
 import { ApiService } from '@/lib/api';
@@ -12,6 +12,8 @@ export function Post({ post, children }: PostProps) {
   const [isLiked, setIsLiked] = useState(post.isLiked);
   const [likesCount, setLikesCount] = useState(post.likesCount);
   const [isLiking, setIsLiking] = useState(false);
+  const [tiltStyle, setTiltStyle] = useState({});
+  const postRef = useRef<HTMLElement>(null);
 
   const handleLike = async () => {
     if (isLiking) return;
@@ -52,8 +54,36 @@ export function Post({ post, children }: PostProps) {
     return `${Math.floor(diffInMinutes / 1440)}d`;
   };
 
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!postRef.current) return;
+    
+    const rect = postRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = (y - centerY) / centerY * -5;
+    const rotateY = (x - centerX) / centerX * 5;
+    
+    setTiltStyle({
+      transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
+      boxShadow: `0 ${Math.abs(rotateX) * 2}px ${Math.abs(rotateX) * 4}px rgba(0, 0, 0, 0.1)`,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTiltStyle({
+      transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg)',
+      boxShadow: 'none',
+    });
+  };
+
   return (
     <article
+      ref={postRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       style={{
         border: `1px solid ${Color.Border}`,
         borderRadius: Radius.Medium,
@@ -62,6 +92,9 @@ export function Post({ post, children }: PostProps) {
         overflow: 'hidden',
         maxWidth: 480,
         margin: '0 auto 1.5rem auto',
+        transition: 'transform 0.1s ease, box-shadow 0.1s ease',
+        cursor: 'pointer',
+        ...tiltStyle,
       }}>
       <header style={{
         background: Color.Surface,
