@@ -1,7 +1,15 @@
 import React from 'react';
 import { Color, Spacing, FontSize, FontFamily } from '@/lib/presentation';
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export function Header() {
+
+    const router = useRouter()
+
+    const goToProfile = () => {
+        router.push('/account')
+    }
   return (
     <header style={{
       position: 'sticky',
@@ -40,7 +48,8 @@ export function Header() {
         gap: Spacing.Medium,
         marginLeft: 'auto',
       }}>
-        <button style={{
+        <button onClick={goToProfile} 
+        style={{
           width: 40,
           height: 40,
           borderRadius: '50%',
