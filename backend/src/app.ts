@@ -11,6 +11,7 @@ import userRoutes from './routes/users.js';
 import postRoutes from './routes/posts.js';
 import dotenv from 'dotenv';
 import { mongoConnect } from "./config/mongoose.js";
+import testRoutes from './routes/test.js';
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ await mongoConnect();
 
 app.use('/auth', authRoutes);
 app.use('/posts', postRoutes);
+app.use('/test', testRoutes);
 
 app.use(integrateFederation(federation, (req) => undefined));
 
