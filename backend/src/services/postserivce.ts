@@ -38,7 +38,32 @@ export class PostService {
       await this.activityService.publishCreateActivity(savedPost, author);
     }
 
-    return savedPost;
+    // Update Redis cache
+    const populatedPost = await savedPost.populate('author', 'username displayName avatarUrl');
+    
+    // Cache the new post
+    await this.redisService.cachePost(postId.toString(), this.postToCache(populatedPost));
+
+    // Update user's feed cache
+    const userFeedPosts = await this.redisService.getFeedPosts(postData.authorId);
+    await this.redisService.cacheFeedPosts(
+      postData.authorId,
+      [postId.toString(), ...userFeedPosts] // Add new post at the beginning
+    );
+
+    // Update feed cache for user's followers (if needed)
+    // This is optional and depends on your requirements
+    // const followers = await User.find({ following: postData.authorId });
+    // await Promise.all(
+    //   followers.map(follower => 
+    //     this.redisService.cacheFeedPosts(
+    //       follower._id.toString(),
+    //       [postId.toString(), ...userFeedPosts]
+    //     )
+    //   )
+    // );
+
+    return populatedPost;
   }
 
   async getPostById(id: string): Promise<IPost | null> {
@@ -205,7 +230,7 @@ export class PostService {
   async getPostsWithLikeStatus(posts: IPost[], userId?: string): Promise<any[]> {
     if (!userId) {
       return posts.map(post => ({
-        ...post.toObject(),
+        ...(post.toObject ? post.toObject() : post),
         isLiked: false,
       }));
     }
@@ -213,7 +238,7 @@ export class PostService {
     const userObjectId = new mongoose.Types.ObjectId(userId);
     
     return posts.map(post => ({
-      ...post.toObject(),
+      ...(post.toObject ? post.toObject() : post),
       isLiked: post.likes.includes(userObjectId),
     }));
   }
