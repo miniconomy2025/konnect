@@ -35,6 +35,11 @@ export enum Radius {
   Large = 16,
 }
 
+// Font family
+export enum FontFamily {
+  Nunito = "var(--font-nunito), Arial, Helvetica, sans-serif"
+}
+
 // Example usage object for inline styles
 export const styleVars = {
   color: Color,
