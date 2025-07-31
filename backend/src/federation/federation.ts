@@ -1,10 +1,13 @@
-import { createFederation, Person, Image } from "@fedify/fedify";
+import { createFederation, Person, Image, Create, Note } from "@fedify/fedify";
 import { getLogger } from "@logtape/logtape";
 import { MemoryKvStore, InProcessMessageQueue } from "@fedify/fedify";
 import { UserService } from "../services/userService.ts";
+import { PostService } from "../services/postserivce.ts";
+import { dateToTemporal } from "../utils/temporal.ts";
 
 const logger = getLogger("federation");
 const userService = new UserService();
+const postService = new PostService();
 
 const federation = createFederation({
   kv: new MemoryKvStore(),
@@ -48,9 +51,38 @@ federation.setOutboxDispatcher("/users/{identifier}/outbox", async (ctx, identif
   const user = await userService.findByUsername(identifier);
   if (!user) return null;
   
+  const page = cursor ? parseInt(cursor) : 1;
+  const limit = 20;
+  
+  const posts = await postService.getUserPosts(user._id.toString(), page, limit);
+  
+  const activities = posts.map(post => {
+    const noteId = post.activityId;
+    
+    const note = new Note({
+      id: new URL(noteId),
+      content: post.caption,
+      to: new URL("https://www.w3.org/ns/activitystreams#Public"),
+      published: dateToTemporal(post.createdAt),
+      attachments: [new Image({
+        url: new URL(post.mediaUrl),
+        mediaType: post.mediaType,
+      })],
+      attribution: ctx.getActorUri(identifier),
+    });
+    
+    return new Create({
+      id: new URL(`${noteId}/activity`),
+      actor: ctx.getActorUri(identifier),
+      object: note,
+      to: new URL("https://www.w3.org/ns/activitystreams#Public"),
+      published: dateToTemporal(post.createdAt),
+    });
+  });
+  
   return {
-    items: [],
-    nextCursor: null,
+    items: activities,
+    nextCursor: posts.length === limit ? (page + 1).toString() : null,
   };
 });
 
@@ -73,6 +105,30 @@ federation.setFollowingDispatcher("/users/{identifier}/following", async (ctx, i
     nextCursor: null,
   };
 });
+
+federation.setObjectDispatcher(
+  Note,
+  "/posts/{id}",
+  async (ctx, { id }) => {
+    const post = await postService.getPostById(id);
+    if (!post) return null;
+    
+    const user = await userService.findById(post.author.toString());
+    if (!user) return null;
+    
+    return new Note({
+      id: new URL(post.activityId),
+      content: post.caption,
+      to: new URL("https://www.w3.org/ns/activitystreams#Public"),
+      published: dateToTemporal(post.createdAt),
+      attachments: [new Image({
+        url: new URL(post.mediaUrl),
+        mediaType: post.mediaType,
+      })],
+      attribution: ctx.getActorUri(user.username),
+    });
+  }
+);
 
 federation.setInboxListeners("/users/{identifier}/inbox", "/inbox");
 
