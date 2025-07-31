@@ -10,7 +10,21 @@ interface TextPostProps {
 export function TextPost({ post }: TextPostProps) {
   return (
     <PostContainer post={post}>
-      <p style={{ padding: `${Spacing.Large} ${Spacing.Medium}`, fontSize: FontSize.Base, color: Color.Text, margin: 0 }}>{post.caption}</p>
+      <section style={{ 
+        padding: `${Spacing.Large} ${Spacing.Medium}`, 
+        fontSize: FontSize.Base, 
+        color: Color.Text, 
+        margin: 0,
+        textAlign: 'left',
+      }}>
+        <p style={{ 
+          margin: 0, 
+          textAlign: 'justify',
+          lineHeight: 1.6,
+        }}>
+          {post.caption}
+        </p>
+      </section>
     </PostContainer>
   );
 }
