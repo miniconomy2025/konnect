@@ -1,5 +1,5 @@
 import React from 'react';
-import { Color, Spacing, FontSize, Radius, FontFamily } from '@/lib/presentation';
+import { Color, Spacing, FontSize, FontFamily } from '@/lib/presentation';
 
 export function Header() {
   return (

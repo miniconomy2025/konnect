@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Header } from '@/components/Header';
-import { FeedToggle } from '@/components/FeedToggle';
-import { Feed } from '@/components/Feed';
+import { Header } from '@/components/Home/Header';
+import { FeedToggle } from '@/components/Feed/FeedToggle';
+import { Feed } from '@/components/Feed/Feed';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
 
 export function Home() {

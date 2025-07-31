@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { TextPost } from './TextPost';
-import { ImagePost } from './ImagePost';
-import { VideoPost } from './VideoPost';
+import { TextPost } from '../Post/TextPost';
+import { ImagePost } from '../Post/ImagePost';
+import { VideoPost } from '../Post/VideoPost';
 import type { Post } from '@/types/post';
-import { Color, Spacing, FontSize, Radius } from '@/lib/presentation';
+import { Color, Spacing, FontSize } from '@/lib/presentation';
 import { ApiService } from '@/lib/api';
 
 interface FeedProps {

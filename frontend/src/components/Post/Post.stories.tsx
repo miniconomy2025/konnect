@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Post } from './Post';
+import { Post } from './Post/Post';
 import { TextPost } from './TextPost';
 import { ImagePost } from './ImagePost';
 import { VideoPost } from './VideoPost';
