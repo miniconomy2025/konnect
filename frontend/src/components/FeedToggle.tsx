@@ -12,21 +12,25 @@ export function FeedToggle({ mode, onModeChange }: FeedToggleProps) {
       position: 'sticky',
       top: 0,
       zIndex: 100,
-      background: Color.Background,
-      paddingTop: Spacing.Medium,
+      background: 'transparent',
+      // paddingTop: Spacing.Medium,
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
     }}>
       <section style={{
         display: 'flex',
-        background: Color.Background,
+        // background: Color.Background,
         borderRadius: Radius.Large,
         padding: Spacing.XSmall,
+        background: 'rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        filter: 'blur(0.3px)',
         border: `1px solid ${Color.Border}`,
         position: 'relative',
       }}>
-        <div style={{
+        <section style={{
           position: 'absolute',
           top: Spacing.XSmall,
           left: Spacing.XSmall,
