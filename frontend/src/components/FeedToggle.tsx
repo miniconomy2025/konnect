@@ -26,13 +26,26 @@ export function FeedToggle({ mode, onModeChange }: FeedToggleProps) {
         border: `1px solid ${Color.Border}`,
         position: 'relative',
       }}>
+        <div style={{
+          position: 'absolute',
+          top: Spacing.XSmall,
+          left: Spacing.XSmall,
+          width: 'calc(50% - 4px)',
+          height: 'calc(100% - 8px)',
+          background: Color.Primary,
+          borderRadius: '12px',
+          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          transform: mode === 'following' ? 'translateX(100%)' : 'translateX(0)',
+          zIndex: 1,
+        }} />
+        
         <button
           onClick={() => onModeChange('discover')}
           style={{
             padding: `${Spacing.Small} ${Spacing.Large}`,
             borderRadius: '12px',
             border: 'none',
-            background: mode === 'discover' ? Color.Primary : 'transparent',
+            background: 'transparent',
             color: mode === 'discover' ? 'white' : Color.Text,
             fontSize: FontSize.Base,
             fontWeight: mode === 'discover' ? '600' : '400',
@@ -40,6 +53,8 @@ export function FeedToggle({ mode, onModeChange }: FeedToggleProps) {
             transition: 'all 0.2s ease',
             minWidth: 100,
             fontFamily: 'inherit',
+            position: 'relative',
+            zIndex: 2,
           }}
         >
           Discover
@@ -50,7 +65,7 @@ export function FeedToggle({ mode, onModeChange }: FeedToggleProps) {
             padding: `${Spacing.Small} ${Spacing.Large}`,
             borderRadius: '12px',
             border: 'none',
-            background: mode === 'following' ? Color.Primary : 'transparent',
+            background: 'transparent',
             color: mode === 'following' ? 'white' : Color.Text,
             fontSize: FontSize.Base,
             fontWeight: mode === 'following' ? '600' : '400',
@@ -58,6 +73,8 @@ export function FeedToggle({ mode, onModeChange }: FeedToggleProps) {
             transition: 'all 0.2s ease',
             minWidth: 100,
             fontFamily: 'inherit',
+            position: 'relative',
+            zIndex: 2,
           }}
         >
           Following
