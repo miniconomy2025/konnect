@@ -7,7 +7,7 @@ output "public_subnet_id" {
 }
 
 output "private_subnet_ids" {
-  value = [aws_subnet.private.id]
+  value = aws_subnet.private[count.index]
 }
 
 output "default_security_group_id" {
