@@ -216,6 +216,12 @@ export class PostService {
 
     await post.save();
     
+    // Publish like/unlike activity to ActivityPub
+    const user = await User.findById(userId);
+    if (user) {
+      await this.activityService.publishLikeActivity(post, user, isLiked);
+    }
+
     // Update cache with the like status
     const postObj = post.toObject();
     const postData: PostWithLikeStatus = {
