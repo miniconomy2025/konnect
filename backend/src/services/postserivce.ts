@@ -6,6 +6,20 @@ import { Post, type IPost } from '../models/post.js';
 import { User, type IUser} from '../models/user.js';
 import type { CreatePostData } from '../types/post.js';
 
+type PostWithLikeStatus = {
+  _id: mongoose.Types.ObjectId;
+  author: mongoose.Types.ObjectId | IUser;
+  caption: string;
+  mediaUrl: string;
+  mediaType: string;
+  activityId: string;
+  likes: mongoose.Types.ObjectId[];
+  likesCount: number;
+  isLiked: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export class PostService {
   private s3Service = new S3Service();
   private activityService = new ActivityService();
@@ -107,10 +121,10 @@ export class PostService {
     await Promise.all([
       this.redisService.cacheFeedPosts(
         userId,
-        posts.map((p) => p._id.toString())
+        posts.map(p => (p as IPost & { _id: mongoose.Types.ObjectId })._id.toString())
       ),
-      ...posts.map((post) => 
-        this.redisService.cachePost(post._id.toString(), this.postToCache(post))
+      ...posts.map(post => 
+        this.redisService.cachePost((post as IPost & { _id: mongoose.Types.ObjectId })._id.toString(), this.postToCache(post))
       )
     ]);
 
@@ -153,10 +167,10 @@ export class PostService {
     await Promise.all([
       this.redisService.cacheFeedPosts(
         `feed:${userId}`,
-        posts.map((p) => p._id.toString())
+        posts.map(p => (p as IPost & { _id: mongoose.Types.ObjectId })._id.toString())
       ),
-      ...posts.map((post) => 
-        this.redisService.cachePost(post._id.toString(), this.postToCache(post))
+      ...posts.map(post => 
+        this.redisService.cachePost((post as IPost & { _id: mongoose.Types.ObjectId })._id.toString(), this.postToCache(post))
       )
     ]);
 
@@ -164,7 +178,7 @@ export class PostService {
   }
 
   async likePost(postId: string, userId: string): Promise<{ success: boolean; likesCount: number; isLiked: boolean }> {
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate('author', 'username displayName avatarUrl');
     if (!post) {
       return { success: false, likesCount: 0, isLiked: false };
     }
@@ -186,8 +200,22 @@ export class PostService {
 
     await post.save();
     
-    // Update cache
-    await this.redisService.cachePost(postId, this.postToCache(post));
+    // Update cache with the like status
+    const postObj = post.toObject();
+    const postData: PostWithLikeStatus = {
+      _id: post._id as mongoose.Types.ObjectId,
+      author: postObj.author,
+      caption: postObj.caption,
+      mediaUrl: postObj.mediaUrl,
+      mediaType: postObj.mediaType,
+      activityId: postObj.activityId,
+      likes: postObj.likes,
+      likesCount: postObj.likesCount,
+      isLiked,
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt
+    };
+    await this.redisService.cachePost(postId, this.postToCache(postData));
 
     return {
       success: true,
@@ -239,7 +267,7 @@ export class PostService {
     
     return posts.map(post => ({
       ...(post.toObject ? post.toObject() : post),
-      isLiked: post.likes.includes(userObjectId),
+      isLiked: post.likes.some(likeId => likeId.toString() === userObjectId.toString()),
     }));
   }
 
@@ -263,8 +291,8 @@ export class PostService {
     return await this.s3Service.getPresignedUploadUrl(mimeType, userId);
   }
 
-  private postToCache(post: IPost): Record<string, any> {
-    const postObj = post.toObject ? post.toObject() : post;
+  private postToCache(post: IPost | PostWithLikeStatus): Record<string, any> {
+    const postObj = 'toObject' in post ? post.toObject() : post;
     return {
       _id: postObj._id.toString(),
       author: postObj.author instanceof mongoose.Types.ObjectId 
@@ -276,13 +304,14 @@ export class PostService {
       activityId: postObj.activityId,
       likes: JSON.stringify(postObj.likes.map((id: mongoose.Types.ObjectId) => id.toString())),
       likesCount: postObj.likesCount.toString(),
+      isLiked: 'isLiked' in postObj ? postObj.isLiked : false,
       createdAt: postObj.createdAt.toISOString(),
       updatedAt: postObj.updatedAt.toISOString()
     };
   }
 
   private transformCachedPost(cached: Record<string, any>): IPost {
-    return {
+    const post = {
       _id: new mongoose.Types.ObjectId(cached._id),
       author: typeof cached.author === 'string' && cached.author.startsWith('{')
         ? JSON.parse(cached.author)
@@ -293,8 +322,16 @@ export class PostService {
       activityId: cached.activityId,
       likes: JSON.parse(cached.likes).map((id: string) => new mongoose.Types.ObjectId(id)),
       likesCount: parseInt(cached.likesCount),
+      isLiked: cached.isLiked || false,
       createdAt: new Date(cached.createdAt),
       updatedAt: new Date(cached.updatedAt)
-    } as IPost;
+    };
+
+    // Add Mongoose array methods to likes array for proper comparison
+    Object.setPrototypeOf(post.likes, Array.prototype);
+    post.likes.includes = Array.prototype.includes;
+    post.likes.indexOf = Array.prototype.indexOf;
+
+    return post as unknown as IPost;
   }
 }
