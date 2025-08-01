@@ -7,38 +7,6 @@ resource "aws_instance" "this" {
   tags = {
     Name = "${var.project_name}-ec2-${count.index}"
   }
-  user_data = <<-EOF
-    #!/bin/bash
-    # Updating system and installing dependencies
-    apt-get update -y
-    apt-get install -y curl git
-
-    # Installing Node.js (LTS)
-    curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
-    apt-get install -y nodejs
-
-    # Installing PM2, TypeScript, and ts-node globally
-    npm install -g pm2 typescript ts-node
-
-    # Cloning the repo
-    git clone {repo link} /home/ubuntu/{project name}
-
-    # Setting permissions
-    chown -R ubuntu:ubuntu /home/ubuntu/{project name}
-
-    # Installing dependencies
-    cd /home/ubuntu/{project name}
-    sudo -u ubuntu npm install
-
-    # Start the app with PM2
-    sudo -u ubuntu pm2 start dist/app.js --name {project name}
-
-    # Set PM2 to start on boot
-    sudo -u ubuntu pm2 startup systemd -u ubuntu --hp /home/ubuntu
-    sudo -u ubuntu pm2 save
-
-  EOF
-  iam_instance_profile = var.iam_instance_profile
   key_name = var.key_name
 }
 

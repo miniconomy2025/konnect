@@ -44,7 +44,11 @@ next-env.d.ts
 # terraforms
 .terraform
 *.tfvars
+*lock*
 
 # storybook
 *storybook.log
 storybook-static
+
+# keys
+*.pem
