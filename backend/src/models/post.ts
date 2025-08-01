@@ -1,18 +1,22 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 import type { IUser } from './user.js';
 
-export interface IPost extends Document {
-  _id: Types.ObjectId;
-  author: Types.ObjectId;
+export interface IPostBase {
+  author: Types.ObjectId | IUser;
   caption: string;
   mediaUrl: string;
   mediaType: string;
   activityId: string;
   likes: Types.ObjectId[];
   likesCount: number;
+  isLiked?: boolean;
+}
+
+export interface IPost extends Document, IPostBase {
   createdAt: Date;
   updatedAt: Date;
 }
+
 export interface IPostPopulated extends Omit<IPost, 'author'> {
   author: IUser;
 }
