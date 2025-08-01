@@ -170,10 +170,8 @@ export class PostService {
     }
 
     // If not in cache or incomplete, fetch from DB
-    const following = await this.redisService.getFollowing(userId);
-    const posts = await Post.find({
-      author: { $in: following.length > 0 ? following : [userId] }
-    })
+    // For now, return all posts since following is not implemented
+    const posts = await Post.find()
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)

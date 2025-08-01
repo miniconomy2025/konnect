@@ -1,4 +1,4 @@
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { config } from '../config.js';
 
 export class RedisService {
@@ -71,26 +71,5 @@ export class RedisService {
   async getLikes(postId: string): Promise<number> {
     const count = await this.client.get(`post:likes:${postId}`);
     return parseInt(count || '0');
-  }
-
-  // Following cache methods
-  async cacheFollowing(userId: string, followingIds: string[]): Promise<void> {
-    const key = `following:${userId}`;
-    if (followingIds.length > 0) {
-      await this.client.sadd(key, ...followingIds);
-      await this.client.expire(key, 3600); // 1 hour cache
-    }
-  }
-
-  async getFollowing(userId: string): Promise<string[]> {
-    return await this.client.smembers(`following:${userId}`);
-  }
-
-  async addFollowing(userId: string, followingId: string): Promise<void> {
-    await this.client.sadd(`following:${userId}`, followingId);
-  }
-
-  async removeFollowing(userId: string, followingId: string): Promise<void> {
-    await this.client.srem(`following:${userId}`, followingId);
   }
 } 
