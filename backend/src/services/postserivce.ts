@@ -131,7 +131,23 @@ export class PostService {
     return posts;
   }
 
+  async getPublicFeedPosts(page = 1, limit = 20): Promise<IPost[]> {
+    const skip = (page - 1) * limit;
+    
+    // Get all posts sorted by creation date
+    return await Post.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('author', 'username displayName avatarUrl');
+  }
+
   async getFeedPosts(userId: string, page = 1, limit = 20): Promise<IPost[]> {
+    // For non-authenticated users, return public feed
+    if (!userId) {
+      return this.getPublicFeedPosts(page, limit);
+    }
+
     const skip = (page - 1) * limit;
     
     // Try to get from cache first
