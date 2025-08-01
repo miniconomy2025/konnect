@@ -90,11 +90,12 @@ export class PostService {
 
   async getUserPosts(userId: string, page = 1, limit = 20): Promise<IPost[]> {
     const skip = (page - 1) * limit;
+    let posts: IPost[] = [];
     
     // Try to get from cache first
     const cachedPostIds = await this.redisService.getFeedPosts(userId, page, limit);
     if (cachedPostIds.length > 0) {
-      const posts = await Promise.all(
+      const cachedPosts = await Promise.all(
         cachedPostIds.map(async (id: string) => {
           const cached = await this.redisService.getCachedPost(id);
           if (cached) {
@@ -104,29 +105,38 @@ export class PostService {
         })
       );
 
-      // If all posts were in cache, return them
-      if (posts.every(post => post !== null)) {
-        return posts.filter((post): post is IPost => post !== null);
-      }
+      // Filter out any null values from cache misses
+      posts = cachedPosts.filter((post): post is IPost => post !== null);
     }
 
-    // If not in cache or incomplete, fetch from DB
-    const posts = await Post.find({ author: userId })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate('author', 'username displayName avatarUrl');
+    // If we didn't get enough posts from cache, fetch more from MongoDB
+    if (posts.length < limit) {
+      // Calculate how many more posts we need
+      const remainingLimit = limit - posts.length;
+      // Adjust skip to account for posts we already have
+      const adjustedSkip = skip + posts.length;
 
-    // Cache the results
-    await Promise.all([
-      this.redisService.cacheFeedPosts(
-        userId,
-        posts.map(p => (p as IPost & { _id: mongoose.Types.ObjectId })._id.toString())
-      ),
-      ...posts.map(post => 
-        this.redisService.cachePost((post as IPost & { _id: mongoose.Types.ObjectId })._id.toString(), this.postToCache(post))
-      )
-    ]);
+      // Get remaining posts from MongoDB
+      const dbPosts = await Post.find({ author: userId })
+        .sort({ createdAt: -1 })
+        .skip(adjustedSkip)
+        .limit(remainingLimit)
+        .populate('author', 'username displayName avatarUrl');
+
+      // Cache the new posts we found
+      await Promise.all([
+        this.redisService.cacheFeedPosts(
+          userId,
+          dbPosts.map(p => (p as IPost & { _id: mongoose.Types.ObjectId })._id.toString())
+        ),
+        ...dbPosts.map(post => 
+          this.redisService.cachePost((post as IPost & { _id: mongoose.Types.ObjectId })._id.toString(), this.postToCache(post))
+        )
+      ]);
+
+      // Combine cached posts with database posts
+      posts = [...posts, ...dbPosts];
+    }
 
     return posts;
   }

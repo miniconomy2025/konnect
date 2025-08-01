@@ -22,7 +22,7 @@ export class RedisService {
   // Post caching methods
   async cachePost(postId: string, postData: Record<string, any>): Promise<void> {
     await this.client.hset(`post:${postId}`, postData);
-    await this.client.expire(`post:${postId}`, 3600); // 1 hour cache
+    await this.client.expire(`post:${postId}`, 1800); // 30 min cache
   }
 
   async getCachedPost(postId: string): Promise<Record<string, any> | null> {
@@ -57,14 +57,14 @@ export class RedisService {
   async incrementLikes(postId: string): Promise<number> {
     const key = `post:likes:${postId}`;
     const count = await this.client.incr(key);
-    await this.client.expire(key, 3600); // 1 hour cache
+    await this.client.expire(key, 300); // 5 min cache
     return count;
   }
 
   async decrementLikes(postId: string): Promise<number> {
     const key = `post:likes:${postId}`;
     const count = await this.client.decr(key);
-    await this.client.expire(key, 3600);
+    await this.client.expire(key, 300); //5 min cache
     return count;
   }
 
