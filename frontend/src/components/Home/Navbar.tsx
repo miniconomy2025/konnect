@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Home, User } from 'lucide-react';
@@ -13,12 +15,12 @@ const NavBar = () => {
   return (
     <nav style={styles.navbar}>
       <section style={styles.navContainer}>
-        <Link href="/">
+        <Link href="/Home">
           <section style={styles.navLink}>
-            <section style={isActive('/') ? styles.iconWrapperActive : styles.iconWrapper}>
+            <section style={isActive('/Home') ? styles.iconWrapperActive : styles.iconWrapper}>
               <Home size={24} />
             </section>
-            <section style={isActive('/') ? styles.labelActive : styles.label}>
+            <section style={isActive('/Home') ? styles.labelActive : styles.label}>
               Home
             </section>
           </section>

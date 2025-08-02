@@ -1,3 +1,5 @@
+'use client';
+
 import NavBar from '@/components/Home/Navbar';
 import { styles } from '@/styles/mainLayout';
 
