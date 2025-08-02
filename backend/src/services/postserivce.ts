@@ -277,30 +277,6 @@ export class PostService {
     return true;
   }
 
-  async isPostLikedByUser(postId: string, userId: string): Promise<boolean> {
-    const post = await Post.findById(postId);
-    if (!post) return false;
-
-    const userObjectId = new mongoose.Types.ObjectId(userId);
-    return post.likes.includes(userObjectId);
-  }
-
-  async getPostsWithLikeStatus(posts: IPost[], userId?: string): Promise<any[]> {
-    if (!userId) {
-      return posts.map(post => ({
-        ...(post.toObject ? post.toObject() : post),
-        isLiked: false,
-      }));
-    }
-
-    const userObjectId = new mongoose.Types.ObjectId(userId);
-    
-    return posts.map(post => ({
-      ...(post.toObject ? post.toObject() : post),
-      isLiked: post.likes.some(likeId => likeId.toString() === userObjectId.toString()),
-    }));
-  }
-
   async uploadImage(file: Buffer, mimeType: string, userId: string): Promise<string> {
     if (!this.s3Service.validateImageType(mimeType)) {
       throw new Error('Invalid image type. Only JPEG, PNG, and WebP are allowed.');

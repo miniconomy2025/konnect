@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { PostService } from '../services/postserivce.ts';
+import { PostService } from '../services/postserivce.js';
+import { PostNormalizationService } from '../services/postNormalizationService.js';
 import { requireAuth, optionalAuth } from '../middlewares/auth.js';
-import type { PostResponse } from '../types/post.js';
 import type { IPost } from '../models/post.ts';
 import { Types } from 'mongoose';
 import type { IUser } from '../models/user.ts';
@@ -64,32 +64,18 @@ router.post('/', requireAuth, upload.single('image'), async (req, res) => {
       return res.status(500).json({ error: 'Failed to retrieve created post' });
     }
 
-    const response: PostResponse = {
-      id: populatedPost._id.toString(),
-      author: {
-        id: populatedPost.author._id.toString(),
-        username: populatedPost.author.username,
-        displayName: populatedPost.author.displayName,
-        avatarUrl: populatedPost.author.avatarUrl,
-      },
-      caption: populatedPost.caption,
-      mediaUrl: populatedPost.mediaUrl,
-      mediaType: populatedPost.mediaType,
-      activityId: populatedPost.activityId,
-      likesCount: populatedPost.likesCount,
-      isLiked: false,
-      createdAt: populatedPost.createdAt,
-      updatedAt: populatedPost.updatedAt,
-    };
+    const unifiedPost = PostNormalizationService.localPostToUnified(
+      populatedPost, 
+      req.user!._id!.toString()
+    );
 
-    res.status(201).json(response);
+    res.status(201).json(unifiedPost);
   } catch (error) {
     console.error('Post creation error:', error);
     res.status(500).json({ error: 'Failed to create post' });
   }
 });
 
-// get a specific post
 router.get('/:id', optionalAuth, async (req, res) => {
   try {
     const { id } = req.params;
@@ -98,41 +84,23 @@ router.get('/:id', optionalAuth, async (req, res) => {
     if (!post) {
       return res.status(404).json({ error: 'Post not found' });
     }
-
-    const isLiked = req.user ? 
-      await postService.isPostLikedByUser(id, req.user._id!.toString()) : 
-      false;
     
     if (!hasPopulatedAuthor(post)) {
       return res.status(500).json({ error: 'Something went wrong' });
     }
 
-    const response: PostResponse = {
-      id: post._id.toString(),
-      author: {
-        id: post.author._id.toString(),
-        username: post.author.username,
-        displayName: post.author.displayName,
-        avatarUrl: post.author.avatarUrl,
-      },
-      caption: post.caption,
-      mediaUrl: post.mediaUrl,
-      mediaType: post.mediaType,
-      activityId: post.activityId,
-      likesCount: post.likesCount,
-      isLiked,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
-    };
+    const unifiedPost = PostNormalizationService.localPostToUnified(
+      post, 
+      req.user?._id?.toString()
+    );
 
-    res.json(response);
+    res.json(unifiedPost);
   } catch (error) {
     console.error('Get post error:', error);
     res.status(500).json({ error: 'Failed to fetch post' });
   }
 });
 
-// Get users posts
 router.get('/user/:username', optionalAuth, async (req, res) => {
   try {
     const { username } = req.params;
@@ -148,13 +116,21 @@ router.get('/user/:username', optionalAuth, async (req, res) => {
     }
 
     const posts = await postService.getUserPosts(user._id.toString(), page, limit);
-    const postsWithLikeStatus = await postService.getPostsWithLikeStatus(
+    
+    const unifiedPosts = PostNormalizationService.localPostsToUnified(
       posts,
       req.user?._id?.toString()
     );
 
     res.json({
-      posts: postsWithLikeStatus,
+      user: {
+        username: user.username,
+        domain: user.domain,
+        displayName: user.displayName,
+        avatarUrl: user.avatarUrl,
+        isLocal: user.isLocal
+      },
+      posts: unifiedPosts,
       page,
       limit,
       hasMore: posts.length === limit,
@@ -170,6 +146,48 @@ router.get('/', optionalAuth, async (req, res) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
+    const includeExternal = req.query.includeExternal === 'true';
+    const feedType = req.query.type as string || 'local';
+
+    if (includeExternal || feedType === 'mixed') {
+      const localPosts = await postService.getFeedPosts(
+        req.user?._id?.toString() || '',
+        page,
+        Math.ceil(limit / 2)
+      );
+
+      // TODO: When follows are implemented, get external posts
+      // const followedUsers = await userService.getFollowedExternalUsers(req.user._id);
+      // const externalPostsPromises = followedUsers.map(user => 
+      //   externalPostService.getUserPosts(user.username, user.domain, Math.ceil(limit / 2))
+      // );
+      // const externalPostsArrays = await Promise.all(externalPostsPromises);
+      // const externalPosts = externalPostsArrays.flat();
+
+      const externalPosts: any[] = []; 
+
+      const unifiedPosts = PostNormalizationService.mixAndSortPosts(
+        localPosts,
+        externalPosts,
+        req.user?._id?.toString()
+      );
+
+      let filteredPosts = unifiedPosts;
+
+      const finalPosts = filteredPosts.slice(0, limit);
+
+      return res.json({
+        posts: finalPosts,
+        page,
+        limit,
+        hasMore: filteredPosts.length > limit,
+        sources: {
+          local: localPosts.length,
+          external: externalPosts.length
+        },
+        type: 'mixed'
+      });
+    }
 
     const posts = await postService.getFeedPosts(
       req.user?._id?.toString() || '',
@@ -177,16 +195,21 @@ router.get('/', optionalAuth, async (req, res) => {
       limit
     );
     
-    const postsWithLikeStatus = await postService.getPostsWithLikeStatus(
+    let unifiedPosts = PostNormalizationService.localPostsToUnified(
       posts,
       req.user?._id?.toString()
     );
 
     res.json({
-      posts: postsWithLikeStatus,
+      posts: unifiedPosts,
       page,
       limit,
       hasMore: posts.length === limit,
+      sources: {
+        local: unifiedPosts.length,
+        external: 0
+      },
+      type: 'local'
     });
   } catch (error) {
     console.error('Get feed error:', error);
@@ -194,7 +217,6 @@ router.get('/', optionalAuth, async (req, res) => {
   }
 });
 
-// Like/unlike a post, depends on state so only one endpoint
 router.post('/:id/like', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
