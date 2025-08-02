@@ -7,6 +7,7 @@ export const styles: { [key: string]: CSSProperties } = {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
   },
   main: {
+    display: 'flexbox',
     paddingBottom: '0.5rem'
   }
 };

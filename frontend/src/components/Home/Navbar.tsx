@@ -15,7 +15,7 @@ const NavBar = () => {
   return (
     <nav style={styles.navbar}>
       <section style={styles.navContainer}>
-        <Link href="/Home">
+        <Link href="/Home" style={styles.link}>
           <section style={styles.navLink}>
             <section style={isActive('/Home') ? styles.iconWrapperActive : styles.iconWrapper}>
               <Home size={24} />
@@ -26,7 +26,7 @@ const NavBar = () => {
           </section>
         </Link>
 
-        <Link href="/Account">
+        <Link href="/Account" style={styles.link}>
           <section style={styles.navLink}>
             <section style={isActive('/Account') ? styles.iconWrapperActive : styles.iconWrapper}>
               <User size={24} />
