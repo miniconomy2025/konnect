@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { styles } from '@/styles/account';
-import { UserProfile, User, Post } from '@/types/account';
+import { UserProfile, User, PostsResponse } from '@/types/account';
 import  Header  from '@/components/Account/Header';
 import ProfileSection from '@/components/Account/ProfileSection';
 import PostsGrid from '@/components/Account/PostsGrid';
@@ -24,44 +24,47 @@ const ProfilePage: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | undefined>(undefined);
   const [followers, setFollowers] = useState<User[]>([]);
   const [following, setFollowing] = useState<User[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostsResponse | undefined>(undefined);
 
 
   const [tempName, setTempName] = useState<string>(displayName);
-  const [bio, setBio] = useState<string>('Digital creator • Photography enthusiast 📸\nLiving life one moment at a time ✨');
+  const [bio, setBio] = useState<string>('');
   const [tempBio, setTempBio] = useState<string>(bio);
 
 
     useEffect(() => {
         const fetchData = async () => {
-        const { data, error } = await ApiService.getCurrentUser();
+            const { data, error } = await ApiService.getCurrentUser();
 
-        if (error || !data) {
-            console.error('Failed to fetch user data:', error);
-            return;
-        }
-        console.log(data);
-        // const user = data.user; // adapt based on actual shape of response
-        // const userPosts = data.posts || []; // adapt based on actual API
-        // const userFollowers = data.followers || [];
-        // const userFollowing = data.following || [];
+            if (error || !data) {
+                console.error('Failed to fetch user data:', error);
+                return;
+            }
 
-        setUserProfile({
-            username: data.username,
-            displayName: data.displayName,
-            bio: data.bio,
-            avatar: data.avatarUrl,
-            postsCount: data.postsCount,
-            followersCount: data.followersCount,
-            followingCount: data.followingCount,
-            isFollowing: false, // server might give this too
-        });
+            const userPosts = (await ApiService.getUserPosts(data.username)).data; // adapt based on actual API
+            
+            setPosts(userPosts);
 
-        // setFollowers(userFollowers);
-        // setFollowing(userFollowing);
-        // setPosts(userPosts);
-        // setTempName(user.displayName);
-        setBio(data.bio);
+            // const userFollowers = data.followers || [];
+            // const userFollowing = data.following || [];
+
+            setUserProfile({
+                username: data.username,
+                displayName: data.displayName,
+                bio: bio,
+                avatar: data.avatarUrl,
+                postsCount: data.postsCount,
+                followersCount: data.followersCount,
+                followingCount: data.followingCount,
+                isFollowing: false, // server might give this too
+            });
+
+            // setFollowers(userFollowers);
+            // setFollowing(userFollowing);
+            // setPosts(userPosts);
+            setTempName(data.displayName);
+            setBio(data.bio);
+            setTempBio(data.bio);
         };
 
         fetchData();
@@ -101,18 +104,20 @@ const ProfilePage: React.FC = () => {
 //   ];
 
   // Event handlers
-  const handleNameSave = (): void => {
-    setDisplayName(tempName);
-    setIsEditingName(false);
-  };
-
   const handleNameCancel = (): void => {
     setTempName(displayName);
     setIsEditingName(false);
   };
 
-  const handleBioSave = (): void => {
-    setBio(tempBio);
+  const handleNameSave = () => {
+    if (!userProfile) return;
+    setUserProfile({ ...userProfile, displayName: tempName });
+    setIsEditingName(false);
+  };
+
+  const handleBioSave = () => {
+    if (!userProfile) return;
+    setUserProfile({ ...userProfile, bio: tempBio });
     setIsEditingBio(false);
   };
 
@@ -145,7 +150,7 @@ const ProfilePage: React.FC = () => {
 
         <PostsGrid 
             activeTab={activeTab} 
-            posts={posts} 
+            posts={posts?.posts || []} 
         />
 
         {/* Modals */}
