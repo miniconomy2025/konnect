@@ -11,6 +11,7 @@ import userRoutes from './routes/users.js';
 import postRoutes from './routes/posts.js';
 import dotenv from 'dotenv';
 import { mongoConnect } from "./config/mongoose.js";
+import cors from 'cors';
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ const logger = getLogger("backend");
 export const app = express();
 
 app.set("trust proxy", true);
+app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

@@ -2,13 +2,14 @@
 
 import React, { useState } from 'react';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
+import { ApiService } from '@/lib/api';
 
 const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
-
+    window.location.href = 'http://localhost:8000/auth/google';
   };
 
   return (
