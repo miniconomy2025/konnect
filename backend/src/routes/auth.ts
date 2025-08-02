@@ -76,19 +76,6 @@ router.get('/google/callback', async (req, res) => {
     frontendUrl.searchParams.set('isNewUser', isNewUser.toString());
 
     res.redirect(frontendUrl.toString());
-    // res.json({
-    //   success: true,
-    //   token,
-    //   user: {
-    //     id: user._id?.toString(),
-    //     username: user.username,
-    //     displayName: user.displayName,
-    //     email: user.email,
-    //     avatarUrl: user.avatarUrl,
-    //     actorId: user.actorId,
-    //   },
-    //   isNewUser,
-    // });
   } catch (error) {
     console.error('Google OAuth error:', error);
     res.status(500).json({ error: 'Authentication failed' });
