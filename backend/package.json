@@ -26,7 +26,8 @@
     "@types/mongoose": "^5.11.97",
     "@types/multer": "^2.0.0",
     "@types/node": "^20.19.9",
-    "dotenv": "^17.2.1"
+    "dotenv": "^17.2.1",
+    "typescript": "^5.9.2"
   },
   "scripts": {
     "dev": "dotenvx run -- tsx watch ./src/config/index.ts",

@@ -4,4 +4,8 @@ export interface CreateUserData {
   username: string;
   displayName: string;
   avatarUrl?: string;
+  keyPairs: {
+    privateKey: JsonWebKey;
+    publicKey: JsonWebKey;
+  }[]
 }

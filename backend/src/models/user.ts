@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
+import mongoose, { Document, Schema, Types } from 'mongoose';
 
 export interface IUser extends Document {
   _id: Types.ObjectId;
@@ -18,6 +18,10 @@ export interface IUser extends Document {
   isPrivate: boolean;
   createdAt: Date;
   updatedAt: Date;
+  keyPairs: {
+    publicKey: JsonWebKey;
+    privateKey: JsonWebKey | undefined;
+  }[];
 }
 
 const userSchema = new Schema<IUser>({
@@ -83,7 +87,17 @@ const userSchema = new Schema<IUser>({
   isPrivate: {
     type: Boolean,
     default: false
-  }
+  },
+  keyPairs: [{
+    publicKey: {
+      type: Object,
+      required: true
+    },
+    privateKey: {
+      type: Object,
+      required: true
+    }
+  }]
 }, {
   timestamps: true
 });
