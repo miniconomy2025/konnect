@@ -71,7 +71,7 @@ curl -X PUT -H "Authorization: Bearer $TOKEN" \
 ```bash
 # Create post with image
 curl -X POST -H "Authorization: Bearer $TOKEN" \
-     -F "media=@test-image.jpg" \
+     -F "image=@test-image.jpg" \
      -F "caption=My first post" \
      http://localhost:8000/posts
 

@@ -29,7 +29,7 @@ const upload = multer({
   },
 });
 
-router.post('/', requireAuth, upload.single('media'), async (req, res) => {
+router.post('/', requireAuth, upload.single('image'), async (req, res) => {
   try {
     const { caption } = req.body;
     
@@ -38,7 +38,7 @@ router.post('/', requireAuth, upload.single('media'), async (req, res) => {
     }
 
     if (!req.file) {
-      return res.status(400).json({ error: 'Media file is required' });
+      return res.status(400).json({ error: 'Image is required' });
     }
 
     if (caption.length > 2200) {
