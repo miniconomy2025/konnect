@@ -28,6 +28,8 @@ NoTeamCosts Members:
 - **Like System** - Like/unlike posts with user tracking
 - **ActivityPub Posts** - Posts federate as Note objects
 - **User Search** - Search local and external users via WebFinger
+- **External Post Browsing** - View posts from any ActivityPub user
+- **Unified Post Format** - integration of local and external content
 
 ### How it Works
 
@@ -38,6 +40,7 @@ NoTeamCosts Members:
 5. **Federation**: Posts appear in user outboxes as ActivityPub Create activities
 6. **Likes**: Users can like/unlike posts with duplicate prevention
 7. **User Discovery**: Search for local users or discover external users via WebFinger lookups
+8. **External Content Browsing**: View posts from any fediverse user without following
 
 ### Google OAuth Flow
 ```bash
@@ -64,22 +67,25 @@ curl -X PUT -H "Authorization: Bearer $TOKEN" \
      http://localhost:8000/auth/username
 ```
 
-### Test Post Creation
+### Test Post Creation and Feeds
 ```bash
 # Create post with image
 curl -X POST -H "Authorization: Bearer $TOKEN" \
-     -F "image=@test-image.jpg" \
+     -F "media=@test-image.jpg" \
      -F "caption=My first post" \
      http://localhost:8000/posts
 
-# Get specific post
+# Get specific post (unified format)
 curl http://localhost:8000/posts/POST_ID
 
-# Get user's posts
+# Get user's posts (unified format)
 curl http://localhost:8000/posts/user/username
 
-# Get feed
+# Get local feed (default)
 curl http://localhost:8000/posts
+
+# Get mixed feed (local + external)
+curl http://localhost:8000/posts?type=mixed
 
 # Like a post
 curl -X POST -H "Authorization: Bearer $TOKEN" \
@@ -90,7 +96,7 @@ curl -X DELETE -H "Authorization: Bearer $TOKEN" \
      http://localhost:8000/posts/POST_ID
 ```
 
-### Test User Search
+### Test User Search and External Posts
 ```bash
 # Search for local users
 curl "http://localhost:8000/search/users?q=alice"
@@ -101,6 +107,11 @@ curl "http://localhost:8000/search/users?q=@alice@mastodon.social"
 # Direct external user lookup
 curl "http://localhost:8000/search/external/alice/mastodon.social"
 
+# Browse external user's posts (unified format)
+curl "http://localhost:8000/search/posts/alice/mastodon.social?limit=10"
+
+# Get a specific external post
+curl "http://localhost:8000/search/post?url=https://mastodon.social/@alice/123456"
 
 ### Test WebFinger Discovery
 ```bash
@@ -135,16 +146,18 @@ curl -H "Accept: application/activity+json" http://localhost:8000/posts/POST_ID
 - `POST /auth/logout` - Logout user
 
 ### Posts
-- `POST /posts` - Create post with image upload (requires auth)
-- `GET /posts/:id` - Get specific post
-- `GET /posts/user/:username` - Get user's posts
-- `GET /posts` - Get feed/timeline
+- `POST /posts` - Create post with media upload (requires auth)
+- `GET /posts/:id` - Get specific post (unified format)
+- `GET /posts/user/:username` - Get user's posts (unified format)
+- `GET /posts` - Get feed/timeline (supports ?type=mixed for future external content)
 - `POST /posts/:id/like` - Like/unlike post (requires auth)
 - `DELETE /posts/:id` - Delete post (requires auth)
 
 ### Search
 - `GET /search/users` - Search for users (local and external)
 - `GET /search/external/:username/:domain` - Lookup specific external user
+- `GET /search/posts/:username/:domain` - Browse external user's posts (unified format)
+- `GET /search/post` - Get specific external post by URL (unified format)
 
 ### Federation
 - `GET /.well-known/webfinger` - WebFinger user discovery
@@ -218,15 +231,56 @@ Same URL serves different content based on `Accept` header:
 5. Posts appear as Create activities containing Note objects with image attachments
 6. Individual posts accessible as standalone Note objects
 
-### User Search and Discovery
-1. Local search queries database for matching usernames/display names
-2. External search performs WebFinger lookup on remote domains
-3. ActivityPub actor data fetched and normalized across different platforms
-4. External users cached locally for future reference
-5. Search supports both `alice` and `@alice@domain.com` formats
 
-### S3 Configuration
-- Public read access for uploaded images
-- Write access restricted to authenticated API
-- Images stored in `posts/{userId}/` structure
-- Supports JPEG, PNG, WebP formats up to 10MB
+### Unified Post Response Format
+All posts (local and external) return the same structure for consistent frontend development:
+
+```typescript
+{
+  id: string,                    // Local: MongoDB ID, External: ActivityPub URL
+  type: 'local' | 'external',    // Source indicator
+  author: {
+    id: string,                  // Author identifier
+    username: string,            // Username without domain
+    domain: string,              // "localhost:8000" or "mastodon.social"
+    displayName: string,         // Display name
+    avatarUrl?: string,          // Profile picture
+    isLocal: boolean             // Local vs external user
+  },
+  content: {
+    text: string,                // Plain text content
+    hasMedia: boolean,           // Whether post has attachments
+    mediaType?: 'image' | 'video' | null
+  },
+  media?: {
+    type: 'image' | 'video',     // Media type
+    url: string,                 // Media URL
+    width?: number,              // Dimensions
+    height?: number,
+    altText?: string             // Accessibility text
+  },
+  engagement: {
+    likesCount: number,          // Like count (0 for external)
+    isLiked: boolean,            // User's like status (false for external)
+    canInteract: boolean         // Whether user can like/reply
+  },
+  createdAt: Date,               // Publication date
+  updatedAt?: Date,              // Last modified
+  url?: string,                  // Web URL for post
+  isReply: boolean,              // Reply status
+}
+```
+
+## Current Architecture
+
+### Services Overview
+- **UserService**: Local and external user management, search, caching
+- **PostService**: Local post CRUD, likes, media upload, ActivityPub publishing
+- **ExternalPostService**: Fetch and parse posts from external ActivityPub servers
+- **SearchService**: WebFinger discovery, external user lookup and caching
+- **PostNormalizationService**: Convert local and external posts to unified format
+- **ActivityService**: Handle ActivityPub federation activities (Create, Like, Delete)
+- **S3Service**: Media upload, storage, and CDN management
+- **RedisService**: Caching, rate limiting, session management
+- **ActorParser**: Parse and normalize ActivityPub Actor objects across platforms
+- **PostParser**: Parse and normalize ActivityPub Note/Article objects across platforms

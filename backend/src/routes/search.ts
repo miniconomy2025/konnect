@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { SearchService } from '../services/searchService.js';
+import { ExternalPostService } from '../services/externalPostService.js';
+import { PostNormalizationService } from '../services/postNormalizationService.js';
 import { optionalAuth } from '../middlewares/auth.js';
 
 const router = Router();
 const searchService = new SearchService();
+const externalPostService = new ExternalPostService();
 
-// Search for users (local and external)
 router.get('/users', optionalAuth, async (req, res) => {
   try {
     const { q: query, page = '1', limit = '20' } = req.query;
@@ -50,7 +52,6 @@ router.get('/external/:username/:domain', optionalAuth, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-
     res.json({ user });
   } catch (error) {
     console.error('External lookup error:', error);
@@ -58,5 +59,66 @@ router.get('/external/:username/:domain', optionalAuth, async (req, res) => {
   }
 });
 
+// Get external user's posts (unified format)
+router.get('/posts/:username/:domain', optionalAuth, async (req, res) => {
+  try {
+    const { username, domain } = req.params;
+    const { limit = '20' } = req.query;
+    
+    if (!username || !domain) {
+      return res.status(400).json({ error: 'Username and domain are required' });
+    }
+
+    const limitNum = Math.min(parseInt(limit as string) || 20, 50);
+    
+    const externalPosts = await externalPostService.getUserPosts(username, domain, limitNum);
+    
+    let unifiedPosts = PostNormalizationService.externalPostsToUnified(externalPosts);
+    
+    res.json({
+      user: `${username}@${domain}`,
+      posts: unifiedPosts,
+      count: unifiedPosts.length,
+      originalCount: externalPosts.length
+    });
+  } catch (error) {
+    console.error('External posts error:', error);
+    if (error instanceof Error && error.message === 'User not found') {
+      res.status(404).json({ error: 'User not found' });
+    } else {
+      res.status(500).json({ error: 'Failed to fetch external posts' });
+    }
+  }
+});
+
+// Get a specific external post (unified format)
+router.get('/post', optionalAuth, async (req, res) => {
+  try {
+    const { url } = req.query;
+    
+    if (!url || typeof url !== 'string') {
+      return res.status(400).json({ error: 'Post URL is required' });
+    }
+
+    try {
+      new URL(url);
+    } catch {
+      return res.status(400).json({ error: 'Invalid URL format' });
+    }
+
+    const externalPost = await externalPostService.getPost(url);
+    
+    if (!externalPost) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const unifiedPost = PostNormalizationService.externalPostToUnified(externalPost);
+
+    res.json({ post: unifiedPost });
+  } catch (error) {
+    console.error('External post fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch post' });
+  }
+});
 
 export default router;
