@@ -63,20 +63,19 @@ router.get('/google/callback', async (req, res) => {
     });
 
     const token = authService.generateToken(user);
-
-    res.json({
-      success: true,
-      token,
-      user: {
+    const frontendUrl = new URL('http://localhost:3000/Home');
+    frontendUrl.searchParams.set('token', token);
+    frontendUrl.searchParams.set('user', JSON.stringify({
         id: user._id?.toString(),
         username: user.username,
         displayName: user.displayName,
         email: user.email,
         avatarUrl: user.avatarUrl,
         actorId: user.actorId,
-      },
-      isNewUser,
-    });
+    }));
+    frontendUrl.searchParams.set('isNewUser', isNewUser.toString());
+
+    res.redirect(frontendUrl.toString());
   } catch (error) {
     console.error('Google OAuth error:', error);
     res.status(500).json({ error: 'Authentication failed' });
