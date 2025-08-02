@@ -6,6 +6,20 @@ const RESERVED_USERNAMES = [
   'followers', 'following', 'posts', 'activities', 'collections'
 ];
 
+export interface CreateExternalUserData {
+  username: string;
+  domain: string;
+  actorId: string;
+  displayName?: string;
+  avatarUrl?: string;
+  bio?: string;
+  inbox?: string;
+  outbox?: string;
+  followersUrl?: string;
+  followingUrl?: string;
+  isPrivate?: boolean;
+}
+
 export class UserService {
   async findByGoogleId(googleId: string): Promise<IUser | null> {
     return await User.findOne({ googleId });
@@ -21,6 +35,98 @@ export class UserService {
 
   async findById(id: string): Promise<IUser | null> {
     return await User.findById(id);
+  }
+
+  async searchLocalUsers(query: string, limit = 20): Promise<IUser[]> {
+    const searchRegex = new RegExp(query.replace(/^@/, ''), 'i');
+    
+    return await User.find({
+      isLocal: true,
+      $or: [
+        { username: searchRegex },
+        { displayName: searchRegex }
+      ]
+    })
+    .limit(limit)
+    .sort({ username: 1 });
+  }
+
+  async findExternalUser(username: string, domain: string): Promise<IUser | null> {
+    return await User.findOne({ 
+      username, 
+      domain, 
+      isLocal: false 
+    });
+  }
+
+  async createExternalUser(userData: CreateExternalUserData): Promise<IUser | null> {
+    const existing = await this.findExternalUser(userData.username, userData.domain);
+    if (existing) {
+      return await this.updateExternalUser(existing._id.toString(), userData);
+    }
+
+    const user = new User({
+      googleId: `external:${userData.username}@${userData.domain}`,
+      email: `${userData.username}@${userData.domain}`, // Placeholder
+      username: userData.username,
+      domain: userData.domain,
+      actorId: userData.actorId,
+      displayName: userData.displayName || userData.username,
+      avatarUrl: userData.avatarUrl,
+      bio: userData.bio || '',
+      inboxUrl: userData.inbox || `${userData.actorId}/inbox`,
+      outboxUrl: userData.outbox || `${userData.actorId}/outbox`,
+      followersUrl: userData.followersUrl || `${userData.actorId}/followers`,
+      followingUrl: userData.followingUrl || `${userData.actorId}/following`,
+      isLocal: false,
+      isPrivate: userData.isPrivate || false
+    });
+
+    return await user.save();
+  }
+
+  async updateExternalUser(id: string, updates: Partial<CreateExternalUserData>): Promise<IUser | null> {
+    const updateData: Partial<IUser> = {};
+    
+    if (updates.displayName) updateData.displayName = updates.displayName;
+    if (updates.avatarUrl) updateData.avatarUrl = updates.avatarUrl;
+    if (updates.bio !== undefined) updateData.bio = updates.bio;
+    if (updates.inbox) updateData.inboxUrl = updates.inbox;
+    if (updates.outbox) updateData.outboxUrl = updates.outbox;
+    if (updates.followersUrl) updateData.followersUrl = updates.followersUrl;
+    if (updates.followingUrl) updateData.followingUrl = updates.followingUrl;
+    if (updates.isPrivate !== undefined) updateData.isPrivate = updates.isPrivate;
+    
+    updateData.updatedAt = new Date();
+
+    return await User.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true }
+    );
+  }
+
+  async findUserByActorId(actorId: string): Promise<IUser | null> {
+    return await User.findOne({ actorId });
+  }
+
+  async searchAllUsers(query: string, includeExternal = true, limit = 20): Promise<IUser[]> {
+    const searchRegex = new RegExp(query.replace(/^@/, ''), 'i');
+    
+    const searchFilter: any = {
+      $or: [
+        { username: searchRegex },
+        { displayName: searchRegex }
+      ]
+    };
+
+    if (!includeExternal) {
+      searchFilter.isLocal = true;
+    }
+
+    return await User.find(searchFilter)
+      .limit(limit)
+      .sort({ isLocal: -1, username: 1 }); 
   }
 
   async isUsernameAvailable(username: string): Promise<boolean> {
@@ -79,5 +185,23 @@ export class UserService {
       updates,
       { new: true }
     );
+  }
+
+  async refreshExternalUser(username: string, domain: string): Promise<IUser | null> {
+    return await this.findExternalUser(username, domain);
+  }
+
+  async getExternalUserStats(): Promise<{ total: number; byDomain: Record<string, number> }> {
+    const externalUsers = await User.find({ isLocal: false }, 'domain');
+    
+    const byDomain: Record<string, number> = {};
+    for (const user of externalUsers) {
+      byDomain[user.domain] = (byDomain[user.domain] || 0) + 1;
+    }
+
+    return {
+      total: externalUsers.length,
+      byDomain
+    };
   }
 }
