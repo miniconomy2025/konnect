@@ -3,13 +3,13 @@
 import React, { useState } from 'react';
 import { styles } from '@/styles/account';
 import { UserProfile, User, Post } from '@/types/account';
-import { Header } from '@/components/Home/Header';
+import  Header  from '@/components/Account/Header';
 import ProfileSection from '@/components/Account/ProfileSection';
 import PostsGrid from '@/components/Account/PostsGrid';
 import Modal from '@/components/Account/Modal';
 import UserListItem from '@/components/Account/UserListItem';
 import SettingsModal from '@/components/Account/SettingsModal';
-
+import Layout from '@/layouts/Main';
 
 const ProfilePage: React.FC = () => {
   const [activeTab] = useState<string>('posts');
@@ -77,63 +77,68 @@ const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <Header/>
-
-      <ProfileSection 
-        userProfile={userProfile}
-        isEditingBio={isEditingBio}
-        tempBio={tempBio}
-        setTempBio={setTempBio}
-        onEditBio={() => setIsEditingBio(true)}
-        onSaveBio={handleBioSave}
-        onCancelBio={handleBioCancel}
-        onFollowersClick={() => setShowFollowers(true)}
-        onFollowingClick={() => setShowFollowing(true)}
-      />
-
-      <PostsGrid 
-        activeTab={activeTab} 
-        posts={posts} 
-      />
-
-      {/* Modals */}
-      <Modal 
-        isOpen={showFollowers} 
-        onClose={() => setShowFollowers(false)}
-        title="Followers"
-      >
-        {followers.map((user) => (
-          <UserListItem key={user.id} user={user} showFollowButton />
-        ))}
-      </Modal>
-
-      <Modal 
-        isOpen={showFollowing} 
-        onClose={() => setShowFollowing(false)}
-        title="Following"
-      >
-        {following.map((user) => (
-          <UserListItem key={user.id} user={user} />
-        ))}
-      </Modal>
-
-      <Modal 
-        isOpen={showSettings} 
-        onClose={() => setShowSettings(false)}
-        title="Settings"
-      >
-        <SettingsModal 
-          displayName={displayName}
-          isEditingName={isEditingName}
-          tempName={tempName}
-          setTempName={setTempName}
-          onEditName={() => setIsEditingName(true)}
-          onSaveName={handleNameSave}
-          onCancelName={handleNameCancel}
+    <Layout>
+        <section style={styles.container}>
+        <Header 
+            username={''}
+            onSettingsClick={() => setShowSettings(true)}
         />
-      </Modal>
-    </div>
+
+        <ProfileSection 
+            userProfile={userProfile}
+            isEditingBio={isEditingBio}
+            tempBio={tempBio}
+            setTempBio={setTempBio}
+            onEditBio={() => setIsEditingBio(true)}
+            onSaveBio={handleBioSave}
+            onCancelBio={handleBioCancel}
+            onFollowersClick={() => setShowFollowers(true)}
+            onFollowingClick={() => setShowFollowing(true)}
+        />
+
+        <PostsGrid 
+            activeTab={activeTab} 
+            posts={posts} 
+        />
+
+        {/* Modals */}
+        <Modal 
+            isOpen={showFollowers} 
+            onClose={() => setShowFollowers(false)}
+            title="Followers"
+        >
+            {followers.map((user) => (
+            <UserListItem key={user.id} user={user} showFollowButton />
+            ))}
+        </Modal>
+
+        <Modal 
+            isOpen={showFollowing} 
+            onClose={() => setShowFollowing(false)}
+            title="Following"
+        >
+            {following.map((user) => (
+            <UserListItem key={user.id} user={user} />
+            ))}
+        </Modal>
+
+        <Modal 
+            isOpen={showSettings} 
+            onClose={() => setShowSettings(false)}
+            title="Settings"
+        >
+            <SettingsModal 
+            displayName={displayName}
+            isEditingName={isEditingName}
+            tempName={tempName}
+            setTempName={setTempName}
+            onEditName={() => setIsEditingName(true)}
+            onSaveName={handleNameSave}
+            onCancelName={handleNameCancel}
+            />
+        </Modal>
+        </section>
+    </Layout>
   );
 };
 
