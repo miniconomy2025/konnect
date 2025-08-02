@@ -7,7 +7,7 @@ export function Header() {
     const router = useRouter()
 
     const goToProfile = () => {
-        router.push('/account')
+        router.push('/Account')
     }
   return (
     <header

@@ -4,11 +4,12 @@ import React, { useState } from 'react';
 import { styles } from '@/styles/account';
 import { UserProfile, User, Post } from '@/types/account';
 import { Header } from '@/components/Home/Header';
-import ProfileSection from '@/components/account/ProfileSection';
-import PostsGrid from '@/components/account/PostsGrid';
-import Modal from '@/components/account/Modal';
-import UserListItem from '@/components/account/UserListItem';
-import SettingsModal from '@/components/account/SettingsModal';
+import ProfileSection from '@/components/Account/ProfileSection';
+import PostsGrid from '@/components/Account/PostsGrid';
+import Modal from '@/components/Account/Modal';
+import UserListItem from '@/components/Account/UserListItem';
+import SettingsModal from '@/components/Account/SettingsModal';
+
 
 const ProfilePage: React.FC = () => {
   const [activeTab] = useState<string>('posts');
