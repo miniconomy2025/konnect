@@ -10,6 +10,7 @@ import Modal from '@/components/Account/Modal';
 import UserListItem from '@/components/Account/UserListItem';
 import SettingsModal from '@/components/Account/SettingsModal';
 import Layout from '@/layouts/Main';
+import { ApiService } from '@/lib/api';
 
 const ProfilePage: React.FC = () => {
   const [activeTab] = useState<string>('posts');
@@ -75,6 +76,8 @@ const ProfilePage: React.FC = () => {
     setTempBio(bio);
     setIsEditingBio(false);
   };
+
+  console.log(ApiService.getCurrentUser());
 
   return (
     <Layout>

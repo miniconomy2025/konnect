@@ -17,20 +17,13 @@ const Home: React.FC = () => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
     const userString = params.get("user");
-    const isNewUser = params.get("isNewUser") === "true";
 
     if (token && userString) {
       try {
         const user = JSON.parse(userString);
-        sessionStorage.setItem("token", token);
-        sessionStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("auth_token", token);
 
-        if (isNewUser) {
-          console.log("🎉 Welcome new user:", user.username);
-        }
-
-        // Clean URL
-        window.history.replaceState({}, document.title, "/account");
+        window.history.replaceState({}, document.title, "/Home");
       } catch (err) {
         console.error("Error parsing user from query:", err);
       }
