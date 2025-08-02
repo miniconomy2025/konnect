@@ -1,14 +1,13 @@
 import { Redis } from 'ioredis';
-import { config } from '../config.js';
 
 export class RedisService {
   private client: Redis;
 
   constructor() {
     this.client = new Redis({
-      host: config.redis.host || 'localhost',
-      port: config.redis.port || 6379,
-      password: config.redis.password,
+      host: process.env.REDIS_HOST,
+      port: process.env.REDIS_PORT,
+      password: process.env.REDIS_PASSWORD,
       retryStrategy: (times: number) => {
         const delay = Math.min(times * 50, 2000);
         return delay;

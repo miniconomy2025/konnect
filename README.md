@@ -27,6 +27,7 @@ NoTeamCosts Members:
 - **Image Upload** - Direct S3 upload with proper permissions
 - **Like System** - Like/unlike posts with user tracking
 - **ActivityPub Posts** - Posts federate as Note objects
+- **User Search** - Search local and external users via WebFinger
 
 ### How it Works
 
@@ -36,6 +37,7 @@ NoTeamCosts Members:
 4. **Post Creation**: Users upload images and create posts with captions
 5. **Federation**: Posts appear in user outboxes as ActivityPub Create activities
 6. **Likes**: Users can like/unlike posts with duplicate prevention
+7. **User Discovery**: Search for local users or discover external users via WebFinger lookups
 
 ### Google OAuth Flow
 ```bash
@@ -88,6 +90,18 @@ curl -X DELETE -H "Authorization: Bearer $TOKEN" \
      http://localhost:8000/posts/POST_ID
 ```
 
+### Test User Search
+```bash
+# Search for local users
+curl "http://localhost:8000/search/users?q=alice"
+
+# Search for external users using WebFinger
+curl "http://localhost:8000/search/users?q=@alice@mastodon.social"
+
+# Direct external user lookup
+curl "http://localhost:8000/search/external/alice/mastodon.social"
+
+
 ### Test WebFinger Discovery
 ```bash
 # Replace 'alice' with actual username from your OAuth registration
@@ -127,6 +141,10 @@ curl -H "Accept: application/activity+json" http://localhost:8000/posts/POST_ID
 - `GET /posts` - Get feed/timeline
 - `POST /posts/:id/like` - Like/unlike post (requires auth)
 - `DELETE /posts/:id` - Delete post (requires auth)
+
+### Search
+- `GET /search/users` - Search for users (local and external)
+- `GET /search/external/:username/:domain` - Lookup specific external user
 
 ### Federation
 - `GET /.well-known/webfinger` - WebFinger user discovery
@@ -199,6 +217,13 @@ Same URL serves different content based on `Accept` header:
 4. Server fetches user's outbox to see posts
 5. Posts appear as Create activities containing Note objects with image attachments
 6. Individual posts accessible as standalone Note objects
+
+### User Search and Discovery
+1. Local search queries database for matching usernames/display names
+2. External search performs WebFinger lookup on remote domains
+3. ActivityPub actor data fetched and normalized across different platforms
+4. External users cached locally for future reference
+5. Search supports both `alice` and `@alice@domain.com` formats
 
 ### S3 Configuration
 - Public read access for uploaded images
