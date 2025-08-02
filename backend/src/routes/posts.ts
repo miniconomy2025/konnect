@@ -171,9 +171,11 @@ router.get('/', optionalAuth, async (req, res) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
 
-    const posts = req.user ?
-      await postService.getFeedPosts(req.user._id!.toString(), page, limit) :
-      await postService.getFeedPosts('', page, limit);
+    const posts = await postService.getFeedPosts(
+      req.user?._id?.toString() || '',
+      page,
+      limit
+    );
     
     const postsWithLikeStatus = await postService.getPostsWithLikeStatus(
       posts,
