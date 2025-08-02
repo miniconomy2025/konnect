@@ -1,7 +1,9 @@
 'use client';
 
-import { Home } from '@/pages/Home';
+import { redirect } from 'next/navigation';
 
-export default function Page() {
-  return <Home />;
+const Page: React.FC = () => {
+    redirect('/Home');
 }
+
+export default Page;    
