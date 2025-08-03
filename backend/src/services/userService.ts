@@ -248,11 +248,13 @@ export class UserService {
   }
   
   async getRemoteActorDisplay(actorUrl: string): Promise<DisplayPersonActor | undefined> {
+    console.log(actorUrl)
     const ctx = federation.createContext(
       new URL(actorUrl),
       {}
     );
     const actor = await ctx.lookupObject(new URL(actorUrl));
+    console.log(actor)
     if (!actor) {
       return undefined
     } else if (actor instanceof Person) {

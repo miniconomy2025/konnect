@@ -16,6 +16,8 @@ export class InboxService {
     switch (activityObject.type) {
       case 'Follow':
         return this.persistFollowActivity(activityObject);
+      case 'Create':
+        return this.persistCreateActivity(activityObject);
       default:
         throw new Error(`Unknown activity type: ${activityObject.type}`);
     }
@@ -121,6 +123,7 @@ async persistCreateActivity(activityObject: CreateActivityObject): Promise<IInbo
     const objectId = new mongoose.Types.ObjectId();
 
     let actorUser = await this.userService.findByActorId(activityObject.actor);
+    console.log(actorUser)
     if (!actorUser) {
       const remoteActor = await this.userService.getRemoteActorDisplay(activityObject.actor);
       if (!remoteActor) {
@@ -139,6 +142,7 @@ async persistCreateActivity(activityObject: CreateActivityObject): Promise<IInbo
         throw new Error('Activity already exists');
       }
     }
+    console.log("here")
 
     const inboxActivity = new InboxActivity({
       inboxId: inboxId,
@@ -152,15 +156,19 @@ async persistCreateActivity(activityObject: CreateActivityObject): Promise<IInbo
         },
         object: {
           id: activityObject.object,
-          ref: undefined
+          ref: null
         },
         target: activityObject.target,
         origin: activityObject.activityId,
         activityId: inboxActivityId,
       }
     });
+
+    console.log("here")
     
     const savedActivity = await inboxActivity.save();
+
+    console.log("here again")
     
     const populatedActivity = await InboxActivity.findOne({ _id: savedActivity._id })
       .populate([
@@ -173,6 +181,8 @@ async persistCreateActivity(activityObject: CreateActivityObject): Promise<IInbo
       throw new Error('Failed to populate activity after saving');
     }
     
+    console.log("here again again")
+
     return populateRemoteActivityActorReferences(populatedActivity, this.userService);
   }
   

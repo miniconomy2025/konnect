@@ -42,18 +42,18 @@ router.get('/users/:username', blockFederationHeaders, async (req, res) => {
 
 router.post('/follow', requireAuth, async (req, res) => {
   try {
-    const { targetUserId } = req.body;
+    const { targetUserActorID } = req.body;
     const currentUser = req.user!;
 
-    if (!targetUserId) {
+    if (!targetUserActorID) {
       return res.status(400).json({ error: 'targetUserId is required' });
     }
 
-    if (targetUserId === currentUser._id.toString()) {
+    if (targetUserActorID === currentUser.actorId.toString()) {
       return res.status(400).json({ error: 'Cannot follow yourself' });
     }
 
-    const targetUser = await userService.findById(targetUserId);
+    const targetUser = await userService.findByActorId(targetUserActorID);
     if (!targetUser) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -117,14 +117,14 @@ router.post('/follow', requireAuth, async (req, res) => {
 
 router.post('/unfollow', requireAuth, async (req, res) => {
   try {
-    const { targetUserId } = req.body;
+    const { targetUserActorID } = req.body;
     const currentUser = req.user!;
 
-    if (!targetUserId) {
-      return res.status(400).json({ error: 'targetUserId is required' });
+    if (!targetUserActorID) {
+      return res.status(400).json({ error: 'targetUserActorID is required' });
     }
 
-    const targetUser = await userService.findById(targetUserId);
+    const targetUser = await userService.findByActorId(targetUserActorID);
     if (!targetUser) {
       return res.status(404).json({ error: 'User not found' });
     }

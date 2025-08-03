@@ -44,7 +44,6 @@ router.post('/', requireAuth, upload.single('image'), async (req, res) => {
     if (caption.length > 2200) {
       return res.status(400).json({ error: 'Caption must be 2200 characters or less' });
     }
-
     const mediaUrl = await postService.uploadImage(
       req.file.buffer,
       req.file.mimetype,

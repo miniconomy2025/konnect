@@ -4,6 +4,7 @@ import { User } from "../models/user.ts";
 import { FollowService } from "../services/followService.ts";
 import { InboxService } from "../services/inboxService.ts";
 import { PostService } from "../services/postserivce.ts";
+import { SearchService } from "../services/searchService.ts";
 import { UserService } from "../services/userService.ts";
 import type { CreateActivityObject } from "../types/inbox.ts";
 import { inboxActivityToActivityPubActivity } from '../utils/mappers.ts';
@@ -14,11 +15,55 @@ const userService = new UserService();
 const postService = new PostService();
 const inboxService = new InboxService();
 const followService = new FollowService(userService, inboxService);
+const searchService = new SearchService();
 
 const federation = createFederation({
   kv: new MemoryKvStore(),
   queue: new InProcessMessageQueue(),
 });
+
+function extractUsernameAndDomain(actorId: string): { username: string; domain: string } | null {
+  try {
+    const url = new URL(actorId);
+    const domain = url.hostname;
+    const pathParts = url.pathname.split('/').filter(Boolean);
+    
+    let username = pathParts[pathParts.length - 1];
+    if (username?.startsWith('@')) {
+      username = username.slice(1);
+    }
+    
+    return username ? { username, domain } : null;
+  } catch {
+    return null;
+  }
+}
+
+async function ensureExternalUserExists(actorId: string): Promise<void> {
+  try {
+    const existingUser = await userService.findByActorId(actorId);
+    if (existingUser) {
+      return; 
+    }
+
+    const userInfo = extractUsernameAndDomain(actorId);
+    if (!userInfo) {
+      logger.warn(`Could not extract username/domain from actor ID: ${actorId}`);
+      return;
+    }
+
+    const externalUser = await searchService.lookupExternalUser(userInfo.username, userInfo.domain);
+    if (externalUser) {
+      logger.info(`Successfully created external user: ${userInfo.username}@${userInfo.domain}`);
+    } else {
+      logger.warn(`Failed to lookup/create external user: ${userInfo.username}@${userInfo.domain}`);
+    }
+  } catch (error) {
+    logger.error(`Error ensuring external user exists for ${actorId}:`, {
+      error: error instanceof Error ? error.message : String(error)
+    });
+  }
+}
 
 federation.setActorDispatcher("/users/{identifier}", async (ctx, identifier) => {
   logger.info(`Actor dispatcher called for: ${identifier}`);
@@ -248,10 +293,13 @@ federation
     const actorFollowing = await follow.getActor(ctx);
     if (actorFollowing == null || actorFollowing.id == null) return;
 
+    await ensureExternalUserExists(actorFollowing.id.toString());
+
     const followedUrl = new URL(actorBeingFollowed.id.toString());
     const username = followedUrl.pathname.split('/').pop();
     
     if (!username) {
+      logger.warn(`Could not extract username from URL: ${actorBeingFollowed.id.toString()}`);
       return;
     }
         
@@ -264,8 +312,12 @@ federation
           object: follow,
         }),
       );
+      logger.info(`Successfully sent Accept activity from ${username} to ${actorFollowing.id.toString()}`);
     } catch (error) {
-      logger.error(`Failed to send Accept activity from ${username} to ${actorFollowing.id.toString()}:`, { error: error instanceof Error ? error.message : String(error) });
+      logger.error(`Failed to send Accept activity from ${username} to ${actorFollowing.id.toString()}:`, { 
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
     }
 
     const followInboxActivity: CreateActivityObject = {
@@ -277,12 +329,16 @@ federation
     }
 
     try {
-      const savedActivity = await inboxService.persistInboxActivityObject(followInboxActivity);
+      await inboxService.persistInboxActivityObject(followInboxActivity);
+      logger.info(`Successfully persisted follow activity: ${follow.id?.toString()}`);
     } catch (error) {
       if (error instanceof Error && error.message.includes('already exists')) {
         logger.info(`Follow already exists, skipping persistence: ${actorFollowing.id.toString()} -> ${actorBeingFollowed.id.toString()}`);
       } else {
-        logger.error(`Failed to persist follow activity:`, { error: error instanceof Error ? error.message : String(error) });
+        logger.error(`Failed to persist follow activity:`, { 
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined
+        });
       }
     }
   })
@@ -290,7 +346,15 @@ federation
     const actor = await create.getActor(ctx);
     const object = await create.getObject(ctx);
     
-    if (!actor?.id || !object?.id) return;
+    if (!actor?.id || !object?.id) {
+      logger.warn(`Missing actor or object in Create activity`, { 
+        actorId: actor?.id?.toString(), 
+        objectId: object?.id?.toString() 
+      });
+      return;
+    }
+
+    await ensureExternalUserExists(actor.id.toString());
 
     const createInboxActivity: CreateActivityObject = {
       type: "Create",
@@ -307,7 +371,11 @@ federation
       if (error instanceof Error && error.message.includes('already exists')) {
         logger.info(`Create activity already exists, skipping: ${create.id?.toString()}`);
       } else {
-        logger.error(`Failed to persist create activity:`, { error: error instanceof Error ? error.message : String(error) });
+        console.log(error)
+        logger.error(`Failed to persist create activity:`, { 
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined
+        });
       }
     }
   });
