@@ -13,7 +13,10 @@ const Home: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-
+    if(!localStorage.getItem('auth_token')){
+        alert('Please Login first!') // TODO: Make nice toast
+        window.location.href = '/Login';
+    }
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
     const userString = params.get("user");

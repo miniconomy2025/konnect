@@ -23,6 +23,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   onSaveName, 
   onCancelName 
 }) => {
+
+    const logOut = () => {
+        localStorage.clear();
+        window.location.href = '/Login';
+    };
   return (
     <section style={styles.settingsContent}>
       <section style={styles.settingItem}>
@@ -54,9 +59,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       </section>
       
       <section style={styles.settingsMenu}>
-        <button style={styles.settingMenuButton}>Privacy Settings</button>
-        <button style={styles.settingMenuButton}>Notifications</button>
-        <button style={{...styles.settingMenuButton, ...styles.settingMenuButtonDanger}}>
+        <button 
+            onClick={logOut}
+            style={{...styles.settingMenuButton, ...styles.settingMenuButtonDanger}}>
           Sign Out
         </button>
       </section>
