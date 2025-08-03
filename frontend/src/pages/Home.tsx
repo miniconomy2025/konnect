@@ -17,20 +17,7 @@ const Home: React.FC = () => {
         alert('Please Login first!') // TODO: Make nice toast
         window.location.href = '/Login';
     }
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-    const userString = params.get("user");
 
-    if (token && userString) {
-      try {
-        const user = JSON.parse(userString);
-        localStorage.setItem("auth_token", token);
-
-        window.history.replaceState({}, document.title, "/Home");
-      } catch (err) {
-        console.error("Error parsing user from query:", err);
-      }
-    }
 
     const handleScroll = () => {
       const scrollY = window.scrollY;
