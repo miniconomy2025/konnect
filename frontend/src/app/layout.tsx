@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Nunito } from "next/font/google";
-import { Playwrite_HU } from "next/font/google";
+import { Nunito, Playwrite_HU } from "next/font/google";
 import "./globals.css";
 
 const nunito = Nunito({

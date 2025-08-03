@@ -1,16 +1,33 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
 import { ApiService } from '@/lib/api';
+import { useRouter } from 'next/router';
 
 const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
-
+    const router = useRouter();
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     window.location.href = 'http://localhost:8000/auth/google';
   };
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get("token");
+        const userString = params.get("user");
+
+        if (token && userString) {
+        try {
+            const user = JSON.parse(userString);
+            localStorage.setItem("auth_token", token);
+            router.push('/Home');
+        } catch (err) {
+            console.error("Error parsing user from query:", err);
+        }
+        }
+    }, []);
 
   return (
       <main style={{

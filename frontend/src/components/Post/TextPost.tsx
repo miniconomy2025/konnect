@@ -22,7 +22,7 @@ export function TextPost({ post }: TextPostProps) {
           textAlign: 'justify',
           lineHeight: 1.6,
         }}>
-          {post.caption}
+          {post.content.text}
         </p>
       </section>
     </PostContainer>

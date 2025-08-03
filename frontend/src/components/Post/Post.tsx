@@ -9,8 +9,8 @@ interface PostProps {
 }
 
 export function Post({ post, children }: PostProps) {
-  const [isLiked, setIsLiked] = useState(post.isLiked);
-  const [likesCount, setLikesCount] = useState(post.likesCount);
+  const [isLiked, setIsLiked] = useState(post.engagement.isLiked);
+  const [likesCount, setLikesCount] = useState(post.engagement.likesCount);
   const [isLiking, setIsLiking] = useState(false);
   const [tiltStyle, setTiltStyle] = useState({});
   const postRef = useRef<HTMLElement>(null);
@@ -154,7 +154,7 @@ export function Post({ post, children }: PostProps) {
         {children}
       </main>
       
-      {post.caption && post.mediaType !== 'text' && (
+      {post.content.text && post.media.type !== 'text' && (
         <section style={{
           padding: `${Spacing.Medium} ${Spacing.Large}`,
           background: Color.Surface,
@@ -166,7 +166,7 @@ export function Post({ post, children }: PostProps) {
             lineHeight: 1.5,
             color: Color.Text,
           }}>
-            {post.caption}
+            {post.content.text}
           </p>
         </section>
       )}

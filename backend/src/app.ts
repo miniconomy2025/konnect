@@ -22,7 +22,10 @@ const logger = getLogger("backend");
 export const app = express();
 
 app.set("trust proxy", true);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors())
+
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -35,14 +38,14 @@ app.use((req, res, next) => {
     next();
   }
 });
-
+    
 await mongoConnect();
 
 app.use((req, res, next) => {
   if (req.path === '/posts' && req.method === 'POST') {
     return next();
   }
-  
+
   integrateFederation(federation, (req) => {
     const domain = process.env.DOMAIN || 'localhost:8000';
     const protocol = domain.includes('localhost') ? 'http' : 'https';
