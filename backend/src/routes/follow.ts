@@ -1,7 +1,7 @@
 import { Follow, Undo } from '@fedify/fedify';
 import { getLogger } from '@logtape/logtape';
 import { Router } from 'express';
-import federation from '../federation/federation.ts';
+import federation from '../federation/setup.ts';
 import { requireAuth } from '../middlewares/auth.ts';
 import { blockFederationHeaders } from '../middlewares/blockFederationHeaders.ts';
 import { FollowService } from '../services/followService.ts';

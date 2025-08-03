@@ -1,6 +1,6 @@
 import { Person } from '@fedify/fedify';
 import { Error } from 'mongoose';
-import federation from '../federation/federation.ts';
+import federation from '../federation/setup.ts';
 import { User, type IUser } from '../models/user.ts';
 import type { DisplayPersonActor } from '../types/inbox.ts';
 import type { CreateUserData } from '../types/user.js';

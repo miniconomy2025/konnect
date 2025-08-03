@@ -7,7 +7,7 @@ import express from "express";
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { mongoConnect } from "./config/mongoose.js";
-import federation from "./federation/federation.ts";
+import federation  from "./federation/setup.ts";
 import authRoutes from './routes/auth.js';
 import followRoutes from './routes/follow.js';
 import inboxRoutes from './routes/inbox.js';

@@ -1,6 +1,6 @@
 import { Create, Image, Note } from "@fedify/fedify";
 import { getLogger } from "@logtape/logtape";
-import federation from "../federation/federation.ts";
+import federation from "../federation/setup.ts";
 import type { IPost } from "../models/post.ts";
 import type { IUser } from "../models/user.ts";
 import { User } from "../models/user.ts";
