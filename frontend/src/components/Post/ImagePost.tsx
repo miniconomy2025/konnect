@@ -12,8 +12,8 @@ export function ImagePost({ post }: ImagePostProps) {
     <PostContainer post={post}>
       <figure style={{ margin: 0 }}>
         <Image
-          src={post.mediaUrl || '/placeholder.png'}
-          alt={post.caption || 'Image post'}
+          src={post.media.url || '/placeholder.png'}
+          alt={post.content.text || 'Image post'}
           width={800}
           height={480}
           style={{

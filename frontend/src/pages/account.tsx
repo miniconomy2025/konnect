@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { styles } from '@/styles/account';
-import { UserProfile, User, PostsResponse } from '@/types/account';
+import { UserProfile, User } from '@/types/account';
+import { PostsResponse } from '@/types/post';
 import  Header  from '@/components/Account/Header';
 import ProfileSection from '@/components/Account/ProfileSection';
 import PostsGrid from '@/components/Account/PostsGrid';
@@ -42,7 +43,7 @@ const ProfilePage: React.FC = () => {
             }
 
             const userPosts = (await ApiService.getUserPosts(data.username)).data; // adapt based on actual API
-            
+            console.log(userPosts);
             setPosts(userPosts);
 
             // const userFollowers = data.followers || [];
@@ -51,7 +52,7 @@ const ProfilePage: React.FC = () => {
             setUserProfile({
                 username: data.username,
                 displayName: data.displayName,
-                bio: bio,
+                bio: data.bio,
                 avatar: data.avatarUrl,
                 postsCount: data.postsCount,
                 followersCount: data.followersCount,
@@ -149,7 +150,6 @@ const ProfilePage: React.FC = () => {
         />
 
         <PostsGrid 
-            activeTab={activeTab} 
             posts={posts?.posts || []} 
         />
 

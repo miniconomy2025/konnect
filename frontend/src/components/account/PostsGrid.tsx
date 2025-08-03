@@ -2,25 +2,30 @@
 
 import React from 'react';
 import { styles } from '@/styles/account';
-import { Post } from '@/types/account';
+import { Post } from '@/types/post';
 import PostItem from './PostItem';
+import { ImagePost } from '../Post/ImagePost';
+import { TextPost } from '../Post/TextPost';
 
 interface PostsGridProps {
-  activeTab: string;
   posts: Post[];
 }
 
-const PostsGrid: React.FC<PostsGridProps> = ({ activeTab, posts }) => {
+  const renderPost = (post: Post) => {
+    switch (post.media.type) {
+      case 'text':
+        return <TextPost key={post.id} post={post} />;
+      case 'image':
+        return <ImagePost key={post.id} post={post} />;
+      default:
+        return <TextPost key={post.id} post={post} />;
+    }
+  };
+
+const PostsGrid: React.FC<PostsGridProps> = ({ posts }) => {
   return (
     <section style={styles.postsGrid}>
-      {activeTab === 'posts' && posts.map((post) => (
-        <PostItem key={post.id} post={post} />
-      ))}
-      {activeTab === 'reels' && (
-        <section style={styles.emptyState}>
-          No reels yet
-        </section>
-      )}
+        {posts.map(renderPost)}
     </section>
   );
 };
