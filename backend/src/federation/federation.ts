@@ -1,4 +1,5 @@
 import { Accept, Create, createFederation, Follow, Image, importJwk, InProcessMessageQueue, MemoryKvStore, Note, Person, type Recipient } from "@fedify/fedify";
+import { RedisKvStore, RedisMessageQueue } from "@fedify/redis";
 import { getLogger } from "@logtape/logtape";
 import { User } from "../models/user.ts";
 import { FollowService } from "../services/followService.ts";
@@ -9,6 +10,7 @@ import { UserService } from "../services/userService.ts";
 import type { CreateActivityObject } from "../types/inbox.ts";
 import { inboxActivityToActivityPubActivity } from '../utils/mappers.ts';
 import { dateToTemporal } from "../utils/temporal.ts";
+import { RedisService } from "../services/redisService.ts";
 
 const logger = getLogger("federation");
 const userService = new UserService();
@@ -16,10 +18,11 @@ const postService = new PostService();
 const inboxService = new InboxService();
 const followService = new FollowService(userService, inboxService);
 const searchService = new SearchService();
+const redisService = new RedisService();
 
 const federation = createFederation({
-  kv: new MemoryKvStore(),
-  queue: new InProcessMessageQueue(),
+  kv: new RedisKvStore(redisService.getClient()),
+  queue: new RedisMessageQueue(() =>redisService.getClient()),
 });
 
 function extractUsernameAndDomain(actorId: string): { username: string; domain: string } | null {

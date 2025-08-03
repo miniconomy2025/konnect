@@ -18,6 +18,10 @@ export class RedisService {
     this.client.on('connect', () => console.log('Redis Client Connected'));
   }
 
+  getClient(): Redis {
+    return this.client;
+  }
+
   // Post caching methods
   async cachePost(postId: string, postData: Record<string, any>): Promise<void> {
     await this.client.hset(`post:${postId}`, postData);
