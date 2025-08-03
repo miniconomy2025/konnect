@@ -32,7 +32,7 @@ export class S3Service {
 
     await this.s3Client.send(command);
     
-    return `https://${this.bucketName}.s3.amazonaws.com/${fileName}`;
+    return `https://${this.bucketName}.s3.af-south-1.amazonaws.com/${fileName}`;
   }
 
   async deleteImage(imageUrl: string): Promise<void> {
@@ -59,7 +59,7 @@ export class S3Service {
     });
 
     const uploadUrl = await getSignedUrl(this.s3Client, command, { expiresIn: 3600 }); // 1 hour
-    const imageUrl = `https://${this.bucketName}.s3.amazonaws.com/${fileName}`;
+    const imageUrl = `https://${this.bucketName}.s3.af-south-1.amazonaws.com/${fileName}`;
 
     return { uploadUrl, imageUrl };
   }
