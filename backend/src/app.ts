@@ -13,6 +13,8 @@ import followRoutes from './routes/follow.js';
 import inboxRoutes from './routes/inbox.js';
 import postRoutes from './routes/posts.js';
 import searchRoutes from './routes/search.ts';
+import dotenv from 'dotenv';
+import { mongoConnect } from "./config/mongoose.js";
 import userRoutes from './routes/users.js';
 import webfingerRoutes from './routes/webfinger.js';
 
@@ -22,7 +24,10 @@ const logger = getLogger("backend");
 export const app = express();
 
 app.set("trust proxy", true);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors())
+
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -35,7 +40,7 @@ app.use((req, res, next) => {
     next();
   }
 });
-
+    
 await mongoConnect();
 
 app.use(integrateFederation(federation, (req) => {

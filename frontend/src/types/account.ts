@@ -5,11 +5,6 @@ export interface User {
   avatar: string;
 }
 
-export interface Post {
-  id: number;
-  image: string;
-  likes: number;
-}
 
 export interface UserProfile {
   username: string;
