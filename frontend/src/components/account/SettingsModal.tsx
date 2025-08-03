@@ -23,10 +23,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   onSaveName, 
   onCancelName 
 }) => {
+
+    const logOut = () => {
+        localStorage.clear();
+        window.location.href = '/Login';
+    };
   return (
     <section style={styles.settingsContent}>
       <section style={styles.settingItem}>
-        <label style={styles.settingLabel}>Display Name</label>
+        <label style={styles.settingLabel}>User Name</label>
         {isEditingName ? (
           <section style={styles.settingInputGroup}>
             <input
@@ -34,7 +39,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               value={tempName}
               onChange={(e) => setTempName(e.target.value)}
               style={styles.settingInput}
-              placeholder="Enter display name"
+              placeholder="Enter user name"
             />
             <button onClick={onSaveName} style={styles.saveButton}>
               <Check size={16} />
@@ -54,9 +59,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       </section>
       
       <section style={styles.settingsMenu}>
-        <button style={styles.settingMenuButton}>Privacy Settings</button>
-        <button style={styles.settingMenuButton}>Notifications</button>
-        <button style={{...styles.settingMenuButton, ...styles.settingMenuButtonDanger}}>
+        <button 
+            onClick={logOut}
+            style={{...styles.settingMenuButton, ...styles.settingMenuButtonDanger}}>
           Sign Out
         </button>
       </section>
