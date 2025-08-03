@@ -33,16 +33,13 @@ export const populateRemoteActivityActorReferences = async (
   if (actorRef && typeof actorRef === 'object' && 'username' in actorRef && 'actorId' in actorRef) {
     newActor = actorRef as unknown as DisplayPersonActor;
   } else {
-    console.log("hgere2")
     newActor = await userService.getRemoteActorDisplay(object.actor.id);
-    console.log("hgere")
   }
 
   let newObject: DisplayPersonActor | { actorId: string } | undefined;
   if (objectRef && typeof objectRef === 'object' && 'username' in objectRef && 'actorId' in objectRef) {
     newObject = objectRef as unknown as DisplayPersonActor;
   } else {
-    console.log("hgere1")
     newObject = await userService.getRemoteActorDisplay(object.object.id);
   }
 

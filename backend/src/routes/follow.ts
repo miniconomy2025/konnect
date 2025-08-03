@@ -1,7 +1,6 @@
 import { Follow, Undo } from '@fedify/fedify';
 import { getLogger } from '@logtape/logtape';
 import { Router } from 'express';
-import federation from '../federation/setup.ts';
 import { requireAuth } from '../middlewares/auth.ts';
 import { blockFederationHeaders } from '../middlewares/blockFederationHeaders.ts';
 import { FollowService } from '../services/followService.ts';
@@ -76,26 +75,28 @@ router.post('/follow', requireAuth, async (req, res) => {
 
     if (!targetUser.isLocal) {
       try {
-        const domain = process.env.DOMAIN || 'localhost:8000';
-        const protocol = domain.includes('localhost') ? 'http' : 'https';
-        const baseUrl = `${protocol}://${domain}`;
+        const federationContext = (req as any).federationContext;
+        
+        if (federationContext) {
+          const followActivityPub = new Follow({
+            id: new URL(followActivity.object.activityId),
+            actor: new URL(currentUser.actorId),
+            object: new URL(targetUser.actorId),
+          });
 
-        const ctx = federation.createContext(new URL(baseUrl), {});
-
-        const followActivityPub = new Follow({
-          id: new URL(followActivity.object.activityId),
-          actor: new URL(currentUser.actorId),
-          object: new URL(targetUser.actorId),
-        });
-
-        await ctx.sendActivity(
-          { identifier: currentUser.username },
-          {
-            id: new URL(targetUser.actorId),
-            inboxId: new URL(targetUser.inboxUrl)
-          },
-          followActivityPub
-        );
+          await federationContext.sendActivity(
+            { identifier: currentUser.username },
+            {
+              id: new URL(targetUser.actorId),
+              inboxId: new URL(targetUser.inboxUrl)
+            },
+            followActivityPub
+          );
+          
+          logger.info(`Sent Follow activity to ${targetUser.actorId}`);
+        } else {
+          logger.warn(`No federation context available, Follow activity not sent to ${targetUser.actorId}`);
+        }
       } catch (federationError) {
         logger.error(`Failed to send Follow activity to ${targetUser.actorId}:`, {
           error: federationError instanceof Error ? federationError.message : String(federationError)
@@ -142,30 +143,32 @@ router.post('/unfollow', requireAuth, async (req, res) => {
 
     if (!targetUser.isLocal && existingFollow.activity) {
       try {
-        const domain = process.env.DOMAIN || 'localhost:8000';
-        const protocol = domain.includes('localhost') ? 'http' : 'https';
-        const baseUrl = `${protocol}://${domain}`;
-
-        const ctx = federation.createContext(new URL(baseUrl), {});
-
-        const undoActivity = new Undo({
-          id: new URL(`${baseUrl}/activities/${Date.now()}`),
-          actor: new URL(currentUser.actorId),
-          object: new Follow({
-            id: new URL(existingFollow.activity.object.activityId),
+        const federationContext = (req as any).federationContext;
+        
+        if (federationContext) {
+          const undoActivity = new Undo({
+            id: new URL(`${process.env.DOMAIN || 'localhost:8000'}/activities/${Date.now()}`),
             actor: new URL(currentUser.actorId),
-            object: new URL(targetUser.actorId),
-          }),
-        });
+            object: new Follow({
+              id: new URL(existingFollow.activity.object.activityId),
+              actor: new URL(currentUser.actorId),
+              object: new URL(targetUser.actorId),
+            }),
+          });
 
-        await ctx.sendActivity(
-          { identifier: currentUser.username },
-          {
-            id: new URL(targetUser.actorId),
-            inboxId: new URL(targetUser.inboxUrl)
-          },
-          undoActivity
-        );
+          await federationContext.sendActivity(
+            { identifier: currentUser.username },
+            {
+              id: new URL(targetUser.actorId),
+              inboxId: new URL(targetUser.inboxUrl)
+            },
+            undoActivity
+          );
+          
+          logger.info(`Sent Undo activity to ${targetUser.actorId}`);
+        } else {
+          logger.warn(`No federation context available, Undo activity not sent to ${targetUser.actorId}`);
+        }
       } catch (federationError) {
         logger.error(`Failed to send Undo activity to ${targetUser.actorId}:`, {
           error: federationError instanceof Error ? federationError.message : String(federationError)

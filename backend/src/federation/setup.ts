@@ -4,8 +4,8 @@ import { createOutboxDispatcher } from "./dispatchers/outbox.ts";
 import { createFollowersDispatcher, createFollowingDispatcher } from "./dispatchers/social.ts";
 import { createInboxDispatcher } from "./dispatchers/inbox.ts";
 import { createObjectDispatchers } from "./dispatchers/objects.ts";
-import { createFollowListener } from "./listeners/follow.ts";
-import { createCreateListener } from "./listeners/create.ts";
+import { addFollowListener } from "./listeners/follow.ts";
+import { addCreateListener } from "./listeners/create.ts";
 
 const federation = createFederation({
   kv: new MemoryKvStore(),
@@ -18,7 +18,10 @@ createFollowersDispatcher(federation);
 createFollowingDispatcher(federation);
 createInboxDispatcher(federation);
 createObjectDispatchers(federation);
-createFollowListener(federation);
-createCreateListener(federation);
+
+const inboxListeners = federation.setInboxListeners("/users/{identifier}/inbox", "/inbox");
+
+addFollowListener(inboxListeners);
+addCreateListener(inboxListeners);
 
 export default federation;
