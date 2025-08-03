@@ -1,8 +1,12 @@
 import { Router } from 'express';
 import { UserService } from '../services/userService.js';
+import { FollowService } from '../services/followService.ts';
+import { InboxService } from '../services/inboxService.ts';
 
 const router = Router();
 const userService = new UserService();
+const inboxService = new InboxService();
+const followService = new FollowService(userService, inboxService);
 
 router.get('/users/:username', async (req, res) => {
   try {
@@ -22,7 +26,9 @@ router.get('/users/:username', async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
+    const { followingCount, followersCount } = await followService.getFollowCounts(user.actorId);
+
     return res.json({
       username: user.username,
       displayName: user.displayName,
@@ -31,6 +37,8 @@ router.get('/users/:username', async (req, res) => {
       joinDate: user.createdAt,
       activityPubId: user.actorId,
       isPrivate: user.isPrivate,
+      followingCount,
+      followersCount,
     });
   } catch (error) {
     console.error('User profile endpoint error:', error);
