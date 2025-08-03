@@ -1,0 +1,94 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Layout from '@/layouts/Main';
+import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
+import { SearchIcon } from 'lucide-react';
+import { UserCard } from '@/components/Discover/UserCard';
+import { Header } from '@/components/Home/Header';
+
+const DiscoverPage: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [results, setResults] = useState<any[]>([]); 
+
+  useEffect(() => {
+    if (searchQuery.trim()) {
+    //   const delay = setTimeout(() => {
+    //     // TODO: Replace with your actual fetch logic
+    //     fetch(`/api/users/search?q=${encodeURIComponent(searchQuery)}`)
+    //       .then(res => res.json())
+    //       .then(data => setResults(data))
+    //       .catch(err => console.error('Search error:', err));
+    //   }, 300); // Debounce
+
+    //   return () => clearTimeout(delay);
+        console.log(searchQuery)
+    } else {
+      setResults([]);
+    }
+  }, [searchQuery]);
+
+  return (
+    
+    <Layout>
+      <main
+        style={{
+          padding: Spacing.Medium,
+          background: Color.Background,
+          minHeight: '100vh',
+        }}
+      >
+        <Header/>
+
+        <section
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: Spacing.XSmall,
+            background: Color.Surface,
+            border: `1px solid ${Color.Border}`,
+            borderRadius: 8,
+            padding: Spacing.XSmall,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+          }}
+        >
+          <SearchIcon size={20} color={Color.Secondary} />
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              flex: 1,
+              border: 'none',
+              outline: 'none',
+              fontFamily: FontFamily.Nunito,
+              fontSize: FontSize.Large,
+              background: 'transparent',
+              color: Color.Text,
+            }}
+          />
+        </section>
+
+        <section style={{ marginTop: Spacing.Medium }}>
+          {results.length === 0 && searchQuery.trim() ? (
+            <p style={{
+              fontFamily: FontFamily.Nunito,
+              fontSize: FontSize.Large,
+              color: Color.Muted,
+              marginTop: Spacing.Small,
+            }}>
+              No users found.
+            </p>
+          ) : (
+            results.map(user => (
+              <UserCard key={user.id} user={user} />
+            ))
+          )}
+        </section>
+      </main>
+    </Layout>
+  );
+};
+
+export default DiscoverPage;

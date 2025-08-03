@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Home, User } from 'lucide-react';
+import { Home, User, Search } from 'lucide-react';
 import { styles } from '@/styles/navbar';
 
 const NavBar = () => {
@@ -22,6 +22,17 @@ const NavBar = () => {
             </section>
             <section style={isActive('/Home') ? styles.labelActive : styles.label}>
               Home
+            </section>
+          </section>
+        </Link>
+
+        <Link href="/Discover" style={styles.link}>
+          <section style={styles.navLink}>
+            <section style={isActive('/Discover') ? styles.iconWrapperActive : styles.iconWrapper}>
+              <Search size={24} />
+            </section>
+            <section style={isActive('/Discover') ? styles.labelActive : styles.label}>
+              Discover
             </section>
           </section>
         </Link>
