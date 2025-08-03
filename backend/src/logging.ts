@@ -9,7 +9,11 @@ await configure({
   filters: {},
   loggers: [
     { category: "backend", lowestLevel: "debug", sinks: ["console"] },
-    { category: "fedify", lowestLevel: "info", sinks: ["console"] },
+    { category: "federation", lowestLevel: "info", sinks: ["console"] },
+    { category: "inbox", lowestLevel: "debug", sinks: ["console"] },
+    { category: "activity", lowestLevel: "debug", sinks: ["console"] },
+    { category: "mongoose", lowestLevel: "debug", sinks: ["console"] },
     { category: ["logtape", "meta"], lowestLevel: "warning", sinks: ["console"] },
+    { category: ["fedify", "sig"], lowestLevel: "debug", sinks: ["console"] },
   ],
 });

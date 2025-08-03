@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { UserService } from './userService.js';
 import type { IUser } from '../models/user.ts';
+import { UserService } from './userService.js';
 
 export interface GoogleProfile {
   id: string;
@@ -57,15 +57,42 @@ export class AuthService {
 
     const finalUsername = await this.ensureUniqueUsername(suggestedUsername);
 
+    const keyPair = await this.generateKeyPair();
     user = await this.userService.createUser({
       googleId: profile.id,
       email: profile.emails[0].value,
       username: finalUsername,
       displayName: `${profile.name.givenName} ${profile.name.familyName}`,
       avatarUrl: profile.photos[0]?.value,
+      keyPairs: [{
+        privateKey: keyPair.privateJwk,
+        publicKey: keyPair.publicJwk,
+      }]
     });
 
     return { user, isNewUser: true };
+  }
+
+  private async generateKeyPair() {
+    const keyPair = await crypto.subtle.generateKey(
+      {
+        name: "RSASSA-PKCS1-v1_5",
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+        hash: "SHA-256",
+      },
+      true,
+      ["sign", "verify"]
+    );
+  
+    const publicJwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+    const privateJwk = await crypto.subtle.exportKey("jwk", keyPair.privateKey);
+  
+    const jwks = {
+      keys: [publicJwk],
+    };
+     
+    return { privateJwk, publicJwk, jwks };
   }
 
   private generateUsername(firstName: string, lastName: string): string {
