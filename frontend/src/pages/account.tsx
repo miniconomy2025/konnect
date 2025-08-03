@@ -21,6 +21,7 @@ const ProfilePage: React.FC = () => {
   const [isEditingName, setIsEditingName] = useState<boolean>(false);
   const [isEditingBio, setIsEditingBio] = useState<boolean>(false);
   const [displayName, setDisplayName] = useState<string>('');
+  const [userName, setUserName] = useState<string>('');
 
   const [userProfile, setUserProfile] = useState<UserProfile | undefined>(undefined);
   const [followers, setFollowers] = useState<User[]>([]);
@@ -28,7 +29,7 @@ const ProfilePage: React.FC = () => {
   const [posts, setPosts] = useState<PostsResponse | undefined>(undefined);
 
 
-  const [tempName, setTempName] = useState<string>(displayName);
+  const [tempName, setTempName] = useState<string>(userName);
   const [bio, setBio] = useState<string>('');
   const [tempBio, setTempBio] = useState<string>(bio);
 
@@ -69,7 +70,8 @@ const ProfilePage: React.FC = () => {
             // setFollowing(userFollowing);
             // setPosts(userPosts);
             setDisplayName(data.displayName);
-            setTempName(data.displayName);
+            setUserName(data.username);
+            setTempName(data.username);
             setBio(data.bio);
             setTempBio(data.bio);
         };
@@ -90,15 +92,25 @@ const ProfilePage: React.FC = () => {
 
   // Event handlers
   const handleNameCancel = (): void => {
-    setTempName(displayName);
+    setTempName(userName);
     setIsEditingName(false);
   };
 
-  const handleNameSave = () => {
+  const handleNameSave = async () => {
     if (!userProfile) return;
-    setDisplayName(tempName);
-    setUserProfile({ ...userProfile, displayName: tempName });
-    setIsEditingName(false);
+
+    // Make API Call
+    const response = await ApiService.updateUsername(tempName);
+
+    if(response.error){
+        alert('Error updating display name');
+        console.log(response.error);
+    }else{
+        alert('Updated User Name');
+        setUserName(tempName);
+        setUserProfile({ ...userProfile, username: tempName });
+        setIsEditingName(false);        
+    }
   };
 
   const handleBioSave = () => {
@@ -165,7 +177,7 @@ const ProfilePage: React.FC = () => {
             title="Settings"
         >
             <SettingsModal 
-            displayName={displayName}
+            displayName={userName}
             isEditingName={isEditingName}
             tempName={tempName}
             setTempName={setTempName}
