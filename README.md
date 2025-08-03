@@ -78,7 +78,9 @@ GET /users/username
   "avatarUrl": "https://...",
   "joinDate": "2024-01-01T00:00:00.000Z",
   "activityPubId": "http://localhost:8000/users/johndoe",
-  "isPrivate": false
+  "isPrivate": false,
+  "followingCount": 1,
+  "followersCount": 1
 }
 ```
 
