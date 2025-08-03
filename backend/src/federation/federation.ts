@@ -362,19 +362,20 @@ federation
       actor: actor.id.toString(),
       object: object.id.toString(),
       activityId: create.id?.toString(),
-    }
+    };
 
     try {
       await inboxService.persistInboxActivityObject(createInboxActivity);
-      logger.info(`Stored Create activity from ${actor.id} for object ${object.id}`);
     } catch (error) {
       if (error instanceof Error && error.message.includes('already exists')) {
         logger.info(`Create activity already exists, skipping: ${create.id?.toString()}`);
       } else {
-        console.log(error)
         logger.error(`Failed to persist create activity:`, { 
           error: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined
+          stack: error instanceof Error ? error.stack : undefined,
+          actorId: actor.id.toString(),
+          objectId: object.id.toString(),
+          activityId: create.id?.toString()
         });
       }
     }

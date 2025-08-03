@@ -248,25 +248,38 @@ export class UserService {
   }
   
   async getRemoteActorDisplay(actorUrl: string): Promise<DisplayPersonActor | undefined> {
-    console.log(actorUrl)
+  try {
     const ctx = federation.createContext(
       new URL(actorUrl),
       {}
     );
+    
     const actor = await ctx.lookupObject(new URL(actorUrl));
-    console.log(actor)
+    
     if (!actor) {
-      return undefined
-    } else if (actor instanceof Person) {
+      return undefined;
+    }
+    
+    if (actor instanceof Person) {
       const user: DisplayPersonActor = {
         actorId: actorUrl,
         username: actor.preferredUsername?.toString() || actorUrl,
-        displayName: actor.name?.toString() || actorUrl,
+        displayName: actor.name?.toString() || actor.preferredUsername?.toString() || actorUrl,
         avatarUrl: (await actor.getIcon())?.url?.toString() || '',
       }
       return user;
     } else {
-      throw new Error(`Actor of type ${typeof actor} not supported`)
+      if ('attribution' in actor && actor.attribution) {
+        const attributedActorUrl = actor.attribution.toString();
+        
+        return await this.getRemoteActorDisplay(attributedActorUrl);
+      }
+      
+      return undefined;
     }
+  } catch (error) {
+    console.error(`Error looking up remote actor ${actorUrl}:`, error);
+    return undefined;
   }
+}
 }

@@ -32,15 +32,15 @@ export class FeedService {
     const followingActorIds = await this.followService.getFollowingActorIds(user.actorId);
     followingActorIds.push(user.actorId);
 
-    const [localPosts, federatedActivities] = await Promise.all([
+    const [localPosts, externalPosts] = await Promise.all([
       this.getLocalPostsFromFollowing(followingActorIds, page, Math.ceil(limit / 2)),
-      this.getFederatedActivitiesFromFollowing(followingActorIds, page, Math.ceil(limit / 2))
+      this.getExternalPostsFromFollowing(followingActorIds, page, Math.ceil(limit / 2))
     ]);
 
     const unifiedLocalPosts = PostNormalizationService.localPostsToUnified(localPosts, userId);
-    const unifiedFederatedPosts = await this.convertFederatedActivitiesToUnified(federatedActivities);
+    const unifiedExternalPosts = this.convertExternalPostsToUnified(externalPosts);
 
-    const allPosts = [...unifiedLocalPosts, ...unifiedFederatedPosts]
+    const allPosts = [...unifiedLocalPosts, ...unifiedExternalPosts]
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, limit);
 
@@ -49,7 +49,7 @@ export class FeedService {
       hasMore: allPosts.length === limit,
       sources: {
         local: unifiedLocalPosts.length,
-        federated: unifiedFederatedPosts.length
+        federated: unifiedExternalPosts.length
       }
     };
   }
@@ -94,96 +94,63 @@ export class FeedService {
       .populate('author', 'username displayName avatarUrl');
   }
 
-  private async getFederatedActivitiesFromFollowing(followingActorIds: string[], page: number, limit: number): Promise<any[]> {
-    const skip = (page - 1) * limit;
+  private async getExternalPostsFromFollowing(followingActorIds: string[], page: number, limit: number): Promise<any[]> {
+    try {
+      const { ExternalPost } = await import('../models/externalPost.js');
+      const skip = (page - 1) * limit;
 
-    const createActivities = await InboxActivity.find({
-      'object.type': 'Create',
-      'object.actor.id': { $in: followingActorIds }
-    })
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .populate([
-      { path: 'object.actor.ref', select: 'username displayName avatarUrl actorId domain isLocal' },
-      { path: 'object.object.ref', select: 'username displayName avatarUrl actorId domain isLocal' }
-    ])
-    .lean();
+      const externalPosts = await ExternalPost.find({
+        actorId: { $in: followingActorIds }
+      })
+      .sort({ published: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
 
-    return createActivities;
+      return externalPosts;
+    } catch (error) {
+      logger.error('Error fetching external posts:', {error});
+      return [];
+    }
   }
 
-  private async convertFederatedActivitiesToUnified(activities: any[]): Promise<UnifiedPostResponse[]> {
-    return activities.map(activity => {
+  private convertExternalPostsToUnified(externalPosts: any[]): UnifiedPostResponse[] {
+    return externalPosts.map(post => {
       try {
-        const actorData = activity.object.actor.ref || {
-          username: this.extractUsernameFromActorId(activity.object.actor.id),
-          displayName: this.extractUsernameFromActorId(activity.object.actor.id),
-          actorId: activity.object.actor.id,
-          domain: this.extractDomainFromActorId(activity.object.actor.id),
-          isLocal: false
-        };
-
-        const noteData = this.parseActivityPubNote(activity.object);
-
         return {
-          id: activity.object.activityId,
+          id: post.objectId,
           type: 'external' as const,
           author: {
-            id: actorData.actorId,
-            username: actorData.username,
-            domain: actorData.domain,
-            displayName: actorData.displayName,
-            avatarUrl: actorData.avatarUrl,
+            id: post.actorId,
+            username: this.extractUsernameFromActorId(post.actorId),
+            domain: this.extractDomainFromActorId(post.actorId),
+            displayName: this.extractUsernameFromActorId(post.actorId), // We'll enhance this later
+            avatarUrl: undefined,
             isLocal: false
           },
           content: {
-            text: noteData.content || '',
-            hasMedia: noteData.hasMedia,
-            mediaType: noteData.mediaType
+            text: post.contentText || post.content || '',
+            hasMedia: post.attachments && post.attachments.length > 0,
+            mediaType: this.getFirstMediaType(post.attachments)
           },
-          media: noteData.media,
+          media: this.getFirstMediaAttachment(post.attachments),
           engagement: {
-            likesCount: 0,
+            likesCount: post.likesCount || 0,
             isLiked: false,
             canInteract: false
           },
-          createdAt: activity.createdAt,
-          updatedAt: activity.updatedAt,
-          url: noteData.url,
-          isReply: false
+          createdAt: post.published,
+          updatedAt: post.updated,
+          url: post.url,
+          isReply: !!post.inReplyTo
         };
       } catch (error) {
-        logger.warn('Failed to convert federated activity to unified format:', { error });
+        logger.warn('Failed to convert external post to unified format:', { error, postId: post._id });
         return null;
       }
     }).filter(Boolean) as UnifiedPostResponse[];
   }
 
-  private parseActivityPubNote(activityObject: any): {
-    content: string;
-    hasMedia: boolean;
-    mediaType: 'image' | 'video' | null;
-    media?: { type: 'image' | 'video'; url: string; altText?: string };
-    url?: string;
-  } {
-    let content = '';
-    let hasMedia = false;
-    let mediaType: 'image' | 'video' | null = null;
-    let media: { type: 'image' | 'video'; url: string; altText?: string } | undefined;
-
-    if (activityObject.summary) {
-      content = activityObject.summary;
-    }
-
-    return {
-      content,
-      hasMedia,
-      mediaType,
-      media,
-      url: activityObject.activityId
-    };
-  }
 
   private extractUsernameFromActorId(actorId: string): string {
     try {
@@ -202,5 +169,27 @@ export class FeedService {
     } catch {
       return 'unknown';
     }
+  }
+
+  private getFirstMediaType(attachments: any[]): 'image' | 'video' | null {
+    if (!attachments || attachments.length === 0) return null;
+    
+    const firstMedia = attachments.find(att => att.type === 'image' || att.type === 'video');
+    return firstMedia ? firstMedia.type : null;
+  }
+
+  private getFirstMediaAttachment(attachments: any[]): UnifiedPostResponse['media'] {
+    if (!attachments || attachments.length === 0) return undefined;
+    
+    const firstMedia = attachments.find(att => att.type === 'image' || att.type === 'video');
+    if (!firstMedia) return undefined;
+
+    return {
+      type: firstMedia.type,
+      url: firstMedia.url,
+      width: firstMedia.width,
+      height: firstMedia.height,
+      altText: firstMedia.description
+    };
   }
 }
