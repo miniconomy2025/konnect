@@ -179,5 +179,23 @@ export class ApiService {
     } catch (error) {
       return { error: error instanceof Error ? error.message : 'Unknown error' };
     }
-  }  
+  }
+
+  static async getUserByUsername(username: string): Promise<ApiResponse<any>> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${username}`, {
+        headers: this.getAuthHeaders(),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
 } 

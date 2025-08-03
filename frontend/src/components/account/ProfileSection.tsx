@@ -8,18 +8,21 @@ import BioSection from './BioSection';
 
 interface ProfileSectionProps {
   userProfile: UserProfile;
+  isOwnProfile: boolean;
   isEditingBio: boolean;
   tempBio: string;
-  setTempBio: (value: string) => void;
+  setTempBio: (bio: string) => void;
   onEditBio: () => void;
   onSaveBio: () => void;
   onCancelBio: () => void;
   onFollowersClick: () => void;
   onFollowingClick: () => void;
+  onFollowClick?: () => void;
 }
 
 const ProfileSection: React.FC<ProfileSectionProps> = ({ 
   userProfile, 
+  isOwnProfile,
   isEditingBio, 
   tempBio, 
   setTempBio, 
@@ -27,7 +30,8 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
   onSaveBio, 
   onCancelBio,
   onFollowersClick,
-  onFollowingClick
+  onFollowingClick,
+  onFollowClick
 }) => {
   return (
     <section style={styles.profileSection}>
@@ -42,7 +46,11 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
           <section style={styles.profileTopRow}>
             <h2 style={styles.username}>{userProfile.username}</h2>
           </section>
-          
+          {!isOwnProfile && (
+            <button onClick={onFollowClick}>
+                {userProfile.isFollowing ? 'Unfollow' : 'Follow'}
+            </button>
+            )}
           <ProfileStats 
             postsCount={userProfile.postsCount}
             followersCount={userProfile.followersCount}

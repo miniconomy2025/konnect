@@ -1,12 +1,14 @@
 import React from 'react';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
 import { DiscoverUser } from '@/types/discover';
+import { useRouter } from 'next/router';
 
 interface UserCardProps {
   user: DiscoverUser;
 }
 
 export const UserCard: React.FC<UserCardProps> = ({ user }) => {
+    const router = useRouter();
   return (
     <section
       style={{
@@ -21,7 +23,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         transition: 'transform 0.2s ease',
       }}
       onClick={() => {
-        window.location.href = `/profile/${user.username}`;
+        router.push(`/Account?user=${user.username}`)
       }}
     >
       <img
