@@ -1,4 +1,8 @@
+import { Person } from '@fedify/fedify';
+import { Error } from 'mongoose';
+import federation from '../federation/federation.ts';
 import { User, type IUser } from '../models/user.ts';
+import type { DisplayPersonActor } from '../types/inbox.ts';
 import type { CreateUserData } from '../types/user.js';
 
 const RESERVED_USERNAMES = [
@@ -21,20 +25,58 @@ export interface CreateExternalUserData {
 }
 
 export class UserService {
+  private sanitizeUserOutput(user: IUser | null): IUser | null {
+    if (!user) {
+      return user;
+    } else {
+      user.keyPairs = user.keyPairs.map((keyPair) => ({
+        privateKey: undefined,
+        publicKey: keyPair.publicKey,
+      }));
+      return user;
+    }
+  }
+
   async findByGoogleId(googleId: string): Promise<IUser | null> {
-    return await User.findOne({ googleId });
+    return this.sanitizeUserOutput(await User.findOne({ googleId }));
   }
 
   async findByUsername(username: string): Promise<IUser | null> {
-    return await User.findOne({ username, isLocal: true });
+    return this.sanitizeUserOutput(await User.findOne({ username, isLocal: true }));
+  }
+
+  async findByUsernameUnsanitized(username: string): Promise<Omit<IUser, 'keyPairs'> & { keyPairs: { publicKey: JsonWebKey, privateKey: JsonWebKey }[] } | null> {
+    return await User.findOne({ username });
+  }
+
+  async findByActorIdUnsanitized(actorId: string): Promise<Omit<IUser, 'keyPairs'> & { keyPairs: { publicKey: JsonWebKey, privateKey: JsonWebKey }[] } | null> {
+    return await User.findOne({ actorId });
   }
 
   async findByEmail(email: string): Promise<IUser | null> {
-    return await User.findOne({ email });
+    return this.sanitizeUserOutput(await User.findOne({ email }));
   }
 
   async findById(id: string): Promise<IUser | null> {
-    return await User.findById(id);
+    return this.sanitizeUserOutput(await User.findById(id));
+  }
+
+  async findByActorId(actorId: string): Promise<IUser | null> {
+    return this.sanitizeUserOutput(await User.findOne({ actorId }));
+  }
+
+  async findDisplayActorById(actorId: string): Promise<DisplayPersonActor | undefined> {
+    const user = this.sanitizeUserOutput(await User.findOne({ actorId }));
+    if (!user) {
+      return undefined;
+    } else {
+      return {
+        actorId: user.actorId,
+        username: user.username,
+        displayName: user.displayName,
+        avatarUrl: user.avatarUrl || '',
+      }
+    }
   }
 
   async searchLocalUsers(query: string, limit = 20): Promise<IUser[]> {
@@ -134,7 +176,7 @@ export class UserService {
       return false;
     }
     
-    const existing = await User.findOne({ username, isLocal: true });
+    const existing = this.sanitizeUserOutput(await User.findOne({ username, isLocal: true }));
     return !existing;
   }
 
@@ -203,5 +245,26 @@ export class UserService {
       total: externalUsers.length,
       byDomain
     };
+  }
+  
+  async getRemoteActorDisplay(actorUrl: string): Promise<DisplayPersonActor | undefined> {
+    const ctx = federation.createContext(
+      new URL(actorUrl),
+      {}
+    );
+    const actor = await ctx.lookupObject(new URL(actorUrl));
+    if (!actor) {
+      return undefined
+    } else if (actor instanceof Person) {
+      const user: DisplayPersonActor = {
+        actorId: actorUrl,
+        username: actor.preferredUsername?.toString() || actorUrl,
+        displayName: actor.name?.toString() || actorUrl,
+        avatarUrl: (await actor.getIcon())?.url?.toString() || '',
+      }
+      return user;
+    } else {
+      throw new Error(`Actor of type ${typeof actor} not supported`)
+    }
   }
 }

@@ -23,7 +23,7 @@ router.get('/users/:username', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     
-    res.json({
+    return res.json({
       username: user.username,
       displayName: user.displayName,
       bio: user.bio,
@@ -34,7 +34,7 @@ router.get('/users/:username', async (req, res) => {
     });
   } catch (error) {
     console.error('User profile endpoint error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
