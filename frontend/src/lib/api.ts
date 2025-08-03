@@ -29,9 +29,10 @@ export class ApiService {
   }
 
   // Posts API
-  static async getPosts(page: number = 1, limit: number = 10): Promise<ApiResponse<GetPostsResponse>> {
+  static async getPosts(type: 'discover' | 'following', page: number = 1, limit: number = 10): Promise<ApiResponse<GetPostsResponse>> {
     try {
-      const response = await fetch(`${API_BASE_URL}/posts?page=${page}&limit=${limit}`, {
+      const feedType = type === 'discover' ? 'public' : 'following';
+      const response = await fetch(`${API_BASE_URL}/posts?page=${page}&limit=${limit}&type=${feedType}`, {
         headers: this.getAuthHeaders(),
       });
       
@@ -49,23 +50,6 @@ export class ApiService {
   static async getUserPosts(user: string): Promise<ApiResponse<PostsResponse>> {
     try {
       const response = await fetch(`${API_BASE_URL}/posts/user/${user}`, {
-        headers: this.getAuthHeaders(),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      return { data };
-    } catch (error) {
-      return { error: error instanceof Error ? error.message : 'Unknown error' };
-    }
-  }
-
-  static async getFollowingPosts(page: number = 1, limit: number = 10): Promise<ApiResponse<GetPostsResponse>> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/posts/following?page=${page}&limit=${limit}`, {
         headers: this.getAuthHeaders(),
       });
       

@@ -234,7 +234,7 @@ federation.setObjectDispatcher(
     const post = await postService.getPostById(id);
     if (!post) return null;
     
-    const user = await userService.findById(post.author.toString());
+    const user = await userService.findById(post.author._id.toString());
     if (!user) return null;
     
     return new Note({

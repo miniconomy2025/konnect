@@ -54,7 +54,7 @@ export class FeedService {
     };
   }
 
-  async getPublicFeed(page = 1, limit = 20): Promise<{
+  async getPublicFeed(page = 1, limit = 20, userId?: string): Promise<{
     posts: UnifiedPostResponse[];
     hasMore: boolean;
     sources: { local: number; federated: number };
@@ -67,7 +67,7 @@ export class FeedService {
       .limit(limit)
       .populate('author', 'username displayName avatarUrl');
 
-    const unifiedPosts = PostNormalizationService.localPostsToUnified(localPosts);
+    const unifiedPosts = PostNormalizationService.localPostsToUnified(localPosts, userId);
 
     return {
       posts: unifiedPosts,
