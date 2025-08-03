@@ -1,4 +1,4 @@
-import { PostsResponse } from "@/types/account";
+import { PostsResponse } from "@/types/post";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 

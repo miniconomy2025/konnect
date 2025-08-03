@@ -12,7 +12,6 @@ import postRoutes from './routes/posts.js';
 import searchRoutes from './routes/search.ts';
 import dotenv from 'dotenv';
 import { mongoConnect } from "./config/mongoose.js";
-import cors from 'cors';
 
 dotenv.config();
 
@@ -21,7 +20,6 @@ const logger = getLogger("backend");
 export const app = express();
 
 app.set("trust proxy", true);
-app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -36,8 +34,8 @@ app.use((req, res, next) => {
     next();
   }
 });
-
-await mongoConnect();
+    
+// await mongoConnect();
 
 app.use('/auth', authRoutes);
 app.use('/posts', postRoutes);
