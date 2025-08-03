@@ -51,9 +51,8 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/posts', postRoutes);
 app.use('/search', searchRoutes);
-app.use('/inboxes', inboxRoutes);
 app.use('/follows', followRoutes);
-
+app.use('/inboxes', inboxRoutes);
 
 app.use('', webfingerRoutes);
 app.use('', userRoutes);

@@ -32,6 +32,22 @@ export class FollowService {
     return populateRemoteFollowActorReferences(populatedFollow, this.userService, this.InboxService);
   }
 
+  async removeFollow(actorId: string, objectId: string): Promise<boolean> {
+    const result = await FollowModel.deleteOne({ 
+      'actor.id': actorId, 
+      'object.id': objectId 
+    });
+    return result.deletedCount > 0;
+  }
+
+  async isFollowing(actorId: string, objectId: string): Promise<boolean> {
+    const follow = await FollowModel.findOne({ 
+      'actor.id': actorId, 
+      'object.id': objectId 
+    });
+    return !!follow;
+  }
+
   async getFollowById(id: string): Promise<IFollowObjectPopulated | null> {
     const follow = await FollowModel.findById(id).populate(this.population).lean();
 
@@ -98,13 +114,22 @@ export class FollowService {
     return Promise.all(follows.map(follow => populateRemoteFollowActorReferences(follow, this.userService, this.InboxService)));
   }
 
-  async getFollowsByObjectId(objectId: string, page: number, limit: number) {
-    const follows = await FollowModel.find({ 'object.id': objectId })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .populate(this.population)
-      .lean();
+  async getFollowingActorIds(actorId: string): Promise<string[]> {
+    const follows = await FollowModel.find({ 'actor.id': actorId }).lean();
+    return follows.map(follow => follow.object.id);
+  }
 
-    return follows;
+  async getFollowerActorIds(objectId: string): Promise<string[]> {
+    const follows = await FollowModel.find({ 'object.id': objectId }).lean();
+    return follows.map(follow => follow.actor.id);
+  }
+
+  async getFollowCounts(actorId: string): Promise<{ followingCount: number; followersCount: number }> {
+    const [followingCount, followersCount] = await Promise.all([
+      FollowModel.countDocuments({ 'actor.id': actorId }),
+      FollowModel.countDocuments({ 'object.id': actorId })
+    ]);
+
+    return { followingCount, followersCount };
   }
 }

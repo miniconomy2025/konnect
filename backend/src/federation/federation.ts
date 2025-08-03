@@ -248,7 +248,6 @@ federation
     const actorFollowing = await follow.getActor(ctx);
     if (actorFollowing == null || actorFollowing.id == null) return;
 
-    // Extract username from the actor being followed
     const followedUrl = new URL(actorBeingFollowed.id.toString());
     const username = followedUrl.pathname.split('/').pop();
     
@@ -284,6 +283,31 @@ federation
         logger.info(`Follow already exists, skipping persistence: ${actorFollowing.id.toString()} -> ${actorBeingFollowed.id.toString()}`);
       } else {
         logger.error(`Failed to persist follow activity:`, { error: error instanceof Error ? error.message : String(error) });
+      }
+    }
+  })
+  .on(Create, async (ctx, create) => {
+    const actor = await create.getActor(ctx);
+    const object = await create.getObject(ctx);
+    
+    if (!actor?.id || !object?.id) return;
+
+    const createInboxActivity: CreateActivityObject = {
+      type: "Create",
+      summary: `${actor.name || actor.preferredUsername || 'Someone'} created a post`,
+      actor: actor.id.toString(),
+      object: object.id.toString(),
+      activityId: create.id?.toString(),
+    }
+
+    try {
+      await inboxService.persistInboxActivityObject(createInboxActivity);
+      logger.info(`Stored Create activity from ${actor.id} for object ${object.id}`);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('already exists')) {
+        logger.info(`Create activity already exists, skipping: ${create.id?.toString()}`);
+      } else {
+        logger.error(`Failed to persist create activity:`, { error: error instanceof Error ? error.message : String(error) });
       }
     }
   });
