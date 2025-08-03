@@ -1,4 +1,4 @@
-import { PostsResponse } from "@/types/post";
+import { GetPostsResponse, PostsResponse } from "@/types/post";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -14,11 +14,22 @@ export class ApiService {
     return {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
+      ...this.getSkipBrowserWarningHeaders(),
     };
   }
 
+  private static getSkipBrowserWarningHeaders(): HeadersInit {
+    if (process.env.NEXT_PUBLIC_ENV === 'development') {
+      return {
+        'ngrok-skip-browser-warning': 'true',
+      };
+    } else {
+      return {};
+    }
+  }
+
   // Posts API
-  static async getPosts(page: number = 1, limit: number = 10): Promise<ApiResponse<any[]>> {
+  static async getPosts(page: number = 1, limit: number = 10): Promise<ApiResponse<GetPostsResponse>> {
     try {
       const response = await fetch(`${API_BASE_URL}/posts?page=${page}&limit=${limit}`, {
         headers: this.getAuthHeaders(),
@@ -52,7 +63,7 @@ export class ApiService {
     }
   }
 
-  static async getFollowingPosts(page: number = 1, limit: number = 10): Promise<ApiResponse<any[]>> {
+  static async getFollowingPosts(page: number = 1, limit: number = 10): Promise<ApiResponse<GetPostsResponse>> {
     try {
       const response = await fetch(`${API_BASE_URL}/posts/following?page=${page}&limit=${limit}`, {
         headers: this.getAuthHeaders(),
@@ -107,7 +118,9 @@ export class ApiService {
 
   static async checkUsername(username: string): Promise<ApiResponse<{ available: boolean }>> {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/check-username/${username}`);
+      const response = await fetch(`${API_BASE_URL}/auth/check-username/${username}`, {
+        headers: this.getAuthHeaders(),
+      });
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -143,11 +156,20 @@ export class ApiService {
   static async createPost(formData: FormData): Promise<ApiResponse<any>> {
     try {
       const token = localStorage.getItem('auth_token');
+      const headers: Record<string, string> = {};
+      
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
+      if (process.env.NEXT_PUBLIC_ENV === 'development') {
+        headers['ngrok-skip-browser-warning'] = 'true';
+      }
+      
+      // Note: Don't set Content-Type for FormData - let browser set it
       const response = await fetch(`${API_BASE_URL}/posts`, {
         method: 'POST',
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
+        headers,
         body: formData,
       });
       

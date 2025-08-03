@@ -41,12 +41,18 @@ app.use((req, res, next) => {
     
 await mongoConnect();
 
-app.use(integrateFederation(federation, (req) => {
-  const domain = process.env.DOMAIN || 'localhost:8000';
-  const protocol = domain.includes('localhost') ? 'http' : 'https';
-  const baseUrl = `${protocol}://${domain}`;
-  return new URL(req.originalUrl, baseUrl);
-}));
+app.use((req, res, next) => {
+  if (req.path === '/posts' && req.method === 'POST') {
+    return next();
+  }
+
+  integrateFederation(federation, (req) => {
+    const domain = process.env.DOMAIN || 'localhost:8000';
+    const protocol = domain.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${domain}`;
+    return new URL(req.originalUrl, baseUrl);
+  })(req, res, next);
+});
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
