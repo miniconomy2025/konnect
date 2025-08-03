@@ -35,7 +35,7 @@ app.use((req, res, next) => {
   }
 });
     
-// await mongoConnect();
+await mongoConnect();
 
 app.use('/auth', authRoutes);
 app.use('/posts', postRoutes);
