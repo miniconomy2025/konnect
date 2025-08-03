@@ -46,7 +46,7 @@ GET /search/users?q=alex&page=1&limit=20
       "avatarUrl": "https://...",
       "actorId": "https://mastodon.social/users/alex",
       "isLocal": false,
-      "bio": "Developer from SF",
+      "bio": "test",
       "isPrivate": false
     }
   ],
