@@ -262,12 +262,6 @@ curl -X DELETE -H "Authorization: Bearer $TOKEN" \
 ```bash
 # Get user's followers and following
 curl "http://localhost:8000/follows/users/alice?page=1&limit=20"
-
-# Follow a user
-curl -X POST -H "Authorization: Bearer $TOKEN" \
-     -H "Content-Type: application/json" \
-     -d '{"targetUserId":"user_id_to_follow"}' \
-     http://localhost:8000/follows
 ```
 
 ### Test Inbox System
@@ -279,8 +273,8 @@ curl "http://localhost:8000/inboxes/users/alice?page=1&limit=20"
 curl -X POST -H "Content-Type: application/json" \
      -d '{
        "type": "Follow",
-       "actor": "https://remote-server.com/users/bob",
-       "object": "https://localhost:8000/users/alice",
+       "actor": "https://remote-server.com/users/bob", # The actor performing the activity
+       "object": "https://localhost:8000/users/alice", # The actor/object the activity is being performed on
        "summary": "Bob followed Alice"
      }' \
      http://localhost:8000/inboxes/users/alice
@@ -289,8 +283,8 @@ curl -X POST -H "Content-Type: application/json" \
 curl -X POST -H "Content-Type: application/json" \
      -d '{
        "type": "Follow",
-       "actor": "https://localhost:8000/users/alice",
-       "object": "https://mastodon.social/users/bob"
+       "actor": "https://localhost:8000/users/alice", # The actor performing the activity
+       "object": "https://mastodon.social/users/bob" # The actor/object the activity is being performed on
      }' \
      http://localhost:8000/inboxes/users/alice
 ```
