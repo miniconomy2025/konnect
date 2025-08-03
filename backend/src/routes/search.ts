@@ -16,9 +16,9 @@ router.get('/users', optionalAuth, async (req, res) => {
       return res.status(400).json({ error: 'Query parameter is required' });
     }
 
-    if (query.length < 2) {
-      return res.status(400).json({ error: 'Query must be at least 2 characters' });
-    }
+    // if (query.length < 2) {
+    //   return res.status(400).json({ error: 'Query must be at least 2 characters' });
+    // }
 
     const pageNum = parseInt(page as string) || 1;
     const limitNum = Math.min(parseInt(limit as string) || 20, 50); // Max 50 results

@@ -1,13 +1,9 @@
 import React from 'react';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
+import { DiscoverUser } from '@/types/discover';
 
 interface UserCardProps {
-  user: {
-    id: string;
-    username: string;
-    fullName: string;
-    profileImage?: string;
-  };
+  user: DiscoverUser;
 }
 
 export const UserCard: React.FC<UserCardProps> = ({ user }) => {
@@ -29,7 +25,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
       }}
     >
       <img
-        src={user.profileImage || '/assets/images/default-profile.png'}
+        src={user.avatarUrl || '/assets/images/default-profile.png'}
         alt={`${user.username}'s avatar`}
         style={{
           width: 40,
@@ -45,7 +41,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
           fontFamily: FontFamily.Nunito,
           fontWeight: 600,
           color: Color.Text,
-        }}>{user.fullName}</section>
+        }}>{user.displayName}</section>
         <section style={{
           fontSize: FontSize.Small,
           fontFamily: FontFamily.Nunito,

@@ -6,23 +6,22 @@ import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
 import { SearchIcon } from 'lucide-react';
 import { UserCard } from '@/components/Discover/UserCard';
 import { Header } from '@/components/Home/Header';
+import { ApiService } from '@/lib/api';
+import { DiscoverSearchResponse, DiscoverUser } from '@/types/discover';
 
 const DiscoverPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [results, setResults] = useState<any[]>([]); 
+  const [results, setResults] = useState<DiscoverUser[]>([]); 
 
   useEffect(() => {
     if (searchQuery.trim()) {
-    //   const delay = setTimeout(() => {
-    //     // TODO: Replace with your actual fetch logic
-    //     fetch(`/api/users/search?q=${encodeURIComponent(searchQuery)}`)
-    //       .then(res => res.json())
-    //       .then(data => setResults(data))
-    //       .catch(err => console.error('Search error:', err));
-    //   }, 300); // Debounce
-
-    //   return () => clearTimeout(delay);
-        console.log(searchQuery)
+        const fetchData = async () => {
+            const { data: response } = await ApiService.searchUsers(searchQuery);
+            if(response){
+                setResults(response.results);
+            }
+        }
+        fetchData();
     } else {
       setResults([]);
     }
@@ -82,7 +81,7 @@ const DiscoverPage: React.FC = () => {
             </p>
           ) : (
             results.map(user => (
-              <UserCard key={user.id} user={user} />
+              <UserCard key={user.actorId} user={user} />
             ))
           )}
         </section>
