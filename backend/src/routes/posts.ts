@@ -152,7 +152,7 @@ router.get('/', optionalAuth, async (req, res) => {
 
     let result;
     if (feedType === 'public' || !req.user) {
-      result = await feedService.getPublicFeed(page, limit);
+      result = await feedService.getPublicFeed(page, limit, req.user?._id?.toString());
     } else {
       result = await feedService.getTimelineFeed(req.user._id!.toString(), page, limit);
     }

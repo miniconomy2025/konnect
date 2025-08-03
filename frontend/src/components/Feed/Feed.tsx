@@ -11,10 +11,22 @@ interface FeedProps {
 }
 
 export function Feed({ mode }: FeedProps) {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<{
+    discover: Post[];
+    following: Post[];
+  }>({
+    discover: [],
+    following: [],
+  });
   const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState({
+    discover: true,
+    following: true,
+  });
+  const [pages, setPages] = useState({
+    discover: 1,
+    following: 1,
+  });
   const [error, setError] = useState<string | null>(null);
 
   // Fetch posts from API or fallback to mock data
@@ -26,16 +38,15 @@ export function Feed({ mode }: FeedProps) {
       let apiResponse: ApiResponse<GetPostsResponse>;
       
       if (mode === 'discover') {
-        apiResponse = await ApiService.getPosts(pageNum, 3);
+        apiResponse = await ApiService.getPosts('discover', pageNum, 5);
       } else {
-        apiResponse = await ApiService.getFollowingPosts(pageNum, 3);
+        apiResponse = await ApiService.getPosts('following', pageNum, 5);
       }
       
       if (apiResponse.error) {
         console.warn('API failed, using mock data:', apiResponse.error);
         setError(`Failed to load posts: ${apiResponse.error}`);
       } else if (apiResponse.data) {
-        console.log(apiResponse.data);
         const transformedPosts: Post[] = apiResponse.data.posts.map((apiPost: UnifiedPostResponse) => ({
           id: apiPost.id,
           content: {
@@ -66,42 +77,66 @@ export function Feed({ mode }: FeedProps) {
         }));
         
         if (isInitial) {
-          setPosts(transformedPosts);
+          setPosts(prev => ({
+            ...prev,
+            [mode]: transformedPosts,
+          }));
         } else {
-          setPosts(prev => [...prev, ...transformedPosts]);
+          setPosts(prev => {
+            const existingIds = new Set(prev[mode].map(post => post.id));
+            const newPosts = transformedPosts.filter(post => !existingIds.has(post.id));
+            
+            return {
+              ...prev,
+              [mode]: [...prev[mode], ...newPosts],
+            };
+          });
         }
         
-        setHasMore(transformedPosts.length === 3);
+        setHasMore(prev => ({
+          ...prev,
+          [mode]: apiResponse.data?.hasMore || false,
+        }));
       }
     } catch (error) {
-      console.error('Error fetching posts:', error);
       setError('Failed to load posts');
     } finally {
       setLoading(false);
-      setPage(pageNum);
+      setPages(prev => ({
+        ...prev,
+        [mode]: pageNum,
+      }));
     }
   }, [mode]);
 
   useEffect(() => {
-    setPosts([]);
-    setPage(1);
-    setHasMore(true);
-    setError(null);
-    fetchPosts(1, true);
-  }, [mode, fetchPosts]);
+    // Only fetch if we don't have any posts for the current mode
+    if (posts[mode].length === 0) {
+      setPages(prev => ({
+        ...prev,
+        [mode]: 1,
+      }));
+      setHasMore(prev => ({
+        ...prev,
+        [mode]: true,
+      }));
+      setError(null);
+      fetchPosts(1, true);
+    }
+  }, [mode, fetchPosts, posts]);
 
   // Infinite scroll handler
   const handleScroll = useCallback(() => {
-    if (loading || !hasMore) return;
+    if (loading || !hasMore[mode]) return;
     
     const scrollTop = window.scrollY;
     const windowHeight = window.innerHeight;
     const documentHeight = document.documentElement.scrollHeight;
     
     if (scrollTop + windowHeight >= documentHeight - 100) {
-      fetchPosts(page + 1);
+      fetchPosts(pages[mode] + 1);
     }
-  }, [loading, hasMore, page, fetchPosts]);
+  }, [loading, hasMore[mode], pages, mode, fetchPosts]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
@@ -111,13 +146,13 @@ export function Feed({ mode }: FeedProps) {
   const renderPost = (post: Post) => {
     switch (post.media.type) {
       case 'text':
-        return <TextPost key={post.id} post={post} />;
+        return <TextPost post={post} />;
       case 'image':
-        return <ImagePost key={post.id} post={post} />;
+        return <ImagePost post={post} />;
       case 'video':
-        return <VideoPost key={post.id} post={post} />;
+        return <VideoPost post={post} />;
       default:
-        return <TextPost key={post.id} post={post} />;
+        return <TextPost post={post} />;
     }
   };
 
@@ -135,7 +170,7 @@ export function Feed({ mode }: FeedProps) {
         </section>
       )}
       
-      {posts.length === 0 && !loading && mode === 'following' && (
+      {posts[mode].length === 0 && !loading && mode === 'following' && (
         <section style={{
           textAlign: 'center',
           padding: Spacing.XLarge,
@@ -150,7 +185,11 @@ export function Feed({ mode }: FeedProps) {
         </section>
       )}
       
-      {posts.map(renderPost)}
+      {posts[mode].map((post) => (
+        <article key={`${post.id}-${mode}`}>
+          {renderPost(post)}
+        </article>
+      ))}
       
       {loading && (
         <section style={{
@@ -163,7 +202,7 @@ export function Feed({ mode }: FeedProps) {
         </section>
       )}
       
-      {!hasMore && posts.length > 0 && (
+      {!hasMore[mode] && posts[mode].length > 0 && (
         <section style={{
           textAlign: 'center',
           padding: Spacing.Large,
