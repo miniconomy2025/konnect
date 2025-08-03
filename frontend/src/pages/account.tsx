@@ -1,118 +1,115 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation'; // or 'next/router' if using pages/
-import Layout from '@/layouts/Main';
-import { ApiService } from '@/lib/api';
+import React, { useState, useEffect } from 'react';
+import { styles } from '@/styles/account';
 import { UserProfile, User } from '@/types/account';
 import { PostsResponse } from '@/types/post';
-import Header from '@/components/Account/Header';
+import  Header  from '@/components/Account/Header';
 import ProfileSection from '@/components/Account/ProfileSection';
 import PostsGrid from '@/components/Account/PostsGrid';
 import Modal from '@/components/Account/Modal';
 import UserListItem from '@/components/Account/UserListItem';
 import SettingsModal from '@/components/Account/SettingsModal';
-import { styles } from '@/styles/account';
-import { useSearchParams } from 'next/navigation'; // At the top
-
+import Layout from '@/layouts/Main';
+import { ApiService } from '@/lib/api';
 
 const ProfilePage: React.FC = () => {
-  const params = useParams();
-  const profileUsername = params?.username as string | undefined;
+  const [activeTab] = useState<string>('posts');
+  const [showFollowers, setShowFollowers] = useState<boolean>(false);
+  const [showFollowing, setShowFollowing] = useState<boolean>(false);
+  const [showSettings, setShowSettings] = useState<boolean>(false);
+  const [isEditingName, setIsEditingName] = useState<boolean>(false);
+  const [isEditingBio, setIsEditingBio] = useState<boolean>(false);
+  const [displayName, setDisplayName] = useState<string>('');
+  const [userName, setUserName] = useState<string>('');
 
-  const [userProfile, setUserProfile] = useState<UserProfile>();
-  const [posts, setPosts] = useState<PostsResponse>();
+  const [userProfile, setUserProfile] = useState<UserProfile | undefined>(undefined);
   const [followers, setFollowers] = useState<User[]>([]);
   const [following, setFollowing] = useState<User[]>([]);
-  const [showFollowers, setShowFollowers] = useState(false);
-  const [showFollowing, setShowFollowing] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [isEditingBio, setIsEditingBio] = useState(false);
-  const [tempName, setTempName] = useState('');
-  const [tempBio, setTempBio] = useState('');
-  const [bio, setBio] = useState('');
-  const [userName, setUserName] = useState('');
-  const [currentUsername, setCurrentUsername] = useState<string | null>(null);
-  const [viewingOwnProfile, setViewingOwnProfile] = useState(true);
+  const [posts, setPosts] = useState<PostsResponse | undefined>(undefined);
 
 
-  let isOwnProfile = profileUsername === currentUsername;
+  const [tempName, setTempName] = useState<string>(userName);
+  const [bio, setBio] = useState<string>('');
+  const [tempBio, setTempBio] = useState<string>(bio);
 
-  useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      alert('Please log in first!');
-      window.location.href = '/Login';
-      return;
-    }
 
-    const params = new URLSearchParams(window.location.search);
-    const user = params.get("user");
+    useEffect(() => {
+        if(!localStorage.getItem('auth_token')){
+            alert('Please Login first!') // TODO: Make nice toast
+            window.location.href = '/Login';
+        }
 
-    const fetchProfile = async () => {
-      const currentUser = (await ApiService.getCurrentUser()).data;
-      if (!currentUser) return;
+        const fetchData = async () => {
+            const { data, error } = await ApiService.getCurrentUser();
 
-        const usernameToLoad = user || currentUser.username;
-        isOwnProfile = usernameToLoad === currentUser.username;
-        setUserName(currentUser.username);
+            if (error || !data) {
+                console.error('Failed to fetch user data:', error);
+                return;
+            }
 
-      const { data, error } = await ApiService.getUserByUsername(usernameToLoad);
-      if (!data || error) {
-        console.error('Failed to fetch user:', error);
-        return;
-      }
+            const userPosts = (await ApiService.getUserPosts(data.username)).data; // adapt based on actual API
+            console.log(userPosts);
+            setPosts(userPosts);
 
-      const userPosts = (await ApiService.getUserPosts(usernameToLoad)).data;
+            // const userFollowers = data.followers || [];
+            // const userFollowing = data.following || [];
 
-      setUserProfile({
-        username: data.username,
-        displayName: data.displayName,
-        bio: data.bio,
-        avatar: data.avatarUrl,
-        postsCount: data.postsCount,
-        followersCount: data.followersCount,
-        followingCount: data.followingCount,
-        isFollowing: data.isFollowing,
-      });
+            setUserProfile({
+                username: data.username,
+                displayName: data.displayName,
+                bio: data.bio,
+                avatar: data.avatarUrl,
+                postsCount: data.postsCount,
+                followersCount: data.followersCount,
+                followingCount: data.followingCount,
+                isFollowing: false, // server might give this too
+            });
 
-      setPosts(userPosts);
-      setUserName(data.username);
-      setTempName(data.username);
-      setBio(data.bio);
-      setTempBio(data.bio);
+            // setFollowers(userFollowers);
+            // setFollowing(userFollowing);
+            // setPosts(userPosts);
+            setDisplayName(data.displayName);
+            setUserName(data.username);
+            setTempName(data.username);
+            setBio(data.bio);
+            setTempBio(data.bio);
+        };
 
-        setCurrentUsername(currentUser.username);
-        setViewingOwnProfile(isOwnProfile);
-    };
+        fetchData();
+    }, []);
 
-    fetchProfile();
-  }, [profileUsername]);
+//   const followers: User[] = [
+//     { id: 1, username: 'alice_photo', displayName: 'Alice Johnson', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b1e0?w=50&h=50&fit=crop&crop=face' },
+//     { id: 2, username: 'mike_travels', displayName: 'Mike Wilson', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop&crop=face' },
+//     { id: 3, username: 'sarah_art', displayName: 'Sarah Davis', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=50&h=50&fit=crop&crop=face' }
+//   ];
 
-  const handleFollowToggle = async () => {
-    if (!userProfile) return;
-    // const isNowFollowing = !userProfile.isFollowing;
-    // await ApiService.toggleFollow(userProfile.username, isNowFollowing);
-    // setUserProfile({ ...userProfile, isFollowing: isNowFollowing });
-    console.log('Follow')
-  };
+//   const following: User[] = [
+//     { id: 1, username: 'nature_shots', displayName: 'Nature Photography', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face' },
+//     { id: 2, username: 'urban_explorer', displayName: 'Urban Explorer', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=50&h=50&fit=crop&crop=face' }
+//   ];
 
-  const handleNameCancel = () => {
+  // Event handlers
+  const handleNameCancel = (): void => {
     setTempName(userName);
     setIsEditingName(false);
   };
 
   const handleNameSave = async () => {
     if (!userProfile) return;
+
+    // Make API Call
     const response = await ApiService.updateUsername(tempName);
-    if (response.error) {
-      alert('Error updating username');
-    } else {
-      alert('Username updated');
-      setUserName(tempName);
-      setUserProfile({ ...userProfile, username: tempName });
-      setIsEditingName(false);
+
+    if(response.error){
+        alert('Error updating display name');
+        console.log(response.error);
+    }else{
+        alert('Updated User Name');
+        setUserName(tempName);
+        setUserProfile({ ...userProfile, username: tempName });
+        setIsEditingName(false);        
     }
   };
 
@@ -122,7 +119,7 @@ const ProfilePage: React.FC = () => {
     setIsEditingBio(false);
   };
 
-  const handleBioCancel = () => {
+  const handleBioCancel = (): void => {
     setTempBio(bio);
     setIsEditingBio(false);
   };
@@ -131,44 +128,55 @@ const ProfilePage: React.FC = () => {
 
   return (
     <Layout>
-      <section style={styles.container}>
-        <Header
-          username={userProfile.username}
-          onSettingsClick={() => {
-            if (isOwnProfile) setShowSettings(true);
-          }}
+        <section style={styles.container}>
+        <Header 
+            username={''}
+            onSettingsClick={() => setShowSettings(true)}
         />
 
-        <ProfileSection
-          userProfile={userProfile}
-          isEditingBio={isEditingBio}
-          tempBio={tempBio}
-          setTempBio={setTempBio}
-          onEditBio={() => setIsEditingBio(true)}
-          onSaveBio={handleBioSave}
-          onCancelBio={handleBioCancel}
-          onFollowersClick={() => setShowFollowers(true)}
-          onFollowingClick={() => setShowFollowing(true)}
-          isOwnProfile={isOwnProfile}
-          onFollowClick={handleFollowToggle}
+        <ProfileSection 
+            userProfile={userProfile}
+            isEditingBio={isEditingBio}
+            tempBio={tempBio}
+            setTempBio={setTempBio}
+            onEditBio={() => setIsEditingBio(true)}
+            onSaveBio={handleBioSave}
+            onCancelBio={handleBioCancel}
+            onFollowersClick={() => setShowFollowers(true)}
+            onFollowingClick={() => setShowFollowing(true)}
         />
 
-        <PostsGrid posts={posts?.posts || []} />
+        <PostsGrid 
+            posts={posts?.posts || []} 
+        />
 
-        <Modal isOpen={showFollowers} onClose={() => setShowFollowers(false)} title="Followers">
-          {followers.map((user) => (
+        {/* Modals */}
+        <Modal 
+            isOpen={showFollowers} 
+            onClose={() => setShowFollowers(false)}
+            title="Followers"
+        >
+            {followers.map((user) => (
             <UserListItem key={user.id} user={user} showFollowButton />
-          ))}
+            ))}
         </Modal>
 
-        <Modal isOpen={showFollowing} onClose={() => setShowFollowing(false)} title="Following">
-          {following.map((user) => (
+        <Modal 
+            isOpen={showFollowing} 
+            onClose={() => setShowFollowing(false)}
+            title="Following"
+        >
+            {following.map((user) => (
             <UserListItem key={user.id} user={user} />
-          ))}
+            ))}
         </Modal>
 
-        <Modal isOpen={showSettings} onClose={() => setShowSettings(false)} title="Settings">
-          <SettingsModal
+        <Modal 
+            isOpen={showSettings} 
+            onClose={() => setShowSettings(false)}
+            title="Settings"
+        >
+            <SettingsModal 
             displayName={userName}
             isEditingName={isEditingName}
             tempName={tempName}
@@ -176,9 +184,9 @@ const ProfilePage: React.FC = () => {
             onEditName={() => setIsEditingName(true)}
             onSaveName={handleNameSave}
             onCancelName={handleNameCancel}
-          />
+            />
         </Modal>
-      </section>
+        </section>
     </Layout>
   );
 };

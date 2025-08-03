@@ -23,7 +23,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         transition: 'transform 0.2s ease',
       }}
       onClick={() => {
-        router.push(`/Account?user=${user.username}`)
+        router.push(`/Discover?user=${user.username}`);
       }}
     >
       <img
