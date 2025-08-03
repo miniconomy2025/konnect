@@ -13,8 +13,6 @@ import followRoutes from './routes/follow.js';
 import inboxRoutes from './routes/inbox.js';
 import postRoutes from './routes/posts.js';
 import searchRoutes from './routes/search.ts';
-import dotenv from 'dotenv';
-import { mongoConnect } from "./config/mongoose.js";
 import userRoutes from './routes/users.js';
 import webfingerRoutes from './routes/webfinger.js';
 
