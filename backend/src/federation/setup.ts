@@ -6,6 +6,8 @@ import { createInboxDispatcher } from "./dispatchers/inbox.ts";
 import { createObjectDispatchers } from "./dispatchers/objects.ts";
 import { addFollowListener } from "./listeners/follow.ts";
 import { addCreateListener } from "./listeners/create.ts";
+import { addDeleteListener } from "./listeners/delete.ts";
+import { addUndoListener } from "./listeners/undo.ts";
 
 const federation = createFederation({
   kv: new MemoryKvStore(),
@@ -23,5 +25,7 @@ const inboxListeners = federation.setInboxListeners("/users/{identifier}/inbox",
 
 addFollowListener(inboxListeners);
 addCreateListener(inboxListeners);
+addDeleteListener(inboxListeners);
+addUndoListener(inboxListeners);
 
 export default federation;

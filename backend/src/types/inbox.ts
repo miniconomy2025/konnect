@@ -1,4 +1,4 @@
-export const activityTypes = ['Follow', 'Create'] as const;
+export const activityTypes = ['Follow', 'Create', 'Delete', 'Undo'] as const;
 export type ActivityType = typeof activityTypes[number];
 
 export interface CreateActivityObject {
