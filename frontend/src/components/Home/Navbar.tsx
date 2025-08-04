@@ -31,7 +31,6 @@ const NavBar = () => {
           </section>
         </Link>
 
-
         <Link href="/AddPost" style={styles.link}>
             <div style={styles.link}>
             <section style={styles.navLink} onClick={handleCreatePost}>
@@ -54,19 +53,6 @@ const NavBar = () => {
               Discover
             </section>
           </section>
-        </Link>
-
-        <Link href="/AddPost" style={styles.link}>
-            <div style={styles.link}>
-            <section style={styles.navLink} onClick={handleCreatePost}>
-                <section style={isActive('/AddPost') ? styles.iconWrapperActive : styles.iconWrapper}>
-                <Plus size={24} />
-                </section>
-                <section style={isActive('/AddPost') ? styles.labelActive : styles.label}>
-                Post
-                </section>
-            </section>
-            </div>
         </Link>
         
         <Link href="/Account" style={styles.link}>

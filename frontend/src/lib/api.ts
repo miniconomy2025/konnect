@@ -204,4 +204,42 @@ export class ApiService {
     }
   }
 
+  // Following
+    static async followUser(user: String): Promise<ApiResponse<any>> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/follows/follow`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ 'targetUserActorID': user }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
+    static async unfollowUser(user: String): Promise<ApiResponse<any>> {
+        try {
+        const response = await fetch(`${API_BASE_URL}/follows/unfollow`, {
+            method: 'POST',
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify({ 'targetUserActorID': user }),
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return { data };
+        } catch (error) {
+        return { error: error instanceof Error ? error.message : 'Unknown error' };
+        }
+    }
 } 

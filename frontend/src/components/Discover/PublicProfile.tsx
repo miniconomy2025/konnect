@@ -17,12 +17,12 @@ const PublicProfileView: React.FC<PublicProfileProps> = ({ username, onBack }) =
   const [userProfile, setUserProfile] = useState<UserProfile | undefined>();
   const [posts, setPosts] = useState<PostsResponse | undefined>();
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const [actorId, setActorId] = useState<string>();
 
   useEffect(() => {
     const fetchUserData = async () => {
       const { data } = await ApiService.getUserByUsername(username);
       const postRes = await ApiService.getUserPosts(username);
-
       if (data) {
         setUserProfile({
           username: data.username,
@@ -36,6 +36,7 @@ const PublicProfileView: React.FC<PublicProfileProps> = ({ username, onBack }) =
         });
         setIsFollowing(data.isFollowing);
         setPosts(postRes.data);
+        setActorId(data.activityPubId);
       }
     };
 
@@ -43,15 +44,14 @@ const PublicProfileView: React.FC<PublicProfileProps> = ({ username, onBack }) =
   }, [username]);
 
   const toggleFollow = async () => {
-    // if (!userProfile) return;
-    // if (isFollowing) {
-    //   await ApiService.unfollowUser(username);
-    //   setIsFollowing(false);
-    // } else {
-    //   await ApiService.followUser(username);
-    //   setIsFollowing(true);
-    // }
-    console.log('follow')
+    if (!userProfile || !actorId) return;
+    if (isFollowing) {
+        const response = await ApiService.unfollowUser(actorId);
+        setIsFollowing(response.data.following);
+    } else {
+        const response = await ApiService.followUser(actorId);
+        setIsFollowing(response.data.following);
+    }
   };
 
   if (!userProfile) return <p>Loading...</p>;
