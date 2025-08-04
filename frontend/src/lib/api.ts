@@ -1,3 +1,4 @@
+import { DiscoverSearchResponse } from "@/types/discover";
 import { GetPostsResponse, PostsResponse } from "@/types/post";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -167,4 +168,40 @@ export class ApiService {
       return { error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
+
+  // Search API
+  static async searchUsers(query: string, page: number = 1, limit: number = 10): Promise<ApiResponse<DiscoverSearchResponse>> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/search/users?q=${query}&page=${page}&limit=${limit}`, {
+        headers: this.getAuthHeaders(),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
+  static async getUserByUsername(username: string): Promise<ApiResponse<any>> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${username}`, {
+        headers: this.getAuthHeaders(),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
 } 
