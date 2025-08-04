@@ -1,3 +1,4 @@
+import { FollowsResponse } from "@/types/account";
 import { DiscoverSearchResponse } from "@/types/discover";
 import { GetPostsResponse, PostsResponse } from "@/types/post";
 
@@ -242,4 +243,21 @@ export class ApiService {
         return { error: error instanceof Error ? error.message : 'Unknown error' };
         }
     }
+
+  static async getFollowers(username: string, page: number = 1, limit: number = 10): Promise<ApiResponse<FollowsResponse>> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/follows/users/${username}?page=${page}&limit=${limit}`, {
+        headers: this.getAuthHeaders(),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
 } 

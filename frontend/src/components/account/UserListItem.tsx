@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { styles } from '@/styles/account';
-import { User } from '@/types/account';
+import { Actor } from '@/types/account';
 
 interface UserListItemProps {
-  user: User;
+  user: Actor;
   showFollowButton?: boolean;
 }
 
@@ -13,7 +13,7 @@ const UserListItem: React.FC<UserListItemProps> = ({ user, showFollowButton = fa
   return (
     <section style={styles.userListItem}>
       <section style={styles.userInfo}>
-        <img src={user.avatar} alt={user.displayName} style={styles.userAvatar} />
+        <img src={user.avatarUrl} alt={user.displayName} style={styles.userAvatar} />
         <section style={styles.userDetails}>
           <p style={styles.userUsername}>{user.username}</p>
           <p style={styles.userDisplayName}>{user.displayName}</p>

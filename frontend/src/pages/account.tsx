@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { styles } from '@/styles/account';
-import { UserProfile, User } from '@/types/account';
+import { UserProfile, User, Actor } from '@/types/account';
 import { PostsResponse } from '@/types/post';
 import  Header  from '@/components/Account/Header';
 import ProfileSection from '@/components/Account/ProfileSection';
@@ -24,8 +24,8 @@ const ProfilePage: React.FC = () => {
   const [userName, setUserName] = useState<string>('');
 
   const [userProfile, setUserProfile] = useState<UserProfile | undefined>(undefined);
-  const [followers, setFollowers] = useState<User[]>([]);
-  const [following, setFollowing] = useState<User[]>([]);
+  const [followers, setFollowers] = useState<Actor[]>([]);
+  const [following, setFollowing] = useState<Actor[]>([]);
   const [posts, setPosts] = useState<PostsResponse | undefined>(undefined);
 
 
@@ -48,12 +48,22 @@ const ProfilePage: React.FC = () => {
                 return;
             }
 
-            const userPosts = (await ApiService.getUserPosts(data.username)).data; // adapt based on actual API
-            console.log(userPosts);
+            const userPosts = (await ApiService.getUserPosts(data.username)).data;
             setPosts(userPosts);
 
-            // const userFollowers = data.followers || [];
-            // const userFollowing = data.following || [];
+            const userFollows = (await ApiService.getFollowers(data.username)).data;
+            
+
+            if(userFollows){
+                const userFollowers = userFollows.followers || [];
+                const userFollowing = userFollows.following || []; 
+                
+                const followers: Actor[] = userFollowers.map(user => user.actor);
+                const following: Actor[] = userFollowing.map(user => user.object);
+                setFollowing(following);
+                setFollowers(followers);
+            }
+
 
             setUserProfile({
                 username: data.username,
@@ -65,10 +75,6 @@ const ProfilePage: React.FC = () => {
                 followingCount: data.followingCount,
                 isFollowing: false, // server might give this too
             });
-
-            // setFollowers(userFollowers);
-            // setFollowing(userFollowing);
-            // setPosts(userPosts);
             setDisplayName(data.displayName);
             setUserName(data.username);
             setTempName(data.username);
@@ -157,7 +163,7 @@ const ProfilePage: React.FC = () => {
             title="Followers"
         >
             {followers.map((user) => (
-            <UserListItem key={user.id} user={user} showFollowButton />
+            <UserListItem key={user._id} user={user} showFollowButton />
             ))}
         </Modal>
 
@@ -167,7 +173,7 @@ const ProfilePage: React.FC = () => {
             title="Following"
         >
             {following.map((user) => (
-            <UserListItem key={user.id} user={user} />
+            <UserListItem key={user._id} user={user} />
             ))}
         </Modal>
 
