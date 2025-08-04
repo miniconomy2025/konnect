@@ -114,26 +114,26 @@ export class PostService {
   }
 
   async deletePost(postId: string, userId: string, federationContext?: any): Promise<boolean> {
-  const post = await Post.findOne({ _id: postId, author: userId });
-  if (!post) {
-    return false;
+    const post = await Post.findOne({ _id: postId, author: userId });
+    if (!post) {
+      return false;
+    }
+
+    const author = await User.findById(userId);
+
+    if (author && federationContext) {
+      await this.activityService.publishDeleteActivity(post, author, federationContext);
+    }
+
+    try {
+      await this.s3Service.deleteImage(post.mediaUrl);
+    } catch (error) {
+      console.error('Failed to delete image from S3:', error);
+    }
+
+    await Post.findByIdAndDelete(postId);
+    return true;
   }
-
-  const author = await User.findById(userId);
-
-  if (author && federationContext) {
-    await this.activityService.publishDeleteActivity(post, author, federationContext);
-  }
-
-  try {
-    await this.s3Service.deleteImage(post.mediaUrl);
-  } catch (error) {
-    console.error('Failed to delete image from S3:', error);
-  }
-
-  await Post.findByIdAndDelete(postId);
-  return true;
-}
 
   async uploadImage(file: Buffer, mimeType: string, userId: string): Promise<string> {
     if (!this.s3Service.validateImageType(mimeType)) {
