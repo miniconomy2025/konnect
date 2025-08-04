@@ -4,6 +4,7 @@ resource "aws_instance" "this" {
   instance_type = "t3.micro"
   subnet_id     = element(var.subnet_ids, count.index % length(var.subnet_ids))
   vpc_security_group_ids = [var.security_group_id]
+  iam_instance_profile = var.instance_profile_name
   tags = {
     Name = "${var.project_name}-ec2-${count.index}"
   }

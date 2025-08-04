@@ -58,3 +58,9 @@ variable "budget_emails" {
   description = "List of email addresses to receive AWS budget alerts"
   type        = list(string)
 }
+
+# GitHub variables
+variable "github_repository" {
+  description = "GitHub repository in format owner/repo"
+  type        = string
+}

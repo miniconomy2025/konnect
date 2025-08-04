@@ -19,6 +19,7 @@ module "ec2" {
   aws_region        = var.aws_region
   security_group_id = module.vpc.default_security_group_id
   key_name          = var.key_name
+  instance_profile_name = module.iam.ec2_instance_profile_name
 }
 
 module "budget" {
@@ -37,4 +38,10 @@ module "alb" {
   project_name = var.project_name
   subnet_ids = module.vpc.public_subnet_ids
   vpc_id     = module.vpc.vpc_id
+}
+
+module "iam" {
+  source = "./modules/iam"
+  github_repository = var.github_repository
+  s3_bucket_name = module.s3.bucket_name
 }
