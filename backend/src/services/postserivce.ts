@@ -257,7 +257,7 @@ export class PostService {
   }
 
   async likePost(postId: string, userId: string): Promise<{ success: boolean; likesCount: number; isLiked: boolean }> {
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate('author', 'username displayName avatarUrl');
     if (!post) {
       throw new Error('Post not found');
     }
@@ -270,9 +270,13 @@ export class PostService {
       post.likes.push(userIdObj);
       post.likesCount++;
       isLiked = true;
+      // Increment like count in Redis
+      await this.redisService.incrementLikes(postId);
     } else {
       post.likes.splice(likeIndex, 1);
       post.likesCount--;
+      // Decrement like count in Redis
+      await this.redisService.decrementLikes(postId);
     }
 
     await post.save();
@@ -282,11 +286,70 @@ export class PostService {
       await this.activityService.publishLikeActivity(post, user, isLiked);
     }
 
+    // Update post cache with new like status
+    const postObj = post.toObject();
+    const postToCache: Partial<IPost> = {
+      _id: post._id as mongoose.Types.ObjectId,
+      author: postObj.author,
+      caption: postObj.caption,
+      mediaUrl: postObj.mediaUrl,
+      mediaType: postObj.mediaType,
+      activityId: postObj.activityId,
+      likes: postObj.likes,
+      likesCount: postObj.likesCount,
+      createdAt: postObj.createdAt,
+      updatedAt: postObj.updatedAt,
+      isLiked
+    };
+    await this.redisService.cachePost(postId, this.postToCache(postToCache as IPost));
+
+    // Update the post in all relevant feed caches
+    const feedCaches = [
+      'public', // Public feed
+      postObj.author.toString(), // Author's feed
+    ];
+
+    // Update the post in each feed cache if it exists
+    await Promise.all(
+      feedCaches.map(async (feedId) => {
+        const feedPosts = await this.redisService.getFeedPosts(feedId);
+        if (feedPosts.includes(postId)) {
+          // If the post is in this feed cache, update the cache with the same post order
+          await this.redisService.cacheFeedPosts(
+            feedId,
+            feedPosts
+          );
+        }
+      })
+    );
+
     return {
       success: true,
       likesCount: post.likesCount,
       isLiked
     };
+  }
+
+  private async updatePostInFeedCaches(post: IPost & { _id: mongoose.Types.ObjectId }): Promise<void> {
+    // Get all feed caches that might contain this post
+    const feedCaches = [
+      'public', // Public feed
+      post.author.toString(), // Author's feed
+    ];
+
+    // Update the post in each feed cache if it exists
+    await Promise.all(
+      feedCaches.map(async (feedId) => {
+        const feedPosts = await this.redisService.getFeedPosts(feedId);
+        if (feedPosts.includes(post._id.toString())) {
+          // If the post is in this feed cache, update the cache with the same post order
+          await this.redisService.cacheFeedPosts(
+            feedId,
+            feedPosts
+          );
+        }
+      })
+    );
   }
 
   async deletePost(postId: string, userId: string): Promise<boolean> {
