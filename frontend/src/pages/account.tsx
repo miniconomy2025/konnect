@@ -85,17 +85,6 @@ const ProfilePage: React.FC = () => {
         fetchData();
     }, []);
 
-//   const followers: User[] = [
-//     { id: 1, username: 'alice_photo', displayName: 'Alice Johnson', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b1e0?w=50&h=50&fit=crop&crop=face' },
-//     { id: 2, username: 'mike_travels', displayName: 'Mike Wilson', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop&crop=face' },
-//     { id: 3, username: 'sarah_art', displayName: 'Sarah Davis', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=50&h=50&fit=crop&crop=face' }
-//   ];
-
-//   const following: User[] = [
-//     { id: 1, username: 'nature_shots', displayName: 'Nature Photography', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face' },
-//     { id: 2, username: 'urban_explorer', displayName: 'Urban Explorer', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=50&h=50&fit=crop&crop=face' }
-//   ];
-
   // Event handlers
   const handleNameCancel = (): void => {
     setTempName(userName);
@@ -163,7 +152,7 @@ const ProfilePage: React.FC = () => {
             title="Followers"
         >
             {followers.map((user) => (
-            <UserListItem key={user._id} user={user} showFollowButton />
+            <UserListItem key={user._id} user={user} following />
             ))}
         </Modal>
 

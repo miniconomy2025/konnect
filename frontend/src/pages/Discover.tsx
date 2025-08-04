@@ -19,6 +19,13 @@ const DiscoverPage: React.FC = () => {
     const searchParams = useSearchParams();
 
     useEffect(() => {
+        if(!localStorage.getItem('auth_token')){
+            alert('Please Login first!') // TODO: Make nice toast
+            window.location.href = '/Login';
+        }
+    }, []);
+
+    useEffect(() => {
         if(searchParams){
             const user = searchParams.get('user');
             setUsernameParam(user);
