@@ -7,7 +7,7 @@ import express from "express";
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { mongoConnect } from "./config/mongoose.js";
-import federation from "./federation/federation.ts";
+import federation  from "./federation/setup.ts";
 import authRoutes from './routes/auth.js';
 import followRoutes from './routes/follow.js';
 import inboxRoutes from './routes/inbox.js';
@@ -15,6 +15,7 @@ import postRoutes from './routes/posts.js';
 import searchRoutes from './routes/search.ts';
 import userRoutes from './routes/users.js';
 import webfingerRoutes from './routes/webfinger.js';
+import { attachFederationContext } from "./middlewares/federation.ts";
 
 dotenv.config();
 const logger = getLogger("backend");
@@ -57,9 +58,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use('/auth', authRoutes);
-app.use('/posts', postRoutes);
+app.use('/posts', attachFederationContext, postRoutes);
 app.use('/search', searchRoutes);
-app.use('/follows', followRoutes);
+app.use('/follows', attachFederationContext, followRoutes);
 app.use('/inboxes', inboxRoutes);
 
 app.use('', webfingerRoutes);

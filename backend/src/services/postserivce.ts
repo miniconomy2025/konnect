@@ -9,7 +9,7 @@ export class PostService {
   private s3Service = new S3Service();
   private activityService = new ActivityService();
 
-  async createPost(postData: CreatePostData): Promise<IPost> {
+  async createPost(postData: CreatePostData, federationContext?: any): Promise<IPost> {
     const domain = process.env.DOMAIN || 'localhost:8000';
     const protocol = domain.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${domain}`;
@@ -31,8 +31,8 @@ export class PostService {
     const savedPost = await post.save();
     
     const author = await User.findById(postData.authorId);
-    if (author) {
-      await this.activityService.publishCreateActivity(savedPost, author);
+    if (author && federationContext) {
+      await this.activityService.queueCreateActivity(savedPost, author, federationContext);
     }
 
     return await savedPost.populate('author', 'username displayName avatarUrl');

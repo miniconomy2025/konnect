@@ -236,10 +236,8 @@ async persistCreateActivity(activityObject: CreateActivityObject): Promise<IInbo
       });
 
       await externalPost.save();
-      console.log(`Stored external post: ${activityObject.object}`);
       
     } catch (error) {
-      console.error('Error processing external post:', error);
       throw error;
     }
   }

@@ -1,6 +1,5 @@
 import { Create, Image, Note } from "@fedify/fedify";
 import { getLogger } from "@logtape/logtape";
-import federation from "../federation/federation.ts";
 import type { IPost } from "../models/post.ts";
 import type { IUser } from "../models/user.ts";
 import { User } from "../models/user.ts";
@@ -10,13 +9,12 @@ const logger = getLogger("activity");
 
 export class ActivityService {
   
-  async publishCreateActivity(post: IPost, author: IUser): Promise<void> {
+  async queueCreateActivity(post: IPost, author: IUser, federationContext?: any): Promise<void> {
     try {
-      const domain = process.env.DOMAIN || 'localhost:8000';
-      const protocol = domain.includes('localhost') ? 'http' : 'https';
-      const baseUrl = `${protocol}://${domain}`;
-      
-      const ctx = federation.createContext(new URL(baseUrl), {});
+      if (!federationContext) {
+        logger.warn(`No federation context available for post ${post.activityId}, activity will not be delivered`);
+        return;
+      }
 
       const { FollowService } = await import('./followService.ts');
       const { InboxService } = await import('./inboxService.ts');
@@ -52,20 +50,21 @@ export class ActivityService {
           url: new URL(post.mediaUrl),
           mediaType: post.mediaType,
         })],
-        attribution: ctx.getActorUri(author.username),
+        attribution: federationContext.getActorUri(author.username),
       });
 
       const createActivity = new Create({
         id: new URL(`${post.activityId}/activity`),
-        actor: ctx.getActorUri(author.username),
+        actor: federationContext.getActorUri(author.username),
         object: note,
         to: new URL("https://www.w3.org/ns/activitystreams#Public"),
         published: dateToTemporal(post.createdAt),
       });
 
+      // Queue delivery to external followers
       const deliveryPromises = externalFollowers.map(async (follower) => {
         try {
-          await ctx.sendActivity(
+          await federationContext.sendActivity(
             { identifier: author.username },
             {
               id: new URL(follower.actorId),
@@ -73,19 +72,19 @@ export class ActivityService {
             },
             createActivity
           );
-          logger.info(`Sent Create activity to ${follower.actorId} for post ${post.activityId}`);
+          logger.info(`Queued Create activity to ${follower.actorId} for post ${post.activityId}`);
         } catch (error) {
-          logger.error(`Failed to send Create activity to ${follower.actorId}:`, {
+          logger.error(`Failed to queue Create activity to ${follower.actorId}:`, {
             error: error instanceof Error ? error.message : String(error)
           });
         }
       });
 
       await Promise.allSettled(deliveryPromises);
-      logger.info(`Create activity delivery completed for post ${post.activityId} to ${externalFollowers.length} external followers`);
+      logger.info(`Create activity delivery queued for post ${post.activityId} to ${externalFollowers.length} external followers`);
       
     } catch (error) {
-      logger.error("Failed to publish create activity:", {
+      logger.error("Failed to queue create activity:", {
         error: error instanceof Error ? error.message : String(error)
       });
     }
@@ -94,7 +93,7 @@ export class ActivityService {
   async publishLikeActivity(post: IPost, user: IUser, isLike: boolean): Promise<void> {
     try {
       logger.info(`${isLike ? 'Like' : 'Unlike'} activity: ${post.activityId} by ${user.username}`);
-      
+      // TODO: Implement Like/Undo activities when we have proper federation context
     } catch (error) {
       logger.error(`Failed to publish ${isLike ? 'like' : 'unlike'} activity:`, {
         error: error instanceof Error ? error.message : String(error)
@@ -105,7 +104,7 @@ export class ActivityService {
   async publishDeleteActivity(post: IPost, author: IUser): Promise<void> {
     try {
       logger.info(`Delete activity: ${post.activityId} by ${author.username}`);
-      
+      // TODO: Implement Delete activities when we have proper federation context
     } catch (error) {
       logger.error("Failed to publish delete activity:", {
         error: error instanceof Error ? error.message : String(error)
