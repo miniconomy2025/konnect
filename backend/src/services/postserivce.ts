@@ -352,7 +352,7 @@ export class PostService {
     );
   }
 
-  async deletePost(postId: string, userId: string): Promise<boolean> {
+  async deletePost(postId: string, userId: string, federationContext?: any): Promise<boolean> {
     const post = await Post.findOne({ _id: postId, author: userId });
     if (!post) {
       return false;
@@ -360,14 +360,14 @@ export class PostService {
 
     const author = await User.findById(userId);
 
+    if (author && federationContext) {
+      await this.activityService.publishDeleteActivity(post, author, federationContext);
+    }
+
     try {
       await this.s3Service.deleteImage(post.mediaUrl);
     } catch (error) {
       console.error('Failed to delete image from S3:', error);
-    }
-
-    if (author) {
-      await this.activityService.publishDeleteActivity(post, author);
     }
 
     await Post.findByIdAndDelete(postId);

@@ -66,11 +66,16 @@ router.post('/follow', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Already following this user' });
     }
 
+    const domain = process.env.DOMAIN || 'localhost:8000';
+    const protocol = domain.includes('localhost') ? 'http' : 'https';
+    const outgoingActivityId = `${protocol}://${domain}/activities/follow-${Date.now()}`;
+
     const followActivity = await inboxService.persistInboxActivityObject({
       type: 'Follow',
       actor: currentUser.actorId,
       object: targetUser.actorId,
-      summary: `${currentUser.displayName} followed ${targetUser.displayName}`
+      summary: `${currentUser.displayName} followed ${targetUser.displayName}`,
+      activityId: outgoingActivityId
     });
 
     if (!targetUser.isLocal) {
@@ -79,7 +84,7 @@ router.post('/follow', requireAuth, async (req, res) => {
         
         if (federationContext) {
           const followActivityPub = new Follow({
-            id: new URL(followActivity.object.activityId),
+            id: new URL(outgoingActivityId),
             actor: new URL(currentUser.actorId),
             object: new URL(targetUser.actorId),
           });
@@ -146,8 +151,11 @@ router.post('/unfollow', requireAuth, async (req, res) => {
         const federationContext = (req as any).federationContext;
         
         if (federationContext) {
+          const domain = process.env.DOMAIN || 'localhost:8000';
+          const protocol = domain.includes('localhost') ? 'http' : 'https';
+          
           const undoActivity = new Undo({
-            id: new URL(`${process.env.DOMAIN || 'localhost:8000'}/activities/${Date.now()}`),
+            id: new URL(`${protocol}://${domain}/activities/undo-${Date.now()}`),
             actor: new URL(currentUser.actorId),
             object: new Follow({
               id: new URL(existingFollow.activity.object.activityId),

@@ -1,4 +1,4 @@
-import { Create, Image, Note } from "@fedify/fedify";
+import { Create, Delete, Image, Note } from "@fedify/fedify";
 import { getLogger } from "@logtape/logtape";
 import type { IPost } from "../models/post.ts";
 import type { IUser } from "../models/user.ts";
@@ -61,7 +61,6 @@ export class ActivityService {
         published: dateToTemporal(post.createdAt),
       });
 
-      // Queue delivery to external followers
       const deliveryPromises = externalFollowers.map(async (follower) => {
         try {
           await federationContext.sendActivity(
@@ -89,7 +88,7 @@ export class ActivityService {
       });
     }
   }
-
+  
   async publishLikeActivity(post: IPost, user: IUser, isLike: boolean): Promise<void> {
     try {
       logger.info(`${isLike ? 'Like' : 'Unlike'} activity: ${post.activityId} by ${user.username}`);
@@ -101,10 +100,71 @@ export class ActivityService {
     }
   }
 
-  async publishDeleteActivity(post: IPost, author: IUser): Promise<void> {
+  async publishDeleteActivity(post: IPost, author: IUser, federationContext?: any): Promise<void> {
     try {
-      logger.info(`Delete activity: ${post.activityId} by ${author.username}`);
-      // TODO: Implement Delete activities when we have proper federation context
+      if (!federationContext) {
+        logger.warn(`No federation context available for post ${post.activityId}, delete activity will not be delivered`);
+        return;
+      }
+
+      const { FollowService } = await import('./followService.ts');
+      const { InboxService } = await import('./inboxService.ts');
+      const { UserService } = await import('./userService.ts');
+      
+      const userService = new UserService();
+      const inboxService = new InboxService();
+      const followService = new FollowService(userService, inboxService);
+
+      const followerActorIds = await followService.getFollowerActorIds(author.actorId);
+      
+      if (followerActorIds.length === 0) {
+        logger.info(`No followers to send Delete activity for post ${post.activityId}`);
+        return;
+      }
+
+      const externalFollowers = await User.find({
+        actorId: { $in: followerActorIds },
+        isLocal: false
+      });
+
+      if (externalFollowers.length === 0) {
+        logger.info(`No external followers to send Delete activity for post ${post.activityId}`);
+        return;
+      }
+
+      const domain = process.env.DOMAIN || 'localhost:8000';
+      const protocol = domain.includes('localhost') ? 'http' : 'https';
+      const deleteActivityId = `${protocol}://${domain}/activities/delete-${Date.now()}`;
+
+      const deleteActivity = new Delete({
+        id: new URL(deleteActivityId),
+        actor: federationContext.getActorUri(author.username),
+        object: new URL(post.activityId),
+        to: new URL("https://www.w3.org/ns/activitystreams#Public"),
+        published: dateToTemporal(new Date()),
+      });
+
+      const deliveryPromises = externalFollowers.map(async (follower) => {
+        try {
+          await federationContext.sendActivity(
+            { identifier: author.username },
+            {
+              id: new URL(follower.actorId),
+              inboxId: new URL(follower.inboxUrl)
+            },
+            deleteActivity
+          );
+          logger.info(`Queued Delete activity to ${follower.actorId} for post ${post.activityId}`);
+        } catch (error) {
+          logger.error(`Failed to queue Delete activity to ${follower.actorId}:`, {
+            error: error instanceof Error ? error.message : String(error)
+          });
+        }
+      });
+
+      await Promise.allSettled(deliveryPromises);
+      logger.info(`Delete activity delivery queued for post ${post.activityId} to ${externalFollowers.length} external followers`);
+      
     } catch (error) {
       logger.error("Failed to publish delete activity:", {
         error: error instanceof Error ? error.message : String(error)
