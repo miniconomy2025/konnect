@@ -1,15 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { Home, User, Search } from 'lucide-react';
+import { Home, User, Search, Plus } from 'lucide-react';
 import { styles } from '@/styles/navbar';
+import { usePathname, useRouter } from 'next/navigation';
 
 const NavBar = () => {
   const router = useRouter();
+  const pathname = usePathname();
 
   const isActive = (path: string) => {
-    return router.pathname === path;
+    return pathname === path;
+  };
+
+  const handleCreatePost = () => {
+    router.push('/AddPost');
   };
 
   return (
@@ -37,12 +42,25 @@ const NavBar = () => {
           </section>
         </Link>
 
+        <Link href="/AddPost" style={styles.link}>
+            <div style={styles.link}>
+            <section style={styles.navLink} onClick={handleCreatePost}>
+                <section style={isActive('/AddPost') ? styles.iconWrapperActive : styles.iconWrapper}>
+                <Plus size={24} />
+                </section>
+                <section style={isActive('/AddPost') ? styles.labelActive : styles.label}>
+                Post
+                </section>
+            </section>
+            </div>
+        </Link>
+        
         <Link href="/Account" style={styles.link}>
           <section style={styles.navLink}>
-            <section style={isActive('/Account') ? styles.iconWrapperActive : styles.iconWrapper}>
+            <section style={isActive('/account') ? styles.iconWrapperActive : styles.iconWrapper}>
               <User size={24} />
             </section>
-            <section style={isActive('/Account') ? styles.labelActive : styles.label}>
+            <section style={isActive('/account') ? styles.labelActive : styles.label}>
               Account
             </section>
           </section>

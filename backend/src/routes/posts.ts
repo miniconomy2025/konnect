@@ -44,19 +44,21 @@ router.post('/', requireAuth, upload.single('image'), async (req, res) => {
     if (caption.length > 2200) {
       return res.status(400).json({ error: 'Caption must be 2200 characters or less' });
     }
-
+    
     const mediaUrl = await postService.uploadImage(
       req.file.buffer,
       req.file.mimetype,
       req.user!._id!.toString()
     );
 
+    const federationContext = (req as any).federationContext;
+
     const post = await postService.createPost({
       authorId: req.user!._id!.toString(),
       caption,
       mediaUrl,
       mediaType: req.file.mimetype,
-    });
+    }, federationContext);
 
     const populatedPost = await postService.getPostById(post._id.toString());
     
@@ -146,70 +148,25 @@ router.get('/', optionalAuth, async (req, res) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
-    const includeExternal = req.query.includeExternal === 'true';
-    const feedType = req.query.type as string || 'local';
+    const feedType = req.query.type as string || 'timeline';
 
-    if (includeExternal || feedType === 'mixed') {
-      const localPosts = await postService.getFeedPosts(
-        req.user?._id?.toString() || '',
-        page,
-        Math.ceil(limit / 2)
-      );
+    const { FeedService } = await import('../services/feedService.js');
+    const feedService = new FeedService();
 
-      // TODO: When follows are implemented, get external posts
-      // const followedUsers = await userService.getFollowedExternalUsers(req.user._id);
-      // const externalPostsPromises = followedUsers.map(user => 
-      //   externalPostService.getUserPosts(user.username, user.domain, Math.ceil(limit / 2))
-      // );
-      // const externalPostsArrays = await Promise.all(externalPostsPromises);
-      // const externalPosts = externalPostsArrays.flat();
-
-      const externalPosts: any[] = []; 
-
-      const unifiedPosts = PostNormalizationService.mixAndSortPosts(
-        localPosts,
-        externalPosts,
-        req.user?._id?.toString()
-      );
-
-      let filteredPosts = unifiedPosts;
-
-      const finalPosts = filteredPosts.slice(0, limit);
-
-      return res.json({
-        posts: finalPosts,
-        page,
-        limit,
-        hasMore: filteredPosts.length > limit,
-        sources: {
-          local: localPosts.length,
-          external: externalPosts.length
-        },
-        type: 'mixed'
-      });
+    let result;
+    if (feedType === 'public' || !req.user) {
+      result = await feedService.getPublicFeed(page, limit, req.user?._id?.toString());
+    } else {
+      result = await feedService.getTimelineFeed(req.user._id!.toString(), page, limit);
     }
 
-    const posts = await postService.getFeedPosts(
-      req.user?._id?.toString() || '',
-      page,
-      limit
-    );
-    
-    let unifiedPosts = PostNormalizationService.localPostsToUnified(
-      posts,
-      req.user?._id?.toString()
-    );
-
     res.json({
-      posts: unifiedPosts,
+      posts: result.posts,
       page,
       limit,
-      hasMore: posts.length === limit,
-      sources: {
-        local: unifiedPosts.length,
-        external: 0
-      },
-      type: 'local'
+      hasMore: result.hasMore,
+      sources: result.sources,
+      type: feedType === 'public' ? 'public' : 'timeline'
     });
   } catch (error) {
     console.error('Get feed error:', error);

@@ -1,6 +1,5 @@
 import { Person } from '@fedify/fedify';
 import { Error } from 'mongoose';
-import federation from '../federation/federation.ts';
 import { User, type IUser } from '../models/user.ts';
 import type { DisplayPersonActor } from '../types/inbox.ts';
 import type { CreateUserData } from '../types/user.js';
@@ -247,24 +246,67 @@ export class UserService {
     };
   }
   
+
   async getRemoteActorDisplay(actorUrl: string): Promise<DisplayPersonActor | undefined> {
-    const ctx = federation.createContext(
-      new URL(actorUrl),
-      {}
-    );
-    const actor = await ctx.lookupObject(new URL(actorUrl));
-    if (!actor) {
-      return undefined
-    } else if (actor instanceof Person) {
-      const user: DisplayPersonActor = {
-        actorId: actorUrl,
-        username: actor.preferredUsername?.toString() || actorUrl,
-        displayName: actor.name?.toString() || actorUrl,
-        avatarUrl: (await actor.getIcon())?.url?.toString() || '',
+    try {
+      // First check if we have this user cached locally
+      const localUser = await this.findByActorId(actorUrl);
+      if (localUser) {
+        return {
+          actorId: localUser.actorId,
+          username: localUser.username,
+          displayName: localUser.displayName,
+          avatarUrl: localUser.avatarUrl || '',
+        };
       }
-      return user;
-    } else {
-      throw new Error(`Actor of type ${typeof actor} not supported`)
+
+      // Fallback: fetch actor data directly via HTTP
+      const response = await fetch(actorUrl, {
+        headers: {
+          'Accept': 'application/activity+json, application/ld+json',
+          'User-Agent': `Konnect/1.0 (${process.env.DOMAIN})`
+        },
+        signal: AbortSignal.timeout(10000)
+      });
+
+      if (!response.ok) {
+        console.warn(`Failed to fetch actor ${actorUrl}: ${response.status}`);
+        return undefined;
+      }
+
+      const actorData = await response.json();
+      
+      if (!actorData.id || !actorData.type) {
+        console.warn(`Invalid actor data for ${actorUrl}`);
+        return undefined;
+      }
+
+      // Extract basic information
+      const username = actorData.preferredUsername || 
+                      actorUrl.split('/').pop() || 
+                      'unknown';
+      
+      const displayName = actorData.name || 
+                         actorData.preferredUsername || 
+                         username;
+
+      let avatarUrl = '';
+      if (actorData.icon?.url) {
+        avatarUrl = actorData.icon.url;
+      } else if (Array.isArray(actorData.icon) && actorData.icon[0]?.url) {
+        avatarUrl = actorData.icon[0].url;
+      }
+
+      return {
+        actorId: actorUrl,
+        username,
+        displayName,
+        avatarUrl,
+      };
+      
+    } catch (error) {
+      console.error(`Error looking up remote actor ${actorUrl}:`, error);
+      return undefined;
     }
   }
 }

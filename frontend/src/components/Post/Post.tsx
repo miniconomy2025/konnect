@@ -171,6 +171,7 @@ export function Post({ post, children }: PostProps) {
         </section>
       )}
       
+      {post.engagement.canInteract && (
       <footer style={{
         padding: `${Spacing.Medium} ${Spacing.Large}`,
         background: Color.Surface,
@@ -200,8 +201,9 @@ export function Post({ post, children }: PostProps) {
             style={{ width: 20, height: 20 }}
           />
           <strong>{likesCount}</strong>
-        </button>
-      </footer>
+          </button>
+        </footer>
+      )}
     </article>
   );
 }

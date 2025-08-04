@@ -16,6 +16,8 @@ export class InboxService {
     switch (activityObject.type) {
       case 'Follow':
         return this.persistFollowActivity(activityObject);
+      case 'Create':
+        return this.persistCreateActivity(activityObject);
       default:
         throw new Error(`Unknown activity type: ${activityObject.type}`);
     }
@@ -113,6 +115,152 @@ export class InboxService {
     }
     
     return populateRemoteActivityActorReferences(populatedActivity, this.userService);
+  }
+
+  
+async persistCreateActivity(activityObject: CreateActivityObject): Promise<IInboxActivityPopulated> {
+    const localActivityId = new mongoose.Types.ObjectId().toString();
+    const objectId = new mongoose.Types.ObjectId();
+
+    let actorUser = await this.userService.findByActorId(activityObject.actor);
+    
+    if (!actorUser) {
+      const remoteActor = await this.userService.getRemoteActorDisplay(activityObject.actor);
+      if (!remoteActor) {
+        throw new Error('Actor not found for Create activity');
+      }
+    }
+
+    const inboxId = actorUser ? 
+      `${actorUser.actorId}/inbox` : 
+      `${this.baseUrl}/shared/inbox`;
+    const inboxActivityId = `${this.baseUrl}/activities/${localActivityId}`;
+
+    if (activityObject.activityId) {
+      const existingActivity = await InboxActivity.findOne({
+        'object.origin': activityObject.activityId
+      });
+      if (existingActivity) {
+        throw new Error('Activity already exists');
+      }
+    }
+
+    try {
+      await this.processAndStoreExternalPost(activityObject);
+    } catch (error) {
+      console.warn('Failed to process external post content:', error);
+    }
+
+    const inboxActivity = new InboxActivity({
+      inboxId: inboxId,
+      object: {
+        _id: objectId,
+        type: activityObject.type,
+        summary: activityObject.summary,
+        actor: {
+          id: activityObject.actor,
+          ref: actorUser ? actorUser._id : undefined
+        },
+        object: {
+          id: activityObject.object,
+          ref: null 
+        },
+        target: activityObject.target,
+        origin: activityObject.activityId,
+        activityId: inboxActivityId,
+      }
+    });
+    
+    const savedActivity = await inboxActivity.save();
+    
+    const populatedActivity = await InboxActivity.findOne({ _id: savedActivity._id })
+      .populate([
+        { path: 'object.actor.ref', select: 'username displayName avatarUrl actorId' },
+        { path: 'object.object.ref', select: 'username displayName avatarUrl actorId' }
+      ])
+      .lean();
+    
+    if (!populatedActivity) {
+      throw new Error('Failed to populate activity after saving');
+    }
+    
+    return populateRemoteActivityActorReferences(populatedActivity, this.userService);
+  }
+
+  private async processAndStoreExternalPost(activityObject: CreateActivityObject): Promise<void> {
+    try {
+      const { ExternalPost } = await import('../models/externalPost.js');
+      const { PostParser } = await import('./postParser.js');
+      
+      const postData = await this.fetchActivityPubObject(activityObject.object);
+      if (!postData) {
+        console.warn(`Could not fetch post object: ${activityObject.object}`);
+        return;
+      }
+
+      const parsedPost = PostParser.parsePost(postData);
+      if (!parsedPost || !PostParser.validatePost(parsedPost)) {
+        console.warn(`Failed to parse post: ${activityObject.object}`);
+        return;
+      }
+
+      const existingPost = await ExternalPost.findOne({ 
+        objectId: activityObject.object 
+      });
+      
+      if (existingPost) {
+        console.log(`External post already exists: ${activityObject.object}`);
+        return;
+      }
+
+      const externalPost = new ExternalPost({
+        activityId: activityObject.activityId || parsedPost.id,
+        actorId: activityObject.actor,
+        objectId: activityObject.object,
+        content: parsedPost.content,
+        contentText: parsedPost.contentText,
+        summary: parsedPost.summary,
+        published: parsedPost.published,
+        updated: parsedPost.updated,
+        url: parsedPost.url,
+        inReplyTo: parsedPost.inReplyTo,
+        attachments: parsedPost.attachments,
+        mentions: parsedPost.mentions,
+        tags: parsedPost.tags,
+        to: parsedPost.to,
+        cc: parsedPost.cc,
+        likesCount: parsedPost.likes || 0,
+        sharesCount: parsedPost.shares || 0,
+        repliesCount: parsedPost.replies || 0,
+        platformType: parsedPost.platformType
+      });
+
+      await externalPost.save();
+      
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  private async fetchActivityPubObject(url: string): Promise<any> {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/activity+json, application/ld+json',
+          'User-Agent': `Konnect/1.0 (${process.env.DOMAIN})`
+        },
+        signal: AbortSignal.timeout(10000)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${url}: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.warn(`Failed to fetch ActivityPub object ${url}:`, error);
+      return null;
+    }
   }
   
   async defaultActivitySummary(type: string, actorUrl: string, objectUrl: string): Promise<string | undefined> {

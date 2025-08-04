@@ -1,5 +1,7 @@
+import { Follow, Undo } from '@fedify/fedify';
 import { getLogger } from '@logtape/logtape';
 import { Router } from 'express';
+import { requireAuth } from '../middlewares/auth.ts';
 import { blockFederationHeaders } from '../middlewares/blockFederationHeaders.ts';
 import { FollowService } from '../services/followService.ts';
 import { InboxService } from '../services/inboxService.ts';
@@ -10,7 +12,6 @@ const userService = new UserService();
 const inboxService = new InboxService();
 const followService = new FollowService(userService, inboxService);
 const logger = getLogger("follow");
-
 
 router.get('/users/:username', blockFederationHeaders, async (req, res) => {
   try {
@@ -33,8 +34,181 @@ router.get('/users/:username', blockFederationHeaders, async (req, res) => {
       limit,
     });
   } catch (error) {
-    logger.error('Get follow error: ', {error});
-    return res.status(500).json({ error: 'Failed to fetch follows', message: (error as Error).message });
+    logger.error('Get follow error: ', { error });
+    return res.status(500).json({ error: 'Failed to fetch follows' });
+  }
+});
+
+router.post('/follow', requireAuth, async (req, res) => {
+  try {
+    const { targetUserActorID } = req.body;
+    const currentUser = req.user!;
+
+    if (!targetUserActorID) {
+      return res.status(400).json({ error: 'targetUserId is required' });
+    }
+
+    if (targetUserActorID === currentUser.actorId.toString()) {
+      return res.status(400).json({ error: 'Cannot follow yourself' });
+    }
+
+    const targetUser = await userService.findByActorId(targetUserActorID);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const existingFollow = await followService.getPopulatedFollowByActorIdAndObjectId(
+      currentUser.actorId,
+      targetUser.actorId
+    );
+
+    if (existingFollow) {
+      return res.status(400).json({ error: 'Already following this user' });
+    }
+
+    const followActivity = await inboxService.persistInboxActivityObject({
+      type: 'Follow',
+      actor: currentUser.actorId,
+      object: targetUser.actorId,
+      summary: `${currentUser.displayName} followed ${targetUser.displayName}`
+    });
+
+    if (!targetUser.isLocal) {
+      try {
+        const federationContext = (req as any).federationContext;
+        
+        if (federationContext) {
+          const followActivityPub = new Follow({
+            id: new URL(followActivity.object.activityId),
+            actor: new URL(currentUser.actorId),
+            object: new URL(targetUser.actorId),
+          });
+
+          await federationContext.sendActivity(
+            { identifier: currentUser.username },
+            {
+              id: new URL(targetUser.actorId),
+              inboxId: new URL(targetUser.inboxUrl)
+            },
+            followActivityPub
+          );
+          
+          logger.info(`Sent Follow activity to ${targetUser.actorId}`);
+        } else {
+          logger.warn(`No federation context available, Follow activity not sent to ${targetUser.actorId}`);
+        }
+      } catch (federationError) {
+        logger.error(`Failed to send Follow activity to ${targetUser.actorId}:`, {
+          error: federationError instanceof Error ? federationError.message : String(federationError)
+        });
+      }
+    }
+
+    return res.json({ 
+      success: true, 
+      message: 'Successfully followed user',
+      following: true
+    });
+
+  } catch (error) {
+    logger.error('Follow user error:', { error });
+    return res.status(500).json({ error: 'Failed to follow user' });
+  }
+});
+
+router.post('/unfollow', requireAuth, async (req, res) => {
+  try {
+    const { targetUserActorID } = req.body;
+    const currentUser = req.user!;
+
+    if (!targetUserActorID) {
+      return res.status(400).json({ error: 'targetUserActorID is required' });
+    }
+
+    const targetUser = await userService.findByActorId(targetUserActorID);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const existingFollow = await followService.getPopulatedFollowByActorIdAndObjectId(
+      currentUser.actorId,
+      targetUser.actorId
+    );
+
+    if (!existingFollow) {
+      return res.status(400).json({ error: 'Not following this user' });
+    }
+
+    await followService.removeFollow(currentUser.actorId, targetUser.actorId);
+
+    if (!targetUser.isLocal && existingFollow.activity) {
+      try {
+        const federationContext = (req as any).federationContext;
+        
+        if (federationContext) {
+          const undoActivity = new Undo({
+            id: new URL(`${process.env.DOMAIN || 'localhost:8000'}/activities/${Date.now()}`),
+            actor: new URL(currentUser.actorId),
+            object: new Follow({
+              id: new URL(existingFollow.activity.object.activityId),
+              actor: new URL(currentUser.actorId),
+              object: new URL(targetUser.actorId),
+            }),
+          });
+
+          await federationContext.sendActivity(
+            { identifier: currentUser.username },
+            {
+              id: new URL(targetUser.actorId),
+              inboxId: new URL(targetUser.inboxUrl)
+            },
+            undoActivity
+          );
+          
+          logger.info(`Sent Undo activity to ${targetUser.actorId}`);
+        } else {
+          logger.warn(`No federation context available, Undo activity not sent to ${targetUser.actorId}`);
+        }
+      } catch (federationError) {
+        logger.error(`Failed to send Undo activity to ${targetUser.actorId}:`, {
+          error: federationError instanceof Error ? federationError.message : String(federationError)
+        });
+      }
+    }
+
+    return res.json({ 
+      success: true, 
+      message: 'Successfully unfollowed user',
+      following: false
+    });
+
+  } catch (error) {
+    logger.error('Unfollow user error:', { error });
+    return res.status(500).json({ error: 'Failed to unfollow user' });
+  }
+});
+
+router.get('/status/:targetUserId', requireAuth, async (req, res) => {
+  try {
+    const { targetUserId } = req.params;
+    const currentUser = req.user!;
+
+    const targetUser = await userService.findById(targetUserId);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const isFollowing = await followService.isFollowing(currentUser.actorId, targetUser.actorId);
+    const isFollowedBy = await followService.isFollowing(targetUser.actorId, currentUser.actorId);
+
+    return res.json({
+      following: isFollowing,
+      followedBy: isFollowedBy
+    });
+
+  } catch (error) {
+    logger.error('Follow status error:', { error });
+    return res.status(500).json({ error: 'Failed to get follow status' });
   }
 });
 

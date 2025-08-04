@@ -144,8 +144,15 @@ router.put('/username', requireAuth, async (req, res) => {
   }
 });
 
-router.get('/me', requireAuth, (req, res) => {
+router.get('/me', requireAuth, async (req, res) => {
   const user = req.user;
+  
+  const { FollowService } = await import('../services/followService.js');
+  const { InboxService } = await import('../services/inboxService.js');
+  const followService = new FollowService(userService, new InboxService());
+  
+  const { followingCount, followersCount } = await followService.getFollowCounts(user!.actorId);
+  
   res.json({
     id: user!._id?.toString(),
     username: user!.username,
@@ -154,8 +161,8 @@ router.get('/me', requireAuth, (req, res) => {
     bio: user!.bio,
     avatarUrl: user!.avatarUrl,
     actorId: user!.actorId,
-    followersCount: 0,
-    followingCount: 0,
+    followersCount,
+    followingCount,
     postsCount: 0,
   });
 });

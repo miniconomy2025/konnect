@@ -21,7 +21,8 @@ export const styles: { [key: string]: CSSProperties } = {
     margin: '0 auto'
   },
   link: {
-    textDecoration: 'none'
+    textDecoration: 'none',
+    cursor: 'pointer'
   },
   navLink: {
     display: 'flex',
