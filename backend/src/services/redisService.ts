@@ -2,8 +2,9 @@ import { Redis } from 'ioredis';
 
 export class RedisService {
   private client: Redis;
+  private static instance: RedisService;
 
-  constructor() {
+  private constructor() {
     this.client = new Redis({
       host: process.env.REDIS_HOST,
       port: parseInt(process.env.REDIS_PORT || '6379'),
@@ -11,13 +12,21 @@ export class RedisService {
       retryStrategy: (times: number) => {
         const delay = Math.min(times * 50, 2000);
         return delay;
-      }
+      },
+      maxRetriesPerRequest: 3
     });
 
     this.client.on('error', (err: Error) => console.error('Redis Client Error:', err));
     this.client.on('connect', () => console.log('Redis Client Connected'));
   }
 
+  public static getInstance(): RedisService {
+    if (!RedisService.instance) {
+      RedisService.instance = new RedisService();
+    }
+    return RedisService.instance;
+  }
+  
   private isCacheEnabled(): boolean {
     return process.env.ENABLE_REDIS_CACHE === 'true';
   }
