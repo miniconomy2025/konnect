@@ -7,6 +7,7 @@ export function Header() {
     <header
     style={{
       position: 'sticky',
+      height:'2.5rem',
       top: 0,
       zIndex: 200,  
       background: Color.Surface,
@@ -42,27 +43,6 @@ export function Header() {
         gap: Spacing.Medium,
         marginLeft: 'auto',
       }}>
-        <button
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: '50%',
-          border: `1px solid ${Color.Border}`,
-          background: Color.Background,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'all 0.2s ease',
-          overflow: 'hidden',
-          pointerEvents: 'auto',
-        }}>
-          <img 
-            src="/assets/images/missingAvatar.jpg" 
-            alt="User avatar"
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
-        </button>
       </nav>
     </header>
   );

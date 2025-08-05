@@ -1,3 +1,5 @@
+import { FollowsResponse } from "@/types/account";
+import { DiscoverSearchResponse } from "@/types/discover";
 import { GetPostsResponse, PostsResponse } from "@/types/post";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -155,6 +157,97 @@ export class ApiService {
         method: 'POST',
         headers,
         body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
+  // Search API
+  static async searchUsers(query: string, page: number = 1, limit: number = 10): Promise<ApiResponse<DiscoverSearchResponse>> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/search/users?q=${query}&page=${page}&limit=${limit}`, {
+        headers: this.getAuthHeaders(),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
+  static async getUserByUsername(username: string): Promise<ApiResponse<any>> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${username}`, {
+        headers: this.getAuthHeaders(),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
+  // Following
+    static async followUser(user: String): Promise<ApiResponse<any>> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/follows/follow`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ 'targetUserActorID': user }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
+    static async unfollowUser(user: String): Promise<ApiResponse<any>> {
+        try {
+        const response = await fetch(`${API_BASE_URL}/follows/unfollow`, {
+            method: 'POST',
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify({ 'targetUserActorID': user }),
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return { data };
+        } catch (error) {
+        return { error: error instanceof Error ? error.message : 'Unknown error' };
+        }
+    }
+
+  static async getFollowers(username: string, page: number = 1, limit: number = 10): Promise<ApiResponse<FollowsResponse>> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/follows/users/${username}?page=${page}&limit=${limit}`, {
+        headers: this.getAuthHeaders(),
       });
       
       if (!response.ok) {

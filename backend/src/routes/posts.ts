@@ -194,8 +194,9 @@ router.post('/:id/like', requireAuth, async (req, res) => {
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
+    const federationContext = (req as any).federationContext;
     
-    const success = await postService.deletePost(id, req.user!._id!.toString());
+    const success = await postService.deletePost(id, req.user!._id!.toString(), federationContext);
     
     if (!success) {
       return res.status(404).json({ error: 'Post not found or you are not the author' });

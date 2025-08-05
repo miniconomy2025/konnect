@@ -13,6 +13,7 @@ interface BioSectionProps {
   onEditBio: () => void;
   onSaveBio: () => void;
   onCancelBio: () => void;
+  isEditable?: boolean;
 }
 
 const BioSection: React.FC<BioSectionProps> = ({ 
@@ -20,6 +21,7 @@ const BioSection: React.FC<BioSectionProps> = ({
   bio, 
   isEditingBio, 
   tempBio, 
+  isEditable,
   setTempBio, 
   onEditBio, 
   onSaveBio, 
@@ -28,6 +30,7 @@ const BioSection: React.FC<BioSectionProps> = ({
   return (
     <section style={styles.bioSection}>
       <h3 style={styles.bioName}>{displayName}</h3>
+
       {isEditingBio ? (
         <section style={styles.bioEditContainer}>
           <textarea
@@ -48,9 +51,12 @@ const BioSection: React.FC<BioSectionProps> = ({
       ) : (
         <section style={styles.bioEditContainer}>
           <p style={styles.bioText}>{bio}</p>
-          <button onClick={onEditBio} style={styles.editButton}>
-            <Edit2 size={16} />
-          </button>
+
+          {isEditable && (
+            <button onClick={onEditBio} style={styles.editButton}>
+              <Edit2 size={16} />
+            </button>
+          )}
         </section>
       )}
     </section>

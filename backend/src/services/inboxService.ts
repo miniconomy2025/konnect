@@ -18,6 +18,12 @@ export class InboxService {
         return this.persistFollowActivity(activityObject);
       case 'Create':
         return this.persistCreateActivity(activityObject);
+      case 'Delete':
+        return this.persistDeleteActivity(activityObject);
+      case 'Undo':
+        return this.persistUndoActivity(activityObject);
+      case 'Update':
+        return this.persistUpdateActivity(activityObject);
       default:
         throw new Error(`Unknown activity type: ${activityObject.type}`);
     }
@@ -30,17 +36,18 @@ export class InboxService {
     let objectUser = await this.userService.findByActorId(activityObject.object);
     let inboxId: string;
     let inboxActivityId: string;
+    
     if (!objectUser) {
       const remoteActor = await this.userService.getRemoteActorDisplay(activityObject.object);
       if (!remoteActor) {
         throw new Error('User not found. For incoming following activities, the object must be a user of this server or a remote actor.');
       } else {
         inboxId = `${remoteActor.actorId}/inbox`;
-        inboxActivityId = `${this.baseUrl}/activities/${localActivityId}`;
+        inboxActivityId = activityObject.activityId || `${this.baseUrl}/activities/${localActivityId}`;
       }
     } else {
       inboxId = `${objectUser.actorId}/inbox`;
-      inboxActivityId = `${this.baseUrl}/activities/${localActivityId}`;
+      inboxActivityId = activityObject.activityId || `${this.baseUrl}/activities/${localActivityId}`;
     }
 
     let actorUser = await this.userService.findByActorId(activityObject.actor);
@@ -59,7 +66,7 @@ export class InboxService {
 
     if (activityObject.activityId) {
       const existingActivity = await InboxActivity.findOne({
-        'object.origin': activityObject.activityId
+        'object.activityId': inboxActivityId
       });
       if (existingActivity) {
         throw new Error('Activity already exists');
@@ -240,6 +247,195 @@ async persistCreateActivity(activityObject: CreateActivityObject): Promise<IInbo
     } catch (error) {
       throw error;
     }
+  }
+
+  async persistDeleteActivity(activityObject: CreateActivityObject): Promise<IInboxActivityPopulated> {
+    const localActivityId = new mongoose.Types.ObjectId().toString();
+    const objectId = new mongoose.Types.ObjectId();
+
+    let actorUser = await this.userService.findByActorId(activityObject.actor);
+    
+    if (!actorUser) {
+      const remoteActor = await this.userService.getRemoteActorDisplay(activityObject.actor);
+      if (!remoteActor) {
+        throw new Error('Actor not found for Delete activity');
+      }
+    }
+
+    const inboxId = actorUser ? 
+      `${actorUser.actorId}/inbox` : 
+      `${this.baseUrl}/shared/inbox`;
+    const inboxActivityId = `${this.baseUrl}/activities/${localActivityId}`;
+
+    if (activityObject.activityId) {
+      const existingActivity = await InboxActivity.findOne({
+        'object.origin': activityObject.activityId
+      });
+      if (existingActivity) {
+        throw new Error('Activity already exists');
+      }
+    }
+
+    const inboxActivity = new InboxActivity({
+      inboxId: inboxId,
+      object: {
+        _id: objectId,
+        type: activityObject.type,
+        summary: activityObject.summary,
+        actor: {
+          id: activityObject.actor,
+          ref: actorUser ? actorUser._id : undefined
+        },
+        object: {
+          id: activityObject.object,
+          ref: null 
+        },
+        target: activityObject.target,
+        origin: activityObject.activityId,
+        activityId: inboxActivityId,
+      }
+    });
+    
+    const savedActivity = await inboxActivity.save();
+    
+    const populatedActivity = await InboxActivity.findOne({ _id: savedActivity._id })
+      .populate([
+        { path: 'object.actor.ref', select: 'username displayName avatarUrl actorId' },
+        { path: 'object.object.ref', select: 'username displayName avatarUrl actorId' }
+      ])
+      .lean();
+    
+    if (!populatedActivity) {
+      throw new Error('Failed to populate activity after saving');
+    }
+    
+    return populateRemoteActivityActorReferences(populatedActivity, this.userService);
+  }
+
+  async persistUndoActivity(activityObject: CreateActivityObject): Promise<IInboxActivityPopulated> {
+    const localActivityId = new mongoose.Types.ObjectId().toString();
+    const objectId = new mongoose.Types.ObjectId();
+
+    let actorUser = await this.userService.findByActorId(activityObject.actor);
+    
+    if (!actorUser) {
+      const remoteActor = await this.userService.getRemoteActorDisplay(activityObject.actor);
+      if (!remoteActor) {
+        throw new Error('Actor not found for Undo activity');
+      }
+    }
+
+    const inboxId = actorUser ? 
+      `${actorUser.actorId}/inbox` : 
+      `${this.baseUrl}/shared/inbox`;
+    const inboxActivityId = activityObject.activityId || `${this.baseUrl}/activities/${localActivityId}`;
+
+    if (activityObject.activityId) {
+      const existingActivity = await InboxActivity.findOne({
+        'object.origin': activityObject.activityId
+      });
+      if (existingActivity) {
+        throw new Error('Activity already exists');
+      }
+    }
+
+    const inboxActivity = new InboxActivity({
+      inboxId: inboxId,
+      object: {
+        _id: objectId,
+        type: activityObject.type,
+        summary: activityObject.summary,
+        actor: {
+          id: activityObject.actor,
+          ref: actorUser ? actorUser._id : undefined
+        },
+        object: {
+          id: activityObject.object,
+          ref: null 
+        },
+        target: activityObject.target,
+        origin: activityObject.activityId,
+        activityId: inboxActivityId,
+      }
+    });
+    
+    const savedActivity = await inboxActivity.save();
+    
+    const populatedActivity = await InboxActivity.findOne({ _id: savedActivity._id })
+      .populate([
+        { path: 'object.actor.ref', select: 'username displayName avatarUrl actorId' },
+        { path: 'object.object.ref', select: 'username displayName avatarUrl actorId' }
+      ])
+      .lean();
+    
+    if (!populatedActivity) {
+      throw new Error('Failed to populate activity after saving');
+    }
+    
+    return populateRemoteActivityActorReferences(populatedActivity, this.userService);
+  }
+
+  async persistUpdateActivity(activityObject: CreateActivityObject): Promise<IInboxActivityPopulated> {
+    const localActivityId = new mongoose.Types.ObjectId().toString();
+    const objectId = new mongoose.Types.ObjectId();
+
+    let actorUser = await this.userService.findByActorId(activityObject.actor);
+    
+    if (!actorUser) {
+      const remoteActor = await this.userService.getRemoteActorDisplay(activityObject.actor);
+      if (!remoteActor) {
+        throw new Error('Actor not found for Update activity');
+      }
+    }
+
+    const inboxId = actorUser ? 
+      `${actorUser.actorId}/inbox` : 
+      `${this.baseUrl}/shared/inbox`;
+    const inboxActivityId = activityObject.activityId || `${this.baseUrl}/activities/${localActivityId}`;
+
+    if (activityObject.activityId) {
+      const existingActivity = await InboxActivity.findOne({
+        'object.origin': activityObject.activityId
+      });
+      if (existingActivity) {
+        throw new Error('Activity already exists');
+      }
+    }
+
+    const inboxActivity = new InboxActivity({
+      inboxId: inboxId,
+      object: {
+        _id: objectId,
+        type: activityObject.type,
+        summary: activityObject.summary,
+        actor: {
+          id: activityObject.actor,
+          ref: actorUser ? actorUser._id : undefined
+        },
+        object: {
+          id: activityObject.object,
+          ref: null 
+        },
+        target: activityObject.target,
+        origin: activityObject.activityId,
+        activityId: inboxActivityId,
+      }
+    });
+    
+    const savedActivity = await inboxActivity.save();
+    
+    const populatedActivity = await InboxActivity.findOne({ _id: savedActivity._id })
+      .populate([
+        { path: 'object.actor.ref', select: 'username displayName avatarUrl actorId' },
+        { path: 'object.object.ref', select: 'username displayName avatarUrl actorId' }
+      ])
+      .lean();
+    
+    if (!populatedActivity) {
+      throw new Error('Failed to populate activity after saving');
+    }
+    
+    return populateRemoteActivityActorReferences(populatedActivity, this.userService);
   }
 
   private async fetchActivityPubObject(url: string): Promise<any> {

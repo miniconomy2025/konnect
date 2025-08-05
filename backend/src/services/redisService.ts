@@ -6,7 +6,7 @@ export class RedisService {
   constructor() {
     this.client = new Redis({
       host: process.env.REDIS_HOST,
-      port: process.env.REDIS_PORT,
+      port: parseInt(process.env.REDIS_PORT || '6379'),
       password: process.env.REDIS_PASSWORD,
       retryStrategy: (times: number) => {
         const delay = Math.min(times * 50, 2000);
@@ -18,23 +18,31 @@ export class RedisService {
     this.client.on('connect', () => console.log('Redis Client Connected'));
   }
 
+  private isCacheEnabled(): boolean {
+    return process.env.ENABLE_REDIS_CACHE === 'true';
+  }
+
   // Post caching methods
   async cachePost(postId: string, postData: Record<string, any>): Promise<void> {
+    if (!this.isCacheEnabled()) return;
     await this.client.hset(`post:${postId}`, postData);
     await this.client.expire(`post:${postId}`, 1800); // 30 min cache
   }
 
   async getCachedPost(postId: string): Promise<Record<string, any> | null> {
+    if (!this.isCacheEnabled()) return null;
     const post = await this.client.hgetall(`post:${postId}`);
     return Object.keys(post).length > 0 ? post : null;
   }
 
   async invalidatePost(postId: string): Promise<void> {
+    if (!this.isCacheEnabled()) return;
     await this.client.del(`post:${postId}`);
   }
 
   // Feed caching methods
   async cacheFeedPosts(userId: string, postIds: string[]): Promise<void> {
+    if (!this.isCacheEnabled()) return;
     const key = `feed:${userId}`;
     const now = Date.now();
     
@@ -47,6 +55,7 @@ export class RedisService {
   }
 
   async getFeedPosts(userId: string, page: number = 1, limit: number = 20): Promise<string[]> {
+    if (!this.isCacheEnabled()) return [];
     const start = (page - 1) * limit;
     const stop = start + limit - 1;
     return await this.client.zrange(`feed:${userId}`, start, stop);
@@ -54,6 +63,7 @@ export class RedisService {
 
   // Like counter methods
   async incrementLikes(postId: string): Promise<number> {
+    if (!this.isCacheEnabled()) return 0;
     const key = `post:likes:${postId}`;
     const count = await this.client.incr(key);
     await this.client.expire(key, 300); // 5 min cache
@@ -61,6 +71,7 @@ export class RedisService {
   }
 
   async decrementLikes(postId: string): Promise<number> {
+    if (!this.isCacheEnabled()) return 0;
     const key = `post:likes:${postId}`;
     const count = await this.client.decr(key);
     await this.client.expire(key, 300); //5 min cache
@@ -68,6 +79,7 @@ export class RedisService {
   }
 
   async getLikes(postId: string): Promise<number> {
+    if (!this.isCacheEnabled()) return 0;
     const count = await this.client.get(`post:likes:${postId}`);
     return parseInt(count || '0');
   }
