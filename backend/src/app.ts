@@ -59,7 +59,7 @@ app.use(express.json());
 
 app.use('/auth', attachFederationContext, authRoutes);
 app.use('/posts', attachFederationContext, postRoutes);
-app.use('/search', searchRoutes);
+app.use('/search', attachFederationContext, searchRoutes);
 app.use('/follows', attachFederationContext, followRoutes);
 app.use('/inboxes', inboxRoutes);
 

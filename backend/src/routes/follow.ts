@@ -80,7 +80,7 @@ router.post('/follow', requireAuth, async (req, res) => {
 
     if (!targetUser.isLocal) {
       try {
-        const federationContext = (req as any).federationContext;
+        const federationContext = req.federationContext;
         
         if (federationContext) {
           const followActivityPub = new Follow({
@@ -148,7 +148,7 @@ router.post('/unfollow', requireAuth, async (req, res) => {
 
     if (!targetUser.isLocal && existingFollow.activity) {
       try {
-        const federationContext = (req as any).federationContext;
+        const federationContext = req.federationContext;
         
         if (federationContext) {
           const domain = process.env.DOMAIN || 'localhost:8000';
