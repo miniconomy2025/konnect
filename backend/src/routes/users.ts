@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { UserService } from '../services/userService.js';
 import { FollowService } from '../services/followService.ts';
 import { InboxService } from '../services/inboxService.ts';
+import { optionalAuth } from '../middlewares/auth.ts';
 import { requireAuth } from '../middlewares/auth.ts';
 
 const router = Router();
@@ -9,8 +10,9 @@ const userService = new UserService();
 const inboxService = new InboxService();
 const followService = new FollowService(userService, inboxService);
 
-router.get('/users/:username', async (req, res) => {
+router.get('/users/:username', optionalAuth, async (req, res) => {
   try {
+    const loggedInActor = req.user?.actorId;
     const { username } = req.params;
     
     const acceptHeader = req.headers.accept || '';
@@ -29,7 +31,7 @@ router.get('/users/:username', async (req, res) => {
     }
 
     const { followingCount, followersCount } = await followService.getFollowCounts(user.actorId);
-
+    const isFollowing = loggedInActor ? await followService.isFollowing(loggedInActor, user.actorId) : false;
     return res.json({
       username: user.username,
       displayName: user.displayName,
@@ -40,6 +42,7 @@ router.get('/users/:username', async (req, res) => {
       isPrivate: user.isPrivate,
       followingCount,
       followersCount,
+      isFollowing
     });
   } catch (error) {
     console.error('User profile endpoint error:', error);

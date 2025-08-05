@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { styles } from '@/styles/account';
-import { UserProfile, User } from '@/types/account';
+import { UserProfile, User, Actor } from '@/types/account';
 import { PostsResponse } from '@/types/post';
 import  Header  from '@/components/Account/Header';
 import ProfileSection from '@/components/Account/ProfileSection';
@@ -24,8 +24,8 @@ const ProfilePage: React.FC = () => {
   const [userName, setUserName] = useState<string>('');
 
   const [userProfile, setUserProfile] = useState<UserProfile | undefined>(undefined);
-  const [followers, setFollowers] = useState<User[]>([]);
-  const [following, setFollowing] = useState<User[]>([]);
+  const [followers, setFollowers] = useState<Actor[]>([]);
+  const [following, setFollowing] = useState<Actor[]>([]);
   const [posts, setPosts] = useState<PostsResponse | undefined>(undefined);
 
 
@@ -48,12 +48,22 @@ const ProfilePage: React.FC = () => {
                 return;
             }
 
-            const userPosts = (await ApiService.getUserPosts(data.username)).data; // adapt based on actual API
-            console.log(userPosts);
+            const userPosts = (await ApiService.getUserPosts(data.username)).data;
             setPosts(userPosts);
 
-            // const userFollowers = data.followers || [];
-            // const userFollowing = data.following || [];
+            const userFollows = (await ApiService.getFollowers(data.username)).data;
+            
+
+            if(userFollows){
+                const userFollowers = userFollows.followers || [];
+                const userFollowing = userFollows.following || []; 
+                
+                const followers: Actor[] = userFollowers.map(user => user.actor);
+                const following: Actor[] = userFollowing.map(user => user.object);
+                setFollowing(following);
+                setFollowers(followers);
+            }
+
 
             setUserProfile({
                 username: data.username,
@@ -65,10 +75,6 @@ const ProfilePage: React.FC = () => {
                 followingCount: data.followingCount,
                 isFollowing: false, // server might give this too
             });
-
-            // setFollowers(userFollowers);
-            // setFollowing(userFollowing);
-            // setPosts(userPosts);
             setDisplayName(data.displayName);
             setUserName(data.username);
             setTempName(data.username);
@@ -78,17 +84,6 @@ const ProfilePage: React.FC = () => {
 
         fetchData();
     }, []);
-
-//   const followers: User[] = [
-//     { id: 1, username: 'alice_photo', displayName: 'Alice Johnson', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b1e0?w=50&h=50&fit=crop&crop=face' },
-//     { id: 2, username: 'mike_travels', displayName: 'Mike Wilson', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop&crop=face' },
-//     { id: 3, username: 'sarah_art', displayName: 'Sarah Davis', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=50&h=50&fit=crop&crop=face' }
-//   ];
-
-//   const following: User[] = [
-//     { id: 1, username: 'nature_shots', displayName: 'Nature Photography', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face' },
-//     { id: 2, username: 'urban_explorer', displayName: 'Urban Explorer', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=50&h=50&fit=crop&crop=face' }
-//   ];
 
   // Event handlers
   const handleNameCancel = (): void => {
@@ -157,7 +152,7 @@ const ProfilePage: React.FC = () => {
             title="Followers"
         >
             {followers.map((user) => (
-            <UserListItem key={user.id} user={user} showFollowButton />
+            <UserListItem key={user._id} user={user} following />
             ))}
         </Modal>
 
@@ -167,7 +162,7 @@ const ProfilePage: React.FC = () => {
             title="Following"
         >
             {following.map((user) => (
-            <UserListItem key={user.id} user={user} />
+            <UserListItem key={user._id} user={user} />
             ))}
         </Modal>
 
