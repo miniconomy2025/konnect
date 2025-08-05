@@ -17,3 +17,8 @@ output "ec2_instance_id" {
   value = try(aws_instance.this[0].id, null)
   description = "ID of the first EC2 instance (if any)"
 }
+
+output "instance_ids" {
+  value = aws_instance.this[*].id
+  description = "List of all EC2 instance IDs"
+}

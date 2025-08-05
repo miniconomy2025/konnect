@@ -5,10 +5,11 @@ resource "aws_instance" "this" {
   subnet_id     = element(var.subnet_ids, count.index % length(var.subnet_ids))
   vpc_security_group_ids = [var.security_group_id]
   iam_instance_profile = var.instance_profile_name
+  key_name = var.key_name
+  
   tags = {
     Name = "${var.project_name}-ec2-${count.index}"
   }
-  key_name = var.key_name
 }
 
 data "aws_ami" "ubuntu" {

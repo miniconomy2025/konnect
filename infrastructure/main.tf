@@ -34,10 +34,11 @@ module "s3" {
 }
 
 module "alb" {
-  source     = "./modules/alb"
+  source       = "./modules/alb"
   project_name = var.project_name
-  subnet_ids = module.vpc.public_subnet_ids
-  vpc_id     = module.vpc.vpc_id
+  subnet_ids   = module.vpc.public_subnet_ids
+  vpc_id       = module.vpc.vpc_id
+  instance_ids = module.ec2.instance_ids
 }
 
 module "iam" {
