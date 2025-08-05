@@ -167,6 +167,43 @@ router.get('/me', requireAuth, async (req, res) => {
   });
 });
 
+router.put('/bio', requireAuth, async (req, res) => {
+  try {
+    const { bio } = req.body;
+    const user = req.user;
+    
+    if (bio !== undefined && bio.length > 500) {
+      return res.status(400).json({ error: 'Bio must be 500 characters or less' });
+    }
+    
+    const updatedUser = await userService.updateUser(user!._id?.toString()!, {
+      bio: bio || ''
+    });
+    
+    if (updatedUser) {
+      const { ActivityService } = await import('../services/activityservice.js');
+      const activityService = new ActivityService();
+      const federationContext = (req as any).federationContext;
+      
+      if (federationContext) {
+        await activityService.publishUpdateActivity(updatedUser, federationContext);
+      }
+    }
+    
+    res.json({ 
+      success: true, 
+      user: {
+        id: updatedUser?._id?.toString(),
+        username: updatedUser?.username,
+        displayName: updatedUser?.displayName,
+        bio: updatedUser?.bio,
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update bio' });
+  }
+});
+
 router.post('/logout', (req, res) => {
   res.json({ success: true, message: 'Logged out successfully' });
 });
