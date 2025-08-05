@@ -160,4 +160,138 @@ export class PostNormalizationService {
     return posts.filter(post => post.content.hasMedia);
   }
 
+  static async localPostToUnifiedWithLikes(localPost: IPost, currentUserId?: string): Promise<UnifiedPostResponse> {
+    const { Like } = await import('../models/like.ts');
+    const { User } = await import('../models/user.ts');
+    
+    // Get federated likes count for this post
+    const federatedLikesCount = await Like.countDocuments({ 'object.id': localPost.activityId });
+    const totalLikes = localPost.likesCount + federatedLikesCount;
+    
+    // Check if current user liked this post (local or federated)
+    let isLiked = false;
+    if (currentUserId) {
+      const userObjectId = new Types.ObjectId(currentUserId);
+      const user = await User.findById(currentUserId);
+      
+      if (user) {
+        // Check local likes first
+        isLiked = localPost.likes.some(likeId => likeId.toString() === userObjectId.toString());
+        
+        // If not liked locally, check federated likes
+        if (!isLiked) {
+          const federatedLike = await Like.findOne({
+            'actor.id': user.actorId,
+            'object.id': localPost.activityId
+          });
+          isLiked = !!federatedLike;
+        }
+      }
+    }
+    console.log(localPost);
+    const author = this.extractAuthorInfo(localPost);
+    
+    return {
+      id: localPost._id.toString(),
+      type: 'local',
+      author: {
+        id: author._id.toString(),
+        username: author.username,
+        domain: author.domain,
+        displayName: author.displayName,
+        avatarUrl: author.avatarUrl,
+        isLocal: author.isLocal
+      },
+      content: {
+        text: localPost.caption,
+        hasMedia: !!localPost.mediaUrl,
+        mediaType: this.getMediaType(localPost.mediaType)
+      },
+      media: localPost.mediaUrl ? {
+        type: this.getMediaType(localPost.mediaType)!,
+        url: localPost.mediaUrl,
+        altText: undefined 
+      } : undefined,
+      engagement: {
+        likesCount: totalLikes, // Now includes federated likes
+        isLiked: isLiked,       // Now checks both local and federated
+        canInteract: true
+      },
+      createdAt: localPost.createdAt,
+      updatedAt: localPost.updatedAt,
+      url: this.buildLocalPostUrl(localPost._id.toString()),
+      isReply: false,
+    };
+  }
+
+  // Update external post method to check like status:
+  static async externalPostToUnifiedWithLikes(externalPost: any, currentUserId?: string): Promise<UnifiedPostResponse> {
+    const { Like } = await import('../models/like.ts');
+    const { User } = await import('../models/user.ts');
+    const {UserService} = await import('../services/userService.ts');
+    const userService = new UserService();
+    
+    // Check if current user has liked this external post
+    let isLiked = false;
+    if (currentUserId) {
+      const user = await User.findById(currentUserId);
+      if (user) {
+        const federatedLike = await Like.findOne({
+          'actor.id': user.actorId,
+          'object.id': externalPost.id
+        });
+        isLiked = !!federatedLike;
+      }
+    }
+    
+    const mediaAttachment = externalPost.attachments.find(att => 
+      att.type === 'image' || att.type === 'video'
+    );
+    console.log(externalPost);
+    const author = await userService.findByActorId(externalPost.actorId)
+    
+    return {
+      id: externalPost.activityId, // This is the ActivityPub activity ID
+      type: 'external',
+      author: {
+        id: author.actorId,
+        username: author.username,
+        domain: author.domain,
+        displayName: author.displayName,
+        avatarUrl: author.avatarUrl,
+        isLocal: false
+      },
+      content: {
+        text: this.cleanTextContent(externalPost.contentText),
+        hasMedia: mediaAttachment !== undefined,
+        mediaType: mediaAttachment ? this.normalizeMediaType(mediaAttachment.type) : null
+      },
+      media: mediaAttachment ? {
+        type: this.normalizeMediaType(mediaAttachment.type)!,
+        url: mediaAttachment.url,
+        width: mediaAttachment.width,
+        height: mediaAttachment.height,
+        altText: mediaAttachment.description
+      } : undefined,
+      engagement: {
+        likesCount: 0, // External posts don't show total counts (privacy)
+        isLiked: isLiked, // Shows if current user liked it
+        canInteract: true // External posts are now interactive!
+      },
+      createdAt: externalPost.published,
+      updatedAt: externalPost.updated,
+      url: externalPost.url,
+      isReply: externalPost.isReply,
+    };
+  }
+
+  // Update your batch methods to use the new like-aware versions:
+  static async localPostsToUnifiedWithLikes(localPosts: IPost[], currentUserId?: string): Promise<UnifiedPostResponse[]> {
+    return Promise.all(localPosts.map(post => this.localPostToUnifiedWithLikes(post, currentUserId)));
+  }
+
+  static async externalPostsToUnifiedWithLikes(externalPosts: ExternalPostResponse[], currentUserId?: string): Promise<UnifiedPostResponse[]> {
+    return Promise.all(externalPosts.map(post => this.externalPostToUnifiedWithLikes(post, currentUserId)));
+  }
+
 }

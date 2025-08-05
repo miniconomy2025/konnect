@@ -21,6 +21,8 @@ export function Post({ post, children }: PostProps) {
     setIsLiking(true);
     
     try {
+      console.log("here");
+      console.log(post)
       const response = await ApiService.likePost(post.id);
       
       if (response.error) {

@@ -4,7 +4,8 @@ export class RedisService {
   private client: Redis;
 
   constructor() {
-    this.client = new Redis({
+    if (process.env.ENABLE_REDIS_CACHE === 'true') {
+      this.client = new Redis({
       host: process.env.REDIS_HOST,
       port: parseInt(process.env.REDIS_PORT || '6379'),
       password: process.env.REDIS_PASSWORD,
@@ -16,6 +17,17 @@ export class RedisService {
 
     this.client.on('error', (err: Error) => console.error('Redis Client Error:', err));
     this.client.on('connect', () => console.log('Redis Client Connected'));
+    }else {
+      this.client = new Redis({
+        retryStrategy: (times: number) => {
+        const delay = 1000000;
+        return delay;
+      }
+      });
+      this.client.on('error', (err: Error) => console.error('Redis Client Error:'));
+    } 
+
+    
   }
 
   private isCacheEnabled(): boolean {

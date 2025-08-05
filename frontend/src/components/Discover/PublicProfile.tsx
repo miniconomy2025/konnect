@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { UserProfile } from '@/types/account';
 import { PostsResponse } from '@/types/post';
 import { ApiService } from '@/lib/api';
-import ProfileSection from '@/components/Account/ProfileSection';
-import PostsGrid from '@/components/Account/PostsGrid';
+import ProfileSection from '@/components/account/ProfileSection';
+import PostsGrid from '@/components/account/PostsGrid';
 import { ArrowLeft } from 'lucide-react';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
 

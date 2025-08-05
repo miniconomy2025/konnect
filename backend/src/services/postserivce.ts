@@ -256,10 +256,15 @@ export class PostService {
     return posts;
   }
 
-  async likePost(postId: string, userId: string): Promise<{ success: boolean; likesCount: number; isLiked: boolean }> {
+  async likePost(postId: string, userId: string, federationContext?: any): Promise<{ success: boolean; likesCount: number; isLiked: boolean }> {
     const post = await Post.findById(postId).populate('author', 'username displayName avatarUrl');
     if (!post) {
       throw new Error('Post not found');
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
     }
 
     const userIdObj = new mongoose.Types.ObjectId(userId);
@@ -270,86 +275,47 @@ export class PostService {
       post.likes.push(userIdObj);
       post.likesCount++;
       isLiked = true;
-      // Increment like count in Redis
+      
+      const domain = process.env.DOMAIN || 'localhost:8000';
+      const protocol = domain.includes('localhost') ? 'http' : 'https';
+      const likeActivityId = `${protocol}://${domain}/activities/like-${Date.now()}`;
+
+      const { Like } = await import('../models/like.ts');
+      const like = new Like({
+        actor: { id: user.actorId, ref: user._id },
+        object: { id: post.activityId, ref: post._id },
+        activityId: likeActivityId,
+        isLocal: true
+      });
+
+      await like.save();
       await this.redisService.incrementLikes(postId);
     } else {
       post.likes.splice(likeIndex, 1);
       post.likesCount--;
-      // Decrement like count in Redis
+      
+      const { Like } = await import('../models/like.ts');
+      await Like.findOneAndDelete({
+        'actor.id': user.actorId,
+        'object.id': post.activityId
+      });
+
       await this.redisService.decrementLikes(postId);
     }
 
     await post.save();
-    
-    const user = await User.findById(userId);
-    if (user) {
-      await this.activityService.publishLikeActivity(post, user, isLiked);
+
+    if (federationContext) {
+      await this.activityService.publishLikeActivity(post, user, isLiked, federationContext);
     }
 
-    // Update post cache with new like status
-    const postObj = post.toObject();
-    const postToCache: Partial<IPost> = {
-      _id: post._id as mongoose.Types.ObjectId,
-      author: postObj.author,
-      caption: postObj.caption,
-      mediaUrl: postObj.mediaUrl,
-      mediaType: postObj.mediaType,
-      activityId: postObj.activityId,
-      likes: postObj.likes,
-      likesCount: postObj.likesCount,
-      createdAt: postObj.createdAt,
-      updatedAt: postObj.updatedAt,
-      isLiked
-    };
-    await this.redisService.cachePost(postId, this.postToCache(postToCache as IPost));
-
-    // Update the post in all relevant feed caches
-    const feedCaches = [
-      'public', // Public feed
-      postObj.author.toString(), // Author's feed
-    ];
-
-    // Update the post in each feed cache if it exists
-    await Promise.all(
-      feedCaches.map(async (feedId) => {
-        const feedPosts = await this.redisService.getFeedPosts(feedId);
-        if (feedPosts.includes(postId)) {
-          // If the post is in this feed cache, update the cache with the same post order
-          await this.redisService.cacheFeedPosts(
-            feedId,
-            feedPosts
-          );
-        }
-      })
-    );
+    await this.redisService.cachePost(postId, this.postToCache(post));
 
     return {
       success: true,
       likesCount: post.likesCount,
       isLiked
     };
-  }
-
-  private async updatePostInFeedCaches(post: IPost & { _id: mongoose.Types.ObjectId }): Promise<void> {
-    // Get all feed caches that might contain this post
-    const feedCaches = [
-      'public', // Public feed
-      post.author.toString(), // Author's feed
-    ];
-
-    // Update the post in each feed cache if it exists
-    await Promise.all(
-      feedCaches.map(async (feedId) => {
-        const feedPosts = await this.redisService.getFeedPosts(feedId);
-        if (feedPosts.includes(post._id.toString())) {
-          // If the post is in this feed cache, update the cache with the same post order
-          await this.redisService.cacheFeedPosts(
-            feedId,
-            feedPosts
-          );
-        }
-      })
-    );
   }
 
   async deletePost(postId: string, userId: string, federationContext?: any): Promise<boolean> {
@@ -415,5 +381,133 @@ export class PostService {
     }
 
     return await this.s3Service.getPresignedUploadUrl(mimeType, userId);
+  }
+    
+  async processIncomingLike(actorId: string, objectId: string, activityId?: string): Promise<void> {
+    const { Like } = await import('../models/like.ts');
+    
+    const existingLike = await Like.findOne({
+      'actor.id': actorId,
+      'object.id': objectId
+    });
+
+    if (existingLike) {
+      throw new Error('Like already exists');
+    }
+
+    const post = await Post.findOne({ activityId: objectId });
+    if (!post) {
+      console.warn(`Local post not found for incoming like: ${objectId}`);
+      return;
+    }
+
+    await this.ensureExternalUserExists(actorId);
+
+    const like = new Like({
+      actor: { id: actorId, ref: undefined }, // External user
+      object: { id: objectId, ref: post._id }, // Local post
+      activityId: activityId || `${objectId}/likes/${Date.now()}`,
+      isLocal: false
+    });
+
+    await like.save();
+
+    await Post.findByIdAndUpdate(post._id, { $inc: { likesCount: 1 } });
+    await this.redisService.incrementLikes(post._id.toString());
+
+    console.log(`Added federated like to post ${post.activityId} from ${actorId}`);
+  }
+
+  async processIncomingUnlike(actorId: string, objectId: string): Promise<void> {
+    const { Like } = await import('../models/like.ts');
+    
+    const like = await Like.findOneAndDelete({
+      'actor.id': actorId,
+      'object.id': objectId
+    });
+
+    if (!like || !like.object.ref) {
+      console.warn(`Like not found for unlike: ${actorId} -> ${objectId}`);
+      return;
+    }
+
+    await Post.findByIdAndUpdate(like.object.ref, { $inc: { likesCount: -1 } });
+    await this.redisService.decrementLikes(like.object.ref.toString());
+
+    console.log(`Removed federated like from post ${objectId} by ${actorId}`);
+  }
+  
+
+  private async ensureExternalUserExists(actorId: string): Promise<void> {
+    const { UserService } = await import('./userService.ts');
+    const userService = new UserService();
+    
+    const existingUser = await userService.findByActorId(actorId);
+    if (existingUser) return;
+
+    const url = new URL(actorId);
+    const pathParts = url.pathname.split('/').filter(Boolean);
+    const username = pathParts[pathParts.length - 1];
+    const domain = url.hostname;
+    
+    const { SearchService } = await import("./searchService.ts");
+    const searchService = new SearchService();
+    await searchService.lookupExternalUser(username, domain);
+  }
+
+  async likeExternalPost(activityId: string, userId: string, federationContext?: any): Promise<{ success: boolean; isLiked: boolean }> {
+      if (!federationContext) {
+      throw new Error('Federation context required for external post likes');
+    }
+
+    const { Like } = await import('../models/like.ts');
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const existingLike = await Like.findOne({
+      'actor.id': user.actorId,
+      'object.id': activityId
+    });
+    
+    if (existingLike) {
+      await Like.findOneAndDelete({
+        'actor.id': user.actorId,
+        'object.id': activityId
+      });
+      
+      const mockPost = { activityId } as IPost;
+      await this.activityService.publishLikeActivity(mockPost, user, false, federationContext);
+      
+      return { success: true, isLiked: false };
+    } else {
+      const domain = process.env.DOMAIN || 'localhost:8000';
+      const protocol = domain.includes('localhost') ? 'http' : 'https';
+      const likeActivityId = `${protocol}://${domain}/activities/like-${Date.now()}`;
+
+      const like = new Like({
+        actor: { id: user.actorId, ref: user._id },
+        object: { id: activityId, ref: undefined }, // External post has no local ref
+        activityId: likeActivityId,
+        isLocal: true
+      });
+
+      await like.save();
+      
+      const mockPost = { activityId } as IPost;
+      await this.activityService.publishLikeActivity(mockPost, user, true, federationContext);
+      
+      return { success: true, isLiked: true };
+    }
+  }
+
+  async isExternalPostLikedByUser(activityId: string, userActorId: string): Promise<boolean> {
+    const { Like } = await import('../models/like.ts');
+    const like = await Like.findOne({
+      'actor.id': userActorId,
+      'object.id': activityId
+    });
+    return !!like;
   }
 }
