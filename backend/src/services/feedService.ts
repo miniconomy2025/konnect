@@ -1,7 +1,7 @@
 import { getLogger } from '@logtape/logtape';
 import { InboxActivity } from '../models/inbox.ts';
 import { Post, type IPost } from '../models/post.ts';
-import { User } from '../models/user.ts';
+import { User, type IUser } from '../models/user.ts';
 import { FollowService } from './followService.ts';
 import { InboxService } from './inboxService.ts';
 import { PostNormalizationService } from './postNormalizationService.ts';
@@ -38,7 +38,7 @@ export class FeedService {
     ]);
 
     const unifiedLocalPosts = PostNormalizationService.localPostsToUnified(localPosts, userId);
-    const unifiedExternalPosts = this.convertExternalPostsToUnified(externalPosts);
+    const unifiedExternalPosts = await this.convertExternalPostsToUnified(externalPosts);
 
     const allPosts = [...unifiedLocalPosts, ...unifiedExternalPosts]
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -114,9 +114,11 @@ export class FeedService {
     }
   }
 
-  private convertExternalPostsToUnified(externalPosts: any[]): UnifiedPostResponse[] {
-    return externalPosts.map(post => {
+  private async convertExternalPostsToUnified(externalPosts: any[]): Promise<UnifiedPostResponse[]> {
+    const postPromises = externalPosts.map(async post => {
       try {
+        const author = await this.userService.findByActorId(post.actorId);
+        
         return {
           id: post.objectId,
           type: 'external' as const,
@@ -124,8 +126,8 @@ export class FeedService {
             id: post.actorId,
             username: this.extractUsernameFromActorId(post.actorId),
             domain: this.extractDomainFromActorId(post.actorId),
-            displayName: this.extractUsernameFromActorId(post.actorId), // We'll enhance this later
-            avatarUrl: undefined,
+            displayName: author?.displayName || this.extractUsernameFromActorId(post.actorId),
+            avatarUrl: author?.avatarUrl,
             isLocal: false
           },
           content: {
@@ -145,10 +147,16 @@ export class FeedService {
           isReply: !!post.inReplyTo
         };
       } catch (error) {
-        logger.warn('Failed to convert external post to unified format:', { error, postId: post._id });
+        logger.warn('Failed to convert external post to unified format:', { 
+          error, 
+          postId: post._id 
+        });
         return null;
       }
-    }).filter(Boolean) as UnifiedPostResponse[];
+    });
+
+    const results = await Promise.all(postPromises);
+    return results.filter(Boolean) as UnifiedPostResponse[];
   }
 
 
