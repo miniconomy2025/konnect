@@ -1,0 +1,21 @@
+{
+  "name": "konnect",
+  "version": "1.0.0",
+  "description": "Federated social media platform",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run frontend:dev\" \"npm run backend:dev\"",
+    "build": "npm run frontend:build && npm run backend:build",
+    "start": "npm run build && npm run backend:start",
+    "frontend:dev": "cd frontend && npm run dev",
+    "frontend:build": "cd frontend && npm run build",
+    "backend:dev": "cd backend && npm run dev", 
+    "backend:build": "echo 'Backend build complete'",
+    "backend:start": "cd backend && npm run prod",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "clean": "rm -rf frontend/out frontend/.next"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
