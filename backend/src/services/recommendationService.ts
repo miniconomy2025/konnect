@@ -1,5 +1,6 @@
 import { getLogger } from '@logtape/logtape';
 import type { IPost } from '../models/post.ts';
+import { Post } from '../models/post.ts';
 import { PostService } from './postserivce.ts';
 import { Neo4jService } from './neo4jService.ts';
 
@@ -32,19 +33,14 @@ export class RecommendationService {
       ]));
 
       // Get actual post data from MongoDB
-      const posts = await Promise.all(
-        uniquePostIds.map(postId => this.postService.getPostById(postId))
-      );
-
-      // Remove nulls and sort by creation date
-      const validPosts = posts
-        .filter((post): post is IPost => post !== null)
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      const posts = await Post.find({ _id: { $in: uniquePostIds } })
+        .populate('author', 'username displayName avatarUrl')
+        .sort({ createdAt: -1 });
 
       // Apply pagination
       const start = (page - 1) * limit;
       const end = start + limit;
-      return validPosts.slice(start, end);
+      return posts.slice(start, end);
 
     } catch (error) {
       logger.error('Failed to get discover feed', { error: error instanceof Error ? error.message : String(error) });

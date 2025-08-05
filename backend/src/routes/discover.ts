@@ -4,6 +4,9 @@ import { requireAuth } from '../middlewares/auth.ts';
 import { PostService } from '../services/postserivce.ts';
 import { Neo4jService } from '../services/neo4jService.ts';
 import { RecommendationService } from '../services/recommendationService.ts';
+import type { IPost } from '../models/post.ts';
+import type { IUser } from '../models/user.ts';
+import type { Document } from 'mongoose';
 
 const router = express.Router();
 const logger = getLogger('discover');
@@ -12,10 +15,47 @@ const neo4jService = new Neo4jService();
 const postService = new PostService();
 const recommendationService = new RecommendationService(postService, neo4jService);
 
+function transformPost(mongoosePost: Document & { author: Document }) {
+  const post = mongoosePost.toObject();
+  const author = post.author;
+
+  return {
+    id: post._id.toString(),
+    type: 'local',
+    author: {
+      id: author._id.toString(),
+      username: author.username,
+      domain: 'local',
+      displayName: author.displayName || author.username,
+      avatarUrl: author.avatarUrl || '/assets/images/missingAvatar.jpg',
+      isLocal: true
+    },
+    content: {
+      text: post.caption,
+      hasMedia: !!post.mediaUrl,
+      mediaType: post.mediaType || null
+    },
+    media: post.mediaUrl ? {
+      type: post.mediaType.startsWith('image/') ? 'image' : 'video',
+      url: post.mediaUrl
+    } : undefined,
+    engagement: {
+      likesCount: post.likesCount,
+      isLiked: post.isLiked || false,
+      canInteract: true
+    },
+    createdAt: post.createdAt.toISOString(),
+    updatedAt: post.updatedAt.toISOString(),
+    isReply: false
+  };
+}
+
 router.get('/', requireAuth, async (req, res) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
+    
+    logger.info('Getting discover feed', { page, limit, userId: req.user!.actorId });
     
     const posts = await recommendationService.getDiscoverFeed(
       req.user!.actorId,
@@ -23,13 +63,34 @@ router.get('/', requireAuth, async (req, res) => {
       limit
     );
 
-    res.json({
-      posts,
+    logger.info('Got discover feed posts', { count: posts.length });
+
+    // Transform posts to match frontend expectations
+    const transformedPosts = posts.map(post => transformPost(post as Document & { author: Document }));
+
+    const response = {
+      posts: transformedPosts,
+      hasMore: posts.length === limit,
       page,
-      limit
+      limit,
+      sources: {
+        external: 0,  // All posts are local for now
+        local: posts.length
+      },
+      type: 'local'  // All posts are local for now
+    };
+
+    logger.info('Sending discover feed response', { 
+      postCount: posts.length,
+      hasMore: response.hasMore
     });
+
+    res.json(response);
   } catch (error) {
-    logger.error('Failed to get discover feed', { error: error instanceof Error ? error.message : String(error) });
+    logger.error('Failed to get discover feed', { 
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
     res.status(500).json({ error: 'Failed to get discover feed' });
   }
 });
