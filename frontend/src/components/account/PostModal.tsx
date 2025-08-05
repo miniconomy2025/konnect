@@ -1,0 +1,84 @@
+"use client";
+
+import React, { useState } from 'react';
+import { Post } from '@/types/post';
+import { styles } from '@/styles/account';
+import { ApiService } from '@/lib/api';
+
+interface PostModalProps {
+  post: Post;
+  onClose: () => void;
+  onPostDeleted: (postId: string) => void;
+  onPostUpdated: (updatedPost: Post) => void;
+}
+
+const PostModal: React.FC<PostModalProps> = ({ post, onClose, onPostDeleted, onPostUpdated }) => {
+  const [editing, setEditing] = useState(false);
+  const [caption, setCaption] = useState(post.content.text);
+  const [loading, setLoading] = useState(false);
+
+  const handleSave = async () => {
+    // setLoading(true);
+    // const { data, error } = await ApiService.updatePostCaption(post._id, caption);
+    // setLoading(false);
+    // if (error) return alert('Failed to update post');
+    // onPostUpdated({ ...post, content: { ...post.content, text: caption } });
+    // setEditing(false);
+    console.log('update')
+  };
+
+  const handleDelete = async () => {
+    // const confirm = window.confirm('Are you sure you want to delete this post?');
+    // if (!confirm) return;
+
+    // setLoading(true);
+    // const { error } = await ApiService.deletePost(post._id);
+    // setLoading(false);
+    // if (error) return alert('Failed to delete post');
+    // onPostDeleted(post._id);
+    // onClose();
+    console.log('delete')
+  };
+
+  return (
+    <section style={styles.modal}>
+      <section style={{ ...styles.modalContent, maxWidth: '32rem' }}>
+        <section style={styles.modalHeader}>
+          <h3 style={styles.modalTitle}>Your Post</h3>
+          <button style={styles.cancelButton} onClick={onClose}>Close</button>
+        </section>
+        <section style={{ padding: '1rem' }}>
+          {post.media.type === 'text' ? (
+            <p>{caption}</p>
+          ) : (
+            <img src={post.media.url} alt="Post" style={{ width: '100%', borderRadius: '6px' }} />
+          )}
+
+          {editing ? (
+            <>
+              <textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                style={styles.bioTextarea}
+              />
+              <section style={{ marginTop: '0.5rem' }}>
+                <button style={styles.saveButton} onClick={handleSave} disabled={loading}>Save</button>
+                <button style={styles.cancelButton} onClick={() => setEditing(false)}>Cancel</button>
+              </section>
+            </>
+          ) : (
+            <>
+              <p style={{ marginTop: '1rem' }}>{caption}</p>
+              <section style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button style={styles.editButton} onClick={() => setEditing(true)}>Edit Caption</button>
+                <button style={styles.cancelButton} onClick={handleDelete} disabled={loading}>Delete</button>
+              </section>
+            </>
+          )}
+        </section>
+      </section>
+    </section>
+  );
+};
+
+export default PostModal;

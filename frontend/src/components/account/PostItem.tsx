@@ -7,9 +7,10 @@ import { Post } from '@/types/post';
 
 interface PostItemProps {
   post: Post;
+  onClick?: (post: Post) => void;
 }
 
-const PostItem: React.FC<PostItemProps> = ({ post }) => {
+const PostItem: React.FC<PostItemProps> = ({ post, onClick }) => {
   const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
     const overlay = e.currentTarget.querySelector('.overlay') as HTMLElement;
     if (overlay) overlay.style.opacity = '1';
@@ -20,9 +21,14 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
     if (overlay) overlay.style.opacity = '0';
   };
 
+  const handleClick = () => {
+    if (onClick) onClick(post);
+  };
+
   return (
     <section
       style={styles.postItem}
+      onClick={handleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
