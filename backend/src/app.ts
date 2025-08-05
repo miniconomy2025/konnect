@@ -64,7 +64,7 @@ app.use('/follows', attachFederationContext, followRoutes);
 app.use('/inboxes', inboxRoutes);
 
 app.use('', webfingerRoutes);
-app.use('', userRoutes);
+app.use('', attachFederationContext, userRoutes);
 
 const frontendPath = path.join(process.cwd(), '../frontend/out');
 app.use(express.static(frontendPath));
