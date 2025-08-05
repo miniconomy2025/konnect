@@ -98,6 +98,53 @@ router.get('/check-username/:username', async (req, res) => {
   }
 });
 
+router.put('/display-name', requireAuth, async (req, res) => {
+  try {
+    const { displayName } = req.body;
+    const user = req.user;
+    
+    if (!displayName || typeof displayName !== 'string') {
+      return res.status(400).json({ error: 'Display name is required' });
+    }
+
+    const trimmedDisplayName = displayName.trim();
+    
+    if (trimmedDisplayName.length === 0) {
+      return res.status(400).json({ error: 'Display name cannot be empty' });
+    }
+    
+    if (trimmedDisplayName.length > 100) {
+      return res.status(400).json({ error: 'Display name must be 100 characters or less' });
+    }
+    
+    const updatedUser = await userService.updateUser(user!._id?.toString()!, {
+      displayName: trimmedDisplayName
+    });
+    
+    if (updatedUser) {
+      const { ActivityService } = await import('../services/activityservice.js');
+      const activityService = new ActivityService();
+      const federationContext = (req as any).federationContext;
+      
+      if (federationContext) {
+        await activityService.publishUpdateActivity(updatedUser, federationContext);
+      }
+    }
+    
+    res.json({ 
+      success: true, 
+      user: {
+        id: updatedUser?._id?.toString(),
+        username: updatedUser?.username,
+        displayName: updatedUser?.displayName,
+        bio: updatedUser?.bio,
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update display name' });
+  }
+});
+
 router.put('/username', requireAuth, async (req, res) => {
   try {
     const { username } = req.body;

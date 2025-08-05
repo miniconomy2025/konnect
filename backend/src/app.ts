@@ -18,7 +18,6 @@ import webfingerRoutes from './routes/webfinger.js';
 import { attachFederationContext } from "./middlewares/federation.ts";
 
 dotenv.config();
-const logger = getLogger("backend");
 
 export const app = express();
 
@@ -41,9 +40,9 @@ await mongoConnect();
 
 // Fedify middleware should come before body parsing middleware
 app.use((req, res, next) => {
-  if (req.path === '/posts' && req.method === 'POST') {
-    return next();
-  }
+  if (req.path.startsWith('/posts') && (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE')) {
+  return next();
+}
 
   integrateFederation(federation, (req) => {
     const domain = process.env.DOMAIN || 'localhost:8000';
