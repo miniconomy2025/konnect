@@ -36,16 +36,13 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose, onPostDeleted, onP
   };
 
   const handleDelete = async () => {
-    // const confirm = window.confirm('Are you sure you want to delete this post?');
-    // if (!confirm) return;
+    const confirm = window.confirm('Are you sure you want to delete this post?');
+    if (!confirm) return;
 
-    // setLoading(true);
-    // const { error } = await ApiService.deletePost(post._id);
-    // setLoading(false);
-    // if (error) return alert('Failed to delete post');
-    // onPostDeleted(post._id);
-    // onClose();
-    console.log('delete')
+    const { error } = await ApiService.deletePost(post.id);
+    if (error) return alert('Failed to delete post');
+    onPostDeleted(post.id);
+    onClose();
   };
 
   return (
