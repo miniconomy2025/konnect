@@ -15,6 +15,7 @@ import postRoutes from './routes/posts.js';
 import searchRoutes from './routes/search.ts';
 import userRoutes from './routes/users.js';
 import webfingerRoutes from './routes/webfinger.js';
+import discoverRoutes from './routes/discover.ts';
 import { attachFederationContext } from "./middlewares/federation.ts";
 
 dotenv.config();
@@ -62,6 +63,7 @@ app.use('/posts', attachFederationContext, postRoutes);
 app.use('/search', searchRoutes);
 app.use('/follows', attachFederationContext, followRoutes);
 app.use('/inboxes', inboxRoutes);
+app.use('/discover', attachFederationContext, discoverRoutes);
 
 app.use('', webfingerRoutes);
 app.use('', userRoutes);

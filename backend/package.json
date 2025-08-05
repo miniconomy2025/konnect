@@ -15,6 +15,7 @@
     "mongodb": "^6.18.0",
     "mongoose": "^8.16.5",
     "multer": "^1.4.5-lts.1",
+    "neo4j-driver": "^5.28.1",
     "tsx": "^4.17.0"
   },
   "devDependencies": {
@@ -31,6 +32,10 @@
   },
   "scripts": {
     "dev": "dotenvx run -- tsx watch ./src/config/index.ts",
-    "prod": "dotenvx run -- node --import tsx ./src/config/index.ts"
+    "prod": "dotenvx run -- node --import tsx ./src/config/index.ts",
+    "init-neo4j": "dotenvx run -- tsx src/scripts/initNeo4j.ts",
+    "verify-neo4j": "dotenvx run -- tsx src/scripts/verifyNeo4j.ts",
+    "sync-neo4j": "dotenvx run -- tsx src/scripts/syncNeo4j.ts",
+    "test-recommendations": "dotenvx run -- tsx src/scripts/testRecommendations.ts"
   }
 }
