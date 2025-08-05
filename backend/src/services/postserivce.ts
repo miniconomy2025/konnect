@@ -374,6 +374,29 @@ export class PostService {
     return true;
   }
 
+  async updatePost(postId: string, caption: string, userId: string, federationContext?: any): Promise<IPost | null> {
+    const post = await Post.findOne({ _id: postId, author: userId });
+    if (!post) {
+      return null;
+    }
+
+    post.caption = caption;
+    post.updatedAt = new Date();
+    
+    const updatedPost = await post.save();
+
+    const author = await User.findById(userId);
+
+    if (author && federationContext) {
+      await this.activityService.publishPostUpdateActivity(updatedPost, author, federationContext);
+    }
+
+    await this.redisService.invalidatePost(postId);
+
+    const populatedPost = await Post.findById(postId).populate('author', 'username displayName avatarUrl');
+    return populatedPost;
+  }
+
   async uploadImage(file: Buffer, mimeType: string, userId: string): Promise<string> {
     if (!this.s3Service.validateImageType(mimeType)) {
       throw new Error('Invalid image type. Only JPEG, PNG, and WebP are allowed.');
