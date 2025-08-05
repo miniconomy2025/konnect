@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { S3Service } from './s3Service.js';
 import { ActivityService } from './activityservice.js';
-import { RedisService } from './redisService.js';
+import { RedisService } from './redisService.ts';
 import { Post, type IPost } from '../models/post.js';
 import { User, type IUser} from '../models/user.js';
 import type { CreatePostData } from '../types/post.js';
@@ -9,7 +9,7 @@ import type { CreatePostData } from '../types/post.js';
 export class PostService {
   private s3Service = new S3Service();
   private activityService = new ActivityService();
-  private redisService = new RedisService();
+  private redisService = RedisService.getInstance();
 
   private async transformCachedPost(cached: Record<string, any>): Promise<IPost> {
     return {

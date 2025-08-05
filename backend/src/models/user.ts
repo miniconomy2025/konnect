@@ -62,7 +62,8 @@ const userSchema = new Schema<IUser>({
     default: ''
   },
   avatarUrl: {
-    type: String
+    type: String,
+    default: ''
   },
   inboxUrl: {
     type: String,

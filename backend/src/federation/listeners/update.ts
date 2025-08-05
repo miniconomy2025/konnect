@@ -1,4 +1,4 @@
-import { Update } from "@fedify/fedify";
+import { Update, type Image, type Actor, type Object as ActivityPubObject } from "@fedify/fedify";
 import { getLogger } from "@logtape/logtape";
 import { UserService } from "../../services/userService.ts";
 import { InboxService } from "../../services/inboxService.ts";
@@ -10,8 +10,8 @@ const inboxService = new InboxService();
 
 export function addUpdateListener(inboxListeners: any) {
   return inboxListeners.on(Update, async (ctx: any, update: any) => {
-    const actor = await update.getActor(ctx);
-    const object = await update.getObject(ctx);
+    const actor: Actor | null = await update.getActor(ctx);
+    const object: ActivityPubObject | null = await update.getObject(ctx);
     
     if (!actor?.id || !object?.id) {
       logger.warn(`Missing actor or object in Update activity`, { 
@@ -35,9 +35,12 @@ export function addUpdateListener(inboxListeners: any) {
           const plainTextBio = object.summary.replace(/<[^>]*>/g, '').trim();
           updateData.bio = plainTextBio;
         }
-        
-        if (object.icon?.url && object.icon.url !== existingUser.avatarUrl) {
-          updateData.avatarUrl = object.icon.url;
+        let newIcon = (await object.getIcon(ctx));
+        const newAvatarUrl = newIcon?.url?.href?.toString() || ''
+        const currentAvatarUrl = existingUser.avatarUrl || '';
+
+        if (newAvatarUrl && newAvatarUrl !== currentAvatarUrl) {
+          updateData.avatarUrl = newAvatarUrl;
         }
 
         if (Object.keys(updateData).length > 0) {
@@ -86,7 +89,6 @@ export function addUpdateListener(inboxListeners: any) {
           logger.warn(`External post not found for update: ${object.id.toString()}`);
         }
       } catch (error) {
-        console.log(error )
         logger.error(`Failed to process post update:`, { 
           error: error instanceof Error ? error.message : String(error)
         });
