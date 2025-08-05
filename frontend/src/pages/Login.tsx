@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
-import { ApiService } from '@/lib/api';
+// import { ApiService } from '@/lib/api'; // TODO: Implement API integration
 import { useRouter } from 'next/router';
 
 const Login: React.FC = () => {
@@ -20,14 +21,14 @@ const Login: React.FC = () => {
 
         if (token && userString) {
         try {
-            const user = JSON.parse(userString);
+                         JSON.parse(userString); // Validate JSON format
             localStorage.setItem("auth_token", token);
             router.push('/Home');
         } catch (err) {
             console.error("Error parsing user from query:", err);
         }
         }
-    }, []);
+    }, [router]);
 
   return (
       <main style={{
@@ -110,7 +111,9 @@ const Login: React.FC = () => {
             }}
           >
             {!isLoading && (
-              <img 
+              <Image
+              width={200}
+              height={200} 
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
                 alt="Google logo"
                 style={{ 

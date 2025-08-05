@@ -136,7 +136,7 @@ export function Feed({ mode }: FeedProps) {
     if (scrollTop + windowHeight >= documentHeight - 100) {
       fetchPosts(pages[mode] + 1);
     }
-  }, [loading, hasMore[mode], pages, mode, fetchPosts]);
+  }, [loading, hasMore, pages, mode, fetchPosts]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);

@@ -5,11 +5,12 @@ import { FeedToggle } from '@/components/Feed/FeedToggle';
 import { Header } from '@/components/Home/Header';
 import Layout from '@/layouts/Main';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation'; // TODO: Implement navigation functionality
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 const Home: React.FC = () => {
-  const router = useRouter();
+  // const router = useRouter(); // TODO: Implement navigation functionality
   const [feedMode, setFeedMode] = useState<'discover' | 'following'>('discover');
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -114,7 +115,9 @@ const Home: React.FC = () => {
             }}
             aria-label="Scroll to top"
         >
-            <img 
+            <Image
+              width={15}
+              height={15} 
             src="/assets/images/upArrow.png" 
             alt="Scroll to top" 
             style={{

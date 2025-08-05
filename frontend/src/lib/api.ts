@@ -10,6 +10,33 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+export interface LikeResponse {
+  success: boolean;
+  likesCount: number;
+  isLiked: boolean;
+}
+
+export interface UserResponse {
+  id: string;
+  username: string;
+  displayName: string;
+  email: string;
+  bio: string;
+  avatarUrl: string;
+  actorId: string;
+  activityPubId: string;
+  followersCount: number;
+  followingCount: number;
+  postsCount: number;
+  isFollowing?: boolean;
+}
+
+export interface FollowResponse {
+  success: boolean;
+  message: string;
+  following: boolean;
+}
+
 export class ApiService {
   private static getAuthHeaders(): HeadersInit {
     const token = localStorage.getItem('auth_token');
@@ -66,7 +93,7 @@ export class ApiService {
     }
   }
 
-  static async likePost(postId: string): Promise<ApiResponse<any>> {
+  static async likePost(postId: string): Promise<ApiResponse<LikeResponse>> {
     try {
       const response = await fetch(`${API_BASE_URL}/posts/${postId}/like`, {
         method: 'POST',
@@ -85,7 +112,7 @@ export class ApiService {
   }
 
   // Auth API
-  static async getCurrentUser(): Promise<ApiResponse<any>> {
+  static async getCurrentUser(): Promise<ApiResponse<UserResponse>> {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
         headers: this.getAuthHeaders(),
@@ -119,7 +146,7 @@ export class ApiService {
     }
   }
 
-  static async updateUsername(username: string): Promise<ApiResponse<any>> {
+  static async updateUsername(username: string): Promise<ApiResponse<{success: boolean; message: string}>> {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/username`, {
         method: 'PUT',
@@ -138,7 +165,7 @@ export class ApiService {
     }
   }
 
-  static async updateDisplayName(displayName: string): Promise<ApiResponse<any>> {
+  static async updateDisplayName(displayName: string): Promise<ApiResponse<{success: boolean; message: string}>> {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/display-name`, {
         method: 'PUT',
@@ -157,7 +184,7 @@ export class ApiService {
     }
   }
 
-  static async updateBio(bio: string): Promise<ApiResponse<any>> {
+  static async updateBio(bio: string): Promise<ApiResponse<{success: boolean; message: string}>> {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/bio`, {
         method: 'PUT',
@@ -177,7 +204,7 @@ export class ApiService {
   }
 
   // Post creation
-  static async createPost(formData: FormData): Promise<ApiResponse<any>> {
+  static async createPost(formData: FormData): Promise<ApiResponse<{success: boolean; post: object}>> {
     try {
       const token = localStorage.getItem('auth_token');
       const headers: Record<string, string> = {};
@@ -226,7 +253,7 @@ export class ApiService {
     }
   }
 
-  static async getUserByUsername(username: string): Promise<ApiResponse<any>> {
+  static async getUserByUsername(username: string): Promise<ApiResponse<UserResponse>> {
     try {
       const response = await fetch(`${API_BASE_URL}/users/${username}`, {
         headers: this.getAuthHeaders(),
@@ -244,7 +271,7 @@ export class ApiService {
   }
 
   // Following
-    static async followUser(user: String): Promise<ApiResponse<any>> {
+         static async followUser(user: string): Promise<ApiResponse<FollowResponse>> {
     try {
       const response = await fetch(`${API_BASE_URL}/follows/follow`, {
         method: 'POST',
@@ -263,7 +290,7 @@ export class ApiService {
     }
   }
 
-    static async unfollowUser(user: String): Promise<ApiResponse<any>> {
+         static async unfollowUser(user: string): Promise<ApiResponse<FollowResponse>> {
         try {
         const response = await fetch(`${API_BASE_URL}/follows/unfollow`, {
             method: 'POST',

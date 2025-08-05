@@ -1,11 +1,12 @@
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
 import { styles } from '@/styles/account';
 import type { UserProfile } from '@/types/account';
 import ProfileStats from '@/components/account/ProfileStats';
 import BioSection from '@/components/account/BioSection';
-import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
+import { Color, FontFamily, FontSize } from '@/lib/presentation';
 
 interface ProfileSectionProps {
   userProfile: UserProfile;
@@ -37,9 +38,11 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
   return (
     <section style={styles.profileSection}>
       <section style={styles.profileHeader}>
-        <img 
+        <Image 
           src={userProfile.avatar} 
           alt={userProfile.displayName}
+          width={80}
+          height={80}
           style={styles.avatar}
         />
 

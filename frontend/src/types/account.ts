@@ -27,7 +27,12 @@ export interface Actor {
 
 export interface Activity {
   inboxId: string;
-  object: any; 
+  object: {
+    actorId: string;
+    username?: string;
+    displayName?: string;
+    avatarUrl?: string;
+  }; 
 }
 
 export interface FollowingItem {

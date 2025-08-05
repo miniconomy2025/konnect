@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
 import { Heart } from 'lucide-react';
 import { styles } from '@/styles/account';
 import { Post } from '@/types/post';
@@ -44,9 +45,11 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
           {post.content.text}
         </section>
       ) : (
-        <img
+        <Image
           src={post.media.url}
           alt={post.content.text}
+          width={300}
+          height={200}
           style={styles.postImage}
         />
       )}

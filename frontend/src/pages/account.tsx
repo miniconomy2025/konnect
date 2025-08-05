@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { styles } from '@/styles/account';
-import { UserProfile, User, Actor } from '@/types/account';
+import { UserProfile, Actor } from '@/types/account';
 import { PostsResponse } from '@/types/post';
 import  Header  from '@/components/account/Header';
 import ProfileSection from '@/components/account/ProfileSection';
@@ -14,7 +14,7 @@ import Layout from '@/layouts/Main';
 import { ApiService } from '@/lib/api';
 
 const ProfilePage: React.FC = () => {
-  const [activeTab] = useState<string>('posts');
+  // const [activeTab] = useState<string>('posts'); // TODO: Implement tab functionality
   const [showFollowers, setShowFollowers] = useState<boolean>(false);
   const [showFollowing, setShowFollowing] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
