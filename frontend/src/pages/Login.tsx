@@ -10,7 +10,7 @@ const Login: React.FC = () => {
     const router = useRouter();
   const handleGoogleLogin = async () => {
     setIsLoading(true);
-    window.location.href = 'http://localhost:8000/auth/google';
+    window.location.href = '/auth/google';
   };
 
     useEffect(() => {
