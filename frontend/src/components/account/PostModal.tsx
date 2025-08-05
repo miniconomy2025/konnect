@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Post } from '@/types/post';
 import { styles } from '@/styles/account';
 import { ApiService } from '@/lib/api';
@@ -16,6 +16,14 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose, onPostDeleted, onP
   const [editing, setEditing] = useState(false);
   const [caption, setCaption] = useState(post.content.text);
   const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, []);
 
   const handleSave = async () => {
     // setLoading(true);
@@ -42,7 +50,13 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose, onPostDeleted, onP
 
   return (
     <section style={styles.modal}>
-      <section style={{ ...styles.modalContent, maxWidth: '32rem' }}>
+      <section style={{ ...styles.modalContent, 
+        maxWidth: '45vw',
+        maxHeight: '70vh',
+        overflowY: 'auto',
+        borderRadius: '12px',
+        padding: '1rem',
+      }}>
         <section style={styles.modalHeader}>
           <h3 style={styles.modalTitle}>Your Post</h3>
           <button style={styles.cancelButton} onClick={onClose}>Close</button>
@@ -51,7 +65,20 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose, onPostDeleted, onP
           {post.media.type === 'text' ? (
             <p>{caption}</p>
           ) : (
-            <img src={post.media.url} alt="Post" style={{ width: '100%', borderRadius: '6px' }} />
+            <section style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+            <img
+                src={post.media.url}
+                alt="Post"
+                style={{
+                maxWidth: '100%',
+                maxHeight: '40vh',
+                height: 'auto',
+                width: 'auto',
+                borderRadius: '8px',
+                objectFit: 'contain',
+                }}
+            />
+            </section>
           )}
 
           {editing ? (
