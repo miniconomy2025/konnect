@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { styles } from '@/styles/account';
-import { UserProfile } from '@/types/account';
-import ProfileStats from './ProfileStats';
-import BioSection from './BioSection';
+import type { UserProfile } from '@/types/account';
+import ProfileStats from '@/components/account/ProfileStats';
+import BioSection from '@/components/account/BioSection';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
 
 interface ProfileSectionProps {
