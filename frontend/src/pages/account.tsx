@@ -77,7 +77,7 @@ const ProfilePage: React.FC = () => {
             });
             setDisplayName(data.displayName);
             setUserName(data.username);
-            setTempName(data.username);
+            setTempName(data.displayName);
             setBio(data.bio);
             setTempBio(data.bio);
         };
@@ -95,21 +95,34 @@ const ProfilePage: React.FC = () => {
     if (!userProfile) return;
 
     // Make API Call
-    const response = await ApiService.updateUsername(tempName);
+    const response = await ApiService.updateDisplayName(tempName);
 
     if(response.error){
         alert('Error updating display name');
         console.log(response.error);
     }else{
-        alert('Updated User Name');
-        setUserName(tempName);
-        setUserProfile({ ...userProfile, username: tempName });
+        alert('Updated Display Name');
+        setDisplayName(tempName);
+        setUserProfile({ ...userProfile, displayName: tempName });
         setIsEditingName(false);        
     }
   };
 
-  const handleBioSave = () => {
+  const handleBioSave = async () => {
     if (!userProfile) return;
+
+    const response = await ApiService.updateBio(tempBio);
+
+    if(response.error){
+        alert('Error updating bio name');
+        console.log(response.error);
+    }else{
+        alert('Updated Bio');
+        setBio(bio);
+        setUserProfile({ ...userProfile, bio: bio });
+        setIsEditingBio(false);        
+    }
+
     setUserProfile({ ...userProfile, bio: tempBio });
     setIsEditingBio(false);
   };
@@ -172,13 +185,13 @@ const ProfilePage: React.FC = () => {
             title="Settings"
         >
             <SettingsModal 
-            displayName={userName}
-            isEditingName={isEditingName}
-            tempName={tempName}
-            setTempName={setTempName}
-            onEditName={() => setIsEditingName(true)}
-            onSaveName={handleNameSave}
-            onCancelName={handleNameCancel}
+                displayName={displayName}
+                isEditingName={isEditingName}
+                tempName={tempName}
+                setTempName={setTempName}
+                onEditName={() => setIsEditingName(true)}
+                onSaveName={handleNameSave}
+                onCancelName={handleNameCancel}
             />
         </Modal>
         </section>

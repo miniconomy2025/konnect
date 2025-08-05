@@ -138,6 +138,44 @@ export class ApiService {
     }
   }
 
+  static async updateDisplayName(displayName: string): Promise<ApiResponse<any>> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/display-name`, {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ displayName }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
+  static async updateBio(bio: string): Promise<ApiResponse<any>> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/bio`, {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ bio }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
   // Post creation
   static async createPost(formData: FormData): Promise<ApiResponse<any>> {
     try {
