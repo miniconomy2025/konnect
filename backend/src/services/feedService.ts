@@ -114,50 +114,50 @@ export class FeedService {
     }
   }
 
-private async convertExternalPostsToUnified(externalPosts: any[]): Promise<UnifiedPostResponse[]> {
-  const postPromises = externalPosts.map(async post => {
-    try {
-      const author = await this.userService.findByActorId(post.actorId);
-      
-      return {
-        id: post.objectId,
-        type: 'external' as const,
-        author: {
-          id: post.actorId,
-          username: this.extractUsernameFromActorId(post.actorId),
-          domain: this.extractDomainFromActorId(post.actorId),
-          displayName: author?.displayName || this.extractUsernameFromActorId(post.actorId),
-          avatarUrl: author?.avatarUrl,
-          isLocal: false
-        },
-        content: {
-          text: post.contentText || post.content || '',
-          hasMedia: post.attachments && post.attachments.length > 0,
-          mediaType: this.getFirstMediaType(post.attachments)
-        },
-        media: this.getFirstMediaAttachment(post.attachments),
-        engagement: {
-          likesCount: post.likesCount || 0,
-          isLiked: false,
-          canInteract: false
-        },
-        createdAt: post.published,
-        updatedAt: post.updated,
-        url: post.url,
-        isReply: !!post.inReplyTo
-      };
-    } catch (error) {
-      logger.warn('Failed to convert external post to unified format:', { 
-        error, 
-        postId: post._id 
-      });
-      return null;
-    }
-  });
+  private async convertExternalPostsToUnified(externalPosts: any[]): Promise<UnifiedPostResponse[]> {
+    const postPromises = externalPosts.map(async post => {
+      try {
+        const author = await this.userService.findByActorId(post.actorId);
+        
+        return {
+          id: post.objectId,
+          type: 'external' as const,
+          author: {
+            id: post.actorId,
+            username: this.extractUsernameFromActorId(post.actorId),
+            domain: this.extractDomainFromActorId(post.actorId),
+            displayName: author?.displayName || this.extractUsernameFromActorId(post.actorId),
+            avatarUrl: author?.avatarUrl,
+            isLocal: false
+          },
+          content: {
+            text: post.contentText || post.content || '',
+            hasMedia: post.attachments && post.attachments.length > 0,
+            mediaType: this.getFirstMediaType(post.attachments)
+          },
+          media: this.getFirstMediaAttachment(post.attachments),
+          engagement: {
+            likesCount: post.likesCount || 0,
+            isLiked: false,
+            canInteract: false
+          },
+          createdAt: post.published,
+          updatedAt: post.updated,
+          url: post.url,
+          isReply: !!post.inReplyTo
+        };
+      } catch (error) {
+        logger.warn('Failed to convert external post to unified format:', { 
+          error, 
+          postId: post._id 
+        });
+        return null;
+      }
+    });
 
-  const results = await Promise.all(postPromises);
-  return results.filter(Boolean) as UnifiedPostResponse[];
-}
+    const results = await Promise.all(postPromises);
+    return results.filter(Boolean) as UnifiedPostResponse[];
+  }
 
 
   private extractUsernameFromActorId(actorId: string): string {
