@@ -3,6 +3,7 @@ import { UserService } from '../services/userService.js';
 import { FollowService } from '../services/followService.ts';
 import { InboxService } from '../services/inboxService.ts';
 import { optionalAuth } from '../middlewares/auth.ts';
+import { requireAuth } from '../middlewares/auth.ts';
 
 const router = Router();
 const userService = new UserService();

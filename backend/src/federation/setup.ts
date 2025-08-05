@@ -8,6 +8,7 @@ import { addFollowListener } from "./listeners/follow.ts";
 import { addCreateListener } from "./listeners/create.ts";
 import { addDeleteListener } from "./listeners/delete.ts";
 import { addUndoListener } from "./listeners/undo.ts";
+import { addUpdateListener } from "./listeners/update.ts";
 
 const federation = createFederation({
   kv: new MemoryKvStore(),
@@ -27,5 +28,6 @@ addFollowListener(inboxListeners);
 addCreateListener(inboxListeners);
 addDeleteListener(inboxListeners);
 addUndoListener(inboxListeners);
+addUpdateListener(inboxListeners);
 
 export default federation;

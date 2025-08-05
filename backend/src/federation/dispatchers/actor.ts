@@ -23,7 +23,7 @@ export function createActorDispatcher(federation: any) {
       id: ctx.getActorUri(identifier),
       preferredUsername: user.username,
       name: user.displayName,
-      summary: user.bio || "",
+      summary: user.bio ? `<p>${user.bio}</p>` : "",
       
       icon: user.avatarUrl ? new Image({
         url: new URL(user.avatarUrl),

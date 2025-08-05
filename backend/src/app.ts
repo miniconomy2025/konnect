@@ -57,7 +57,7 @@ app.use((req, res, next) => {
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.use('/auth', authRoutes);
+app.use('/auth', attachFederationContext, authRoutes);
 app.use('/posts', attachFederationContext, postRoutes);
 app.use('/search', searchRoutes);
 app.use('/follows', attachFederationContext, followRoutes);
