@@ -3,10 +3,14 @@ import type { CreateFollow } from '../types/follow.ts';
 import { populateRemoteFollowActorReferences } from '../utils/mappers.ts';
 import { InboxService } from './inboxService.ts';
 import { UserService } from './userService.ts';
+import { RedisService } from './redisService.ts';
 
 export class FollowService {
+  private redisService: RedisService;
 
-  constructor(private readonly userService: UserService, private readonly InboxService: InboxService) {}
+  constructor(private readonly userService: UserService, private readonly InboxService: InboxService) {
+    this.redisService = new RedisService();
+  }
 
   private population = [
     { path: 'actor.ref', select: 'username displayName avatarUrl actorId' },
@@ -20,6 +24,12 @@ export class FollowService {
     });
 
     await follow.save();
+
+    // Invalidate caches for both users
+    await this.redisService.invalidateFollowCaches(
+      followCreateObject.actor.id,
+      followCreateObject.object.id
+    );
 
     const populatedFollow = await FollowModel.findById(follow._id)
       .populate(this.population)
@@ -37,7 +47,13 @@ export class FollowService {
       'actor.id': actorId, 
       'object.id': objectId 
     });
-    return result.deletedCount > 0;
+
+    if (result.deletedCount > 0) {
+      // Invalidate caches for both users
+      await this.redisService.invalidateFollowCaches(actorId, objectId);
+      return true;
+    }
+    return false;
   }
 
   async isFollowing(actorId: string, objectId: string): Promise<boolean> {
@@ -103,7 +119,7 @@ export class FollowService {
       follows = await FollowModel.find({ 'object.id': objectId })
         .skip((page - 1) * limit)
         .limit(limit)
-      .populate(this.population)
+        .populate(this.population)
         .lean();
     } else {
       follows = await FollowModel.find({ 'object.id': objectId })
@@ -115,20 +131,57 @@ export class FollowService {
   }
 
   async getFollowingActorIds(actorId: string): Promise<string[]> {
+    // Try to get from cache first
+    const cachedFollowing = await this.redisService.getCachedFollowingList(actorId);
+    if (cachedFollowing.length > 0) {
+      return cachedFollowing;
+    }
+
+    // If not in cache, get from database
     const follows = await FollowModel.find({ 'actor.id': actorId }).lean();
-    return follows.map(follow => follow.object.id);
+    const followingIds = follows.map(follow => follow.object.id);
+
+    // Cache the results
+    await this.redisService.cacheFollowingList(actorId, followingIds);
+
+    return followingIds;
   }
 
   async getFollowerActorIds(objectId: string): Promise<string[]> {
+    // Try to get from cache first
+    const cachedFollowers = await this.redisService.getCachedFollowersList(objectId);
+    if (cachedFollowers.length > 0) {
+      return cachedFollowers;
+    }
+
+    // If not in cache, get from database
     const follows = await FollowModel.find({ 'object.id': objectId }).lean();
-    return follows.map(follow => follow.actor.id);
+    const followerIds = follows.map(follow => follow.actor.id);
+
+    // Cache the results
+    await this.redisService.cacheFollowersList(objectId, followerIds);
+
+    return followerIds;
   }
 
   async getFollowCounts(actorId: string): Promise<{ followingCount: number; followersCount: number }> {
+    // Try to get from cache first
+    const cachedCounts = await this.redisService.getCachedFollowCounts(actorId);
+    if (cachedCounts) {
+      return {
+        followingCount: cachedCounts.following,
+        followersCount: cachedCounts.followers
+      };
+    }
+
+    // If not in cache, get from database
     const [followingCount, followersCount] = await Promise.all([
       FollowModel.countDocuments({ 'actor.id': actorId }),
       FollowModel.countDocuments({ 'object.id': actorId })
     ]);
+
+    // Cache the results
+    await this.redisService.cacheFollowCounts(actorId, followingCount, followersCount);
 
     return { followingCount, followersCount };
   }
