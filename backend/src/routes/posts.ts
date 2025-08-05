@@ -3,7 +3,7 @@ import multer from 'multer';
 import { PostService } from '../services/postserivce.js';
 import { PostNormalizationService } from '../services/postNormalizationService.js';
 import { requireAuth, optionalAuth } from '../middlewares/auth.js';
-import type { IPost } from '../models/post.ts';
+import { Post, type IPost } from '../models/post.ts';
 import { Types } from 'mongoose';
 import type { IUser } from '../models/user.ts';
 
@@ -27,6 +27,52 @@ const upload = multer({
       cb(new Error('Invalid file type. Only JPEG, PNG, and WebP are allowed.'));
     }
   },
+});
+
+router.put('/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { caption } = req.body;
+    const userId = req.user!._id!.toString();
+    const federationContext = (req as any).federationContext;
+
+    if (!caption || typeof caption !== 'string') {
+      return res.status(400).json({ error: 'Caption is required' });
+    }
+
+    const trimmedCaption = caption.trim();
+    
+    if (trimmedCaption.length === 0) {
+      return res.status(400).json({ error: 'Caption cannot be empty' });
+    }
+
+    if (trimmedCaption.length > 2200) {
+      return res.status(400).json({ error: 'Caption must be 2200 characters or less' });
+    }
+
+    const updatedPost = await postService.updatePost(id, trimmedCaption, userId, federationContext);
+    
+    if (!updatedPost) {
+      return res.status(404).json({ error: 'Post not found or you are not the author' });
+    }
+
+    if (!hasPopulatedAuthor(updatedPost)) {
+      return res.status(500).json({ error: 'Something went wrong' });
+    }
+
+    const unifiedPost = PostNormalizationService.localPostToUnified(
+      updatedPost, 
+      userId
+    );
+
+    res.json({
+      success: true,
+      post: unifiedPost
+    });
+  } catch (error) {
+    console.error('Post edit error:', error);
+    res.status(500).json({ error: 'Failed to edit post' });
+  }
 });
 
 router.post('/', requireAuth, upload.single('image'), async (req, res) => {
