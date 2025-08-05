@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Post } from '@/types/post';
 import { styles } from '@/styles/account';
 import { ApiService } from '@/lib/api';
+import { Edit2, Check, X } from 'lucide-react';
 
 interface PostModalProps {
   post: Post;
@@ -25,14 +26,13 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose, onPostDeleted, onP
         };
     }, []);
 
-  const handleSave = async () => {
-    // setLoading(true);
-    // const { data, error } = await ApiService.updatePostCaption(post._id, caption);
-    // setLoading(false);
-    // if (error) return alert('Failed to update post');
-    // onPostUpdated({ ...post, content: { ...post.content, text: caption } });
-    // setEditing(false);
-    console.log('update')
+  const handleCaptionSave = async () => {
+    const { data, error } = await ApiService.updatePostCaption(post.id, caption);
+
+    if (error) return alert('Failed to update caption');
+
+    onPostUpdated({ ...post, content: { ...post.content, text: caption } });
+    setEditing(false);
   };
 
   const handleDelete = async () => {
@@ -86,10 +86,10 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose, onPostDeleted, onP
               <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
-                style={styles.bioTextarea}
+                style={{...styles.bioTextarea, marginTop: '2rem'}}
               />
               <section style={{ marginTop: '0.5rem' }}>
-                <button style={styles.saveButton} onClick={handleSave} disabled={loading}>Save</button>
+                <button style={styles.saveButton} onClick={handleCaptionSave} disabled={loading}>Save</button>
                 <button style={styles.cancelButton} onClick={() => setEditing(false)}>Cancel</button>
               </section>
             </>

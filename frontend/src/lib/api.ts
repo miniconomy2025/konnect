@@ -208,6 +208,26 @@ export class ApiService {
     }
   }
 
+  static async updatePostCaption(id: string, caption: string): Promise<ApiResponse<any>> {
+    try {
+        console.log(caption);
+      const response = await fetch(`${API_BASE_URL}/posts/${id}`, {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ caption }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
   // Search API
   static async searchUsers(query: string, page: number = 1, limit: number = 10): Promise<ApiResponse<DiscoverSearchResponse>> {
     try {

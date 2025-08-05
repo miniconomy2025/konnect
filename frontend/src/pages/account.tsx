@@ -207,10 +207,11 @@ const ProfilePage: React.FC = () => {
             }));
             }}
             onPostUpdated={(updatedPost) => {
-            setPosts((prev) => ({
-                ...prev!,
-                posts: prev!.posts.map((post) => post.id === updatedPost.id ? updatedPost : post),
-            }));
+                setPosts((prev) => ({
+                    ...prev!,
+                    posts: prev!.posts.map((post) => post.id === updatedPost.id ? updatedPost : post),
+                })
+            );
             setSelectedPost(updatedPost);
             }}
         />
