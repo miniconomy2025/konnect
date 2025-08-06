@@ -67,7 +67,7 @@ export class FeedService {
       .limit(limit)
       .populate('author', 'username displayName avatarUrl');
 
-    const unifiedPosts = PostNormalizationService.localPostsToUnified(localPosts, userId);
+    const unifiedPosts = await PostNormalizationService.localPostsToUnifiedWithLikes(localPosts, userId);
 
     return {
       posts: unifiedPosts,

@@ -60,7 +60,7 @@ router.put('/:id', requireAuth, async (req, res) => {
       return res.status(500).json({ error: 'Something went wrong' });
     }
 
-    const unifiedPost = PostNormalizationService.localPostToUnified(
+    const unifiedPost = await PostNormalizationService.localPostToUnifiedWithLikes(
       updatedPost, 
       userId
     );
@@ -112,7 +112,7 @@ router.post('/', requireAuth, upload.single('image'), async (req, res) => {
       return res.status(500).json({ error: 'Failed to retrieve created post' });
     }
 
-    const unifiedPost = PostNormalizationService.localPostToUnified(
+    const unifiedPost = await PostNormalizationService.localPostToUnifiedWithLikes(
       populatedPost, 
       req.user!._id!.toString()
     );
@@ -137,7 +137,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
       return res.status(500).json({ error: 'Something went wrong' });
     }
 
-    const unifiedPost = PostNormalizationService.localPostToUnified(
+    const unifiedPost = await PostNormalizationService.localPostToUnifiedWithLikes(
       post, 
       req.user?._id?.toString()
     );
@@ -165,7 +165,7 @@ router.get('/user/:username', optionalAuth, async (req, res) => {
 
     const posts = await postService.getUserPosts(user._id.toString(), page, limit);
     
-    const unifiedPosts = PostNormalizationService.localPostsToUnified(
+    const unifiedPosts = await PostNormalizationService.localPostsToUnifiedWithLikes(
       posts,
       req.user?._id?.toString()
     );
