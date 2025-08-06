@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { styles } from '@/styles/account';
 import { UserProfile, Actor } from '@/types/account';
-import { PostsResponse } from '@/types/post';
+import { Post, PostsResponse } from '@/types/post';
 import  Header  from '@/components/account/Header';
 import ProfileSection from '@/components/account/ProfileSection';
 import PostsGrid from '@/components/account/PostsGrid';
@@ -12,7 +12,7 @@ import UserListItem from '@/components/account/UserListItem';
 import SettingsModal from '@/components/account/SettingsModal';
 import Layout from '@/layouts/Main';
 import { ApiService } from '@/lib/api';
-import PostModal from '@/components/Account/PostModal';
+import PostModal from '@/components/account/PostModal';
 
 const ProfilePage: React.FC = () => {
   // const [activeTab] = useState<string>('posts'); // TODO: Implement tab functionality
