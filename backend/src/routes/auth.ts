@@ -63,7 +63,8 @@ router.get('/google/callback', async (req, res) => {
     });
 
     const token = authService.generateToken(user);
-    const frontendUrl = new URL('https://konnect.tevlen.co.za/Login');
+    // const frontendUrl = new URL('https://konnect.tevlen.co.za/Login');
+    const frontendUrl = new URL(`http://${process.env.DOMAIN || 'localhost:8000'}/Login`);
     frontendUrl.searchParams.set('token', token);
     frontendUrl.searchParams.set('user', JSON.stringify({
         id: user._id?.toString(),
