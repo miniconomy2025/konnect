@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Settings } from 'lucide-react';
-import { styles } from '@/styles/account';
+import { SettingsHeader } from '@/components/UI';
 
 interface HeaderProps {
   username: string;
@@ -11,14 +11,10 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ username, onSettingsClick }) => {
   return (
-    <section style={styles.header}>
-      <section style={styles.headerContent}>
-        <h1 style={styles.headerTitle}>{username}</h1>
-        <button onClick={onSettingsClick} style={styles.iconButton}>
-          <Settings size={24} />
-        </button>
-      </section>
-    </section>
+    <SettingsHeader 
+      title={username}
+      onSettings={onSettingsClick}
+    />
   );
 };
 

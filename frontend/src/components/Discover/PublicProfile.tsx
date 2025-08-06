@@ -6,8 +6,8 @@ import { PostsResponse } from '@/types/post';
 import { ApiService } from '@/lib/api';
 import ProfileSection from '@/components/account/ProfileSection';
 import PostsGrid from '@/components/account/PostsGrid';
-import { ArrowLeft } from 'lucide-react';
-import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
+import { BackHeader } from '@/components/UI';
+import { Spacing } from '@/lib/presentation';
 
 interface PublicProfileProps {
   username: string;
@@ -57,34 +57,24 @@ const PublicProfileView: React.FC<PublicProfileProps> = ({ username, onBack }) =
   if (!userProfile) return <p>Loading...</p>;
 
   return (
-    <section style={{ marginTop: 24 }}>
-      <button
-        onClick={onBack}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          background: 'none',
-          border: 'none',
-          color: Color.Muted,
-          cursor: 'pointer',
-          fontFamily: FontFamily.Nunito,
-          fontSize: FontSize.Large,
-          marginBottom: Spacing.Small,
-        }}
-      >
-        <ArrowLeft size={18} />
-        Back to Discover
-      </button>
-
-      <ProfileSection
+    <section>
+      <BackHeader 
+        title={`@${userProfile.username}`}
+        onBack={onBack}
+        backLabel="Back to Discover"
+        showBorder={true}
+      />
+      
+      <section style={{ padding: Spacing.Medium }}>
+        <ProfileSection
         userProfile={{ ...userProfile, isFollowing }}
         onFollowersClick={() => {}}
         onFollowingClick={() => {}}
         showFollowButton    
         onFollowToggle={toggleFollow}
       />
-      <PostsGrid posts={posts?.posts || []} />
+        <PostsGrid posts={posts?.posts || []} />
+      </section>
     </section>
   );
 };
