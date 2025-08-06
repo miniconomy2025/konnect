@@ -4,12 +4,13 @@ import { populateRemoteFollowActorReferences } from '../utils/mappers.ts';
 import { InboxService } from './inboxService.ts';
 import { UserService } from './userService.ts';
 import { RedisService } from './redisService.ts';
+import { ActivityService } from './activityservice.ts';
 
 export class FollowService {
-  private redisService: RedisService;
+  private activityService = new ActivityService();
+  private redisService = RedisService.getInstance();
 
   constructor(private readonly userService: UserService, private readonly InboxService: InboxService) {
-    this.redisService = new RedisService();
   }
 
   private population = [
