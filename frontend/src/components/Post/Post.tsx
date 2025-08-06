@@ -88,7 +88,9 @@ export function Post({ post, children }: PostProps) {
       style={{
         border: `1px solid ${Color.Border}`,
         borderRadius: Radius.Medium,
-        background: Color.Surface,
+        background: 'rgba(255, 255, 255, 0.9)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
         marginBottom: Spacing.Large,
         overflow: 'hidden',
         maxWidth: 480,
@@ -98,7 +100,7 @@ export function Post({ post, children }: PostProps) {
         ...tiltStyle,
       }}>
       <header style={{
-        background: Color.Surface,
+        background: 'rgba(255, 255, 255, 0.8)',
         padding: `${Spacing.Medium} ${Spacing.Large}`,
         borderBottom: `1px solid ${Color.Border}`,
         display: 'flex',
@@ -155,14 +157,14 @@ export function Post({ post, children }: PostProps) {
         </section>
       </header>
       
-      <main style={{ background: Color.Background, padding: 0, textAlign: 'center' }}>
+      <main style={{ background: 'rgba(248, 249, 250, 0.7)', padding: 0, textAlign: 'center' }}>
         {children}
       </main>
       
       {post.content.text && post.media.type !== 'text' && (
         <section style={{
           padding: `${Spacing.Medium} ${Spacing.Large}`,
-          background: Color.Surface,
+          background: 'rgba(255, 255, 255, 0.8)',
           borderTop: `1px solid ${Color.Border}`,
         }}>
           <p style={{ 
@@ -177,13 +179,15 @@ export function Post({ post, children }: PostProps) {
       )}
       
       {post.engagement.canInteract && (
-      <footer style={{
-        padding: `${Spacing.Medium} ${Spacing.Large}`,
-        background: Color.Surface,
-        borderTop: `1px solid ${Color.Border}`,
-        display: 'flex',
-        alignItems: 'center',
-      }}>
+             <footer style={{
+         padding: `${Spacing.Medium} ${Spacing.Large}`,
+         background: 'rgba(255, 255, 255, 0.8)',
+         backdropFilter: 'blur(8px)',
+         WebkitBackdropFilter: 'blur(8px)',
+         borderTop: `1px solid ${Color.Border}`,
+         display: 'flex',
+         alignItems: 'center',
+       }}>
         <button
           onClick={handleLike}
           disabled={isLiking}

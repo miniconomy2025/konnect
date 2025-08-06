@@ -5,6 +5,7 @@ import { FeedToggle } from '@/components/Feed/FeedToggle';
 import { Header } from '@/components/Home/Header';
 import Layout from '@/layouts/Main';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
+import { NeuralBackground } from '@/components/UI';
 // import { useRouter } from 'next/navigation'; // TODO: Implement navigation functionality
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
@@ -43,9 +44,10 @@ const Home: React.FC = () => {
     <Layout>
         <main style={{
         minHeight: '100vh',
-        background: Color.Background,
+        background: 'transparent',
         position: 'relative',
         }}>
+        <NeuralBackground />
         <Header />
         
         <nav style={{
@@ -81,7 +83,9 @@ const Home: React.FC = () => {
             width: 40,
             height: 40,
             borderRadius: '50%',
-            background: Color.Surface,
+            background: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
             border: `1px solid ${Color.Primary}`,
             color: Color.Primary,
             fontSize: FontSize.Large,
@@ -110,7 +114,7 @@ const Home: React.FC = () => {
             onMouseLeave={(e) => {
             e.currentTarget.style.transform = showScrollToTop ? 'scale(1)' : 'translateY(20px)';
             e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-            e.currentTarget.style.background = Color.Surface;
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
             e.currentTarget.style.color = Color.Primary;
             }}
             aria-label="Scroll to top"

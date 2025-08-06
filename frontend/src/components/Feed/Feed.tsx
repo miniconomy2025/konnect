@@ -171,33 +171,44 @@ export function Feed({ mode }: FeedProps) {
   };
 
   return (
-    <main style={{ padding: Spacing.Medium }}>
-      {error && (
-        <section style={{
-          textAlign: 'center',
-          padding: Spacing.Medium,
-          color: Color.Error,
-          fontSize: FontSize.Base,
-          marginBottom: Spacing.Medium,
-        }}>
-          <strong>{error}</strong>
-        </section>
-      )}
+    <main style={{ 
+      padding: Spacing.Medium,
+      background: 'transparent',
+    }}>
+             {error && (
+         <section style={{
+           textAlign: 'center',
+           padding: Spacing.Medium,
+           color: Color.Error,
+           fontSize: FontSize.Base,
+           marginBottom: Spacing.Medium,
+           background: 'rgba(255, 255, 255, 0.8)',
+           borderRadius: '0.5rem',
+           backdropFilter: 'blur(8px)',
+           WebkitBackdropFilter: 'blur(8px)',
+         }}>
+           <strong>{error}</strong>
+         </section>
+       )}
       
-      {posts[mode].length === 0 && !loading && mode === 'following' && (
-        <section style={{
-          textAlign: 'center',
-          padding: Spacing.XLarge,
-          color: Color.Muted,
-          fontSize: FontSize.Base,
-        }}>
-          <strong style={{ fontSize: 48, marginBottom: Spacing.Medium }}>👥</strong>
-          <h3 style={{ margin: '0 0 1rem 0', color: Color.Text }}>No posts yet</h3>
-          <p style={{ margin: 0, lineHeight: 1.5 }}>
-            Start following people to see their posts here!
-          </p>
-        </section>
-      )}
+             {posts[mode].length === 0 && !loading && mode === 'following' && (
+         <section style={{
+           textAlign: 'center',
+           padding: Spacing.XLarge,
+           color: Color.Muted,
+           fontSize: FontSize.Base,
+           background: 'rgba(255, 255, 255, 0.8)',
+           borderRadius: '1rem',
+           backdropFilter: 'blur(8px)',
+           WebkitBackdropFilter: 'blur(8px)',
+         }}>
+           <strong style={{ fontSize: 48, marginBottom: Spacing.Medium }}>👥</strong>
+           <h3 style={{ margin: '0 0 1rem 0', color: Color.Text }}>No posts yet</h3>
+           <p style={{ margin: 0, lineHeight: 1.5 }}>
+             Start following people to see their posts here!
+           </p>
+         </section>
+       )}
       
       {posts[mode].map((post) => (
         <article key={`${post.id}-${mode}`}>
@@ -205,27 +216,35 @@ export function Feed({ mode }: FeedProps) {
         </article>
       ))}
       
-      {loading && (
-        <section style={{
-          textAlign: 'center',
-          padding: Spacing.Large,
-          color: Color.Muted,
-          fontSize: FontSize.Base,
-        }}>
-          <strong>Loading more posts...</strong>
-        </section>
-      )}
+             {loading && (
+         <section style={{
+           textAlign: 'center',
+           padding: Spacing.Large,
+           color: Color.Muted,
+           fontSize: FontSize.Base,
+           background: 'rgba(255, 255, 255, 0.8)',
+           borderRadius: '0.5rem',
+           backdropFilter: 'blur(8px)',
+           WebkitBackdropFilter: 'blur(8px)',
+         }}>
+           <strong>Loading more posts...</strong>
+         </section>
+       )}
       
-      {!hasMore[mode] && posts[mode].length > 0 && (
-        <section style={{
-          textAlign: 'center',
-          padding: Spacing.Large,
-          color: Color.Muted,
-          fontSize: FontSize.Base,
-        }}>
-          <strong>You&apos;ve reached the end! 🎉</strong>
-        </section>
-      )}
+             {!hasMore[mode] && posts[mode].length > 0 && (
+         <section style={{
+           textAlign: 'center',
+           padding: Spacing.Large,
+           color: Color.Muted,
+           fontSize: FontSize.Base,
+           background: 'rgba(255, 255, 255, 0.8)',
+           borderRadius: '0.5rem',
+           backdropFilter: 'blur(8px)',
+           WebkitBackdropFilter: 'blur(8px)',
+         }}>
+           <strong>You&apos;ve reached the end! 🎉</strong>
+         </section>
+       )}
     </main>
   );
 } 

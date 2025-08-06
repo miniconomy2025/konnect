@@ -23,10 +23,9 @@ export function FeedToggle({ mode, onModeChange }: FeedToggleProps) {
         // background: Color.Background,
         borderRadius: Radius.Large,
         padding: Spacing.XSmall,
-        background: 'rgba(255, 255, 255, 0.1)',
+        background: 'rgba(255, 255, 255, 0.7)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
-        filter: 'blur(0.3px)',
         border: `1px solid ${Color.Border}`,
         position: 'relative',
       }}>

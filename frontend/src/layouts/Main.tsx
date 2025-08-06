@@ -10,7 +10,11 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   return (
     <section style={styles.container}>
-      <main style={styles.main}>
+      <main style={{
+        ...styles.main,
+        position: 'relative',
+        zIndex: 1,
+      }}>
         {children}
       </main>
       <NavBar />

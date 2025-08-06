@@ -3,7 +3,7 @@ import { CSSProperties } from 'react';
 export const styles: { [key: string]: CSSProperties } = {
   container: {
     minHeight: '100vh',
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'transparent',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
   },
   main: {

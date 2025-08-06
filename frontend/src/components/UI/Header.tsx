@@ -56,12 +56,14 @@ export const Header: React.FC<HeaderProps> = ({
     },
     transparent
       ? {
-          background: 'rgba(255, 255, 255, 0.95)',
+          background: 'rgba(255, 255, 255, 0.8)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
         }
       : {
-          background: Color.Surface,
+          background: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
         },
     style
   );
