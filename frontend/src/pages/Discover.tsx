@@ -8,7 +8,7 @@ import { UserCard } from '@/components/Discover/UserCard';
 import  PublicProfileView  from '@/components/Discover/PublicProfile';
 import { Header } from '@/components/Home/Header';
 import { ApiService } from '@/lib/api';
-import { DiscoverSearchResponse, DiscoverUser } from '@/types/discover';
+import { DiscoverUser } from '@/types/discover';
 import { useSearchParams } from 'next/navigation';
 import router from 'next/router';
 

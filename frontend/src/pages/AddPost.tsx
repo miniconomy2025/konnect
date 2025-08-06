@@ -101,7 +101,7 @@ const AddPost: React.FC = () => {
         // Success - redirect to home
         router.push('/');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to create post. Please try again.');
     } finally {
       setIsSubmitting(false);

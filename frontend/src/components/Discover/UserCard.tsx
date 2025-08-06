@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
 import { DiscoverUser } from '@/types/discover';
 import { useRouter } from 'next/router';
@@ -26,7 +27,9 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         router.push(`/Discover?user=${user.username}`);
       }}
     >
-      <img
+      <Image
+        width={48}
+        height={48}
         src={user.avatarUrl || '/assets/images/default-profile.png'}
         alt={`${user.username}'s avatar`}
         style={{

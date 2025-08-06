@@ -32,9 +32,9 @@ const PublicProfileView: React.FC<PublicProfileProps> = ({ username, onBack }) =
           postsCount: data.postsCount,
           followersCount: data.followersCount,
           followingCount: data.followingCount,
-          isFollowing: data.isFollowing,
+          isFollowing: data.isFollowing ?? false,
         });
-        setIsFollowing(data.isFollowing);
+        setIsFollowing(data.isFollowing ?? false);
         setPosts(postRes.data);
         setActorId(data.activityPubId);
       }
@@ -47,10 +47,10 @@ const PublicProfileView: React.FC<PublicProfileProps> = ({ username, onBack }) =
     if (!userProfile || !actorId) return;
     if (isFollowing) {
         const response = await ApiService.unfollowUser(actorId);
-        setIsFollowing(response.data.following);
+        setIsFollowing(response.data?.following ?? false);
     } else {
         const response = await ApiService.followUser(actorId);
-        setIsFollowing(response.data.following);
+        setIsFollowing(response.data?.following ?? false);
     }
   };
 

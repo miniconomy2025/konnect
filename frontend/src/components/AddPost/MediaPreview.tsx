@@ -1,6 +1,7 @@
 import { Color, Spacing } from '@/lib/presentation';
 import { Buttons, Layout, Media, StyleHelpers, Utils } from '@/lib/sharedStyles';
 import React from 'react';
+import Image from 'next/image';
 
 interface MediaPreviewProps {
   mediaPreview: string | null;
@@ -18,7 +19,9 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
   return (
     <div style={StyleHelpers.combine(Layout.card, Utils.relative)}>
       {imageFile?.type.startsWith('image/') ? (
-        <img
+        <Image
+          width={400}
+          height={300}
           src={mediaPreview}
           alt="Media preview"
           style={Media.image}

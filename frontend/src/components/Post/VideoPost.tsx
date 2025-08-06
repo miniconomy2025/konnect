@@ -7,6 +7,8 @@ interface VideoPostProps {
 }
 
 export function VideoPost({ post }: VideoPostProps) {
+  const videoSrc = post.media?.url || '';
+
   return (
     <PostContainer post={post}>
       <figure style={{ margin: 0 }}>
@@ -17,7 +19,7 @@ export function VideoPost({ post }: VideoPostProps) {
           background: '#000',
           maxHeight: 'none',
         }}>
-          <source src={post.mediaUrl} type="video/mp4" />
+          <source src={videoSrc} type="video/mp4" />
           <p>Sorry, your browser does not support embedded videos.</p>
         </video>
       </figure>

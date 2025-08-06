@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
 import { styles } from '@/styles/account';
 import { Actor } from '@/types/account';
 
@@ -13,7 +14,7 @@ const UserListItem: React.FC<UserListItemProps> = ({ user, following = false }) 
   return (
     <section style={styles.userListItem}>
       <section style={styles.userInfo}>
-        <img src={user.avatarUrl} alt={user.displayName} style={styles.userAvatar} />
+        <Image src={user.avatarUrl} alt={user.displayName} width={48} height={48} style={styles.userAvatar} />
         <section style={styles.userDetails}>
           <p style={styles.userUsername}>{user.username}</p>
           <p style={styles.userDisplayName}>{user.displayName}</p>
