@@ -3,7 +3,7 @@ import { Redis } from 'ioredis';
 export class RedisService {
   private client: Redis;
 
-  constructor() {
+  private constructor() {
       this.client = new Redis({
       host: process.env.REDIS_HOST,
       port: parseInt(process.env.REDIS_PORT || '6379'),
