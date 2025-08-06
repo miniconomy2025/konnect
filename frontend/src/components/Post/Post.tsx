@@ -88,9 +88,9 @@ export function Post({ post, children }: PostProps) {
       style={{
         border: `1px solid ${Color.Border}`,
         borderRadius: Radius.Medium,
-        background: 'rgba(255, 255, 255, 0.9)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
+        background: 'rgba(255, 255, 255, 0.7)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         marginBottom: Spacing.Large,
         overflow: 'hidden',
         maxWidth: 480,
@@ -99,14 +99,16 @@ export function Post({ post, children }: PostProps) {
         cursor: 'pointer',
         ...tiltStyle,
       }}>
-      <header style={{
-        background: 'rgba(255, 255, 255, 0.8)',
-        padding: `${Spacing.Medium} ${Spacing.Large}`,
-        borderBottom: `1px solid ${Color.Border}`,
-        display: 'flex',
-        alignItems: 'center',
-        gap: Spacing.Small,
-      }}>
+             <header style={{
+         background: 'rgba(255, 255, 255, 0.6)',
+         backdropFilter: 'blur(12px)',
+         WebkitBackdropFilter: 'blur(12px)',
+         padding: `${Spacing.Medium} ${Spacing.Large}`,
+         borderBottom: `1px solid ${Color.Border}`,
+         display: 'flex',
+         alignItems: 'center',
+         gap: Spacing.Small,
+       }}>
         <figure style={{
           width: 40,
           height: 40,
@@ -157,16 +159,24 @@ export function Post({ post, children }: PostProps) {
         </section>
       </header>
       
-      <main style={{ background: 'rgba(248, 249, 250, 0.7)', padding: 0, textAlign: 'center' }}>
-        {children}
-      </main>
+             <main style={{ 
+         background: 'rgba(248, 249, 250, 0.5)', 
+         backdropFilter: 'blur(12px)',
+         WebkitBackdropFilter: 'blur(12px)',
+         padding: 0, 
+         textAlign: 'center' 
+       }}>
+         {children}
+       </main>
       
       {post.content.text && post.media.type !== 'text' && (
-        <section style={{
-          padding: `${Spacing.Medium} ${Spacing.Large}`,
-          background: 'rgba(255, 255, 255, 0.8)',
-          borderTop: `1px solid ${Color.Border}`,
-        }}>
+                 <section style={{
+           padding: `${Spacing.Medium} ${Spacing.Large}`,
+           background: 'rgba(255, 255, 255, 0.6)',
+           backdropFilter: 'blur(12px)',
+           WebkitBackdropFilter: 'blur(12px)',
+           borderTop: `1px solid ${Color.Border}`,
+         }}>
           <p style={{ 
             margin: 0, 
             fontSize: FontSize.Base,
@@ -179,15 +189,15 @@ export function Post({ post, children }: PostProps) {
       )}
       
       {post.engagement.canInteract && (
-             <footer style={{
-         padding: `${Spacing.Medium} ${Spacing.Large}`,
-         background: 'rgba(255, 255, 255, 0.8)',
-         backdropFilter: 'blur(8px)',
-         WebkitBackdropFilter: 'blur(8px)',
-         borderTop: `1px solid ${Color.Border}`,
-         display: 'flex',
-         alignItems: 'center',
-       }}>
+                           <footer style={{
+          padding: `${Spacing.Medium} ${Spacing.Large}`,
+          background: 'rgba(255, 255, 255, 0.6)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderTop: `1px solid ${Color.Border}`,
+          display: 'flex',
+          alignItems: 'center',
+        }}>
         <button
           onClick={handleLike}
           disabled={isLiking}

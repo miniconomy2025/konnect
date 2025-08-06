@@ -55,18 +55,11 @@ export const NeuralBackground: React.FC<NeuralBackgroundProps> = ({
       const numCircles = Math.min(120, Math.floor((canvas.width * canvas.height) / 10000));
       
       for (let i = 0; i < numCircles; i++) {
-        // Generate random color for each circle
+        // Generate random color for each circle using the specified palette
         const colors = [
-          'rgba(0, 122, 255, 0.8)',    // Blue
-          'rgba(255, 165, 0, 0.8)',    // Orange
-          'rgba(128, 0, 128, 0.8)',    // Purple
-          'rgba(255, 0, 0, 0.8)',      // Red
-          'rgba(0, 255, 0, 0.8)',      // Green
-          'rgba(255, 255, 0, 0.8)',    // Yellow
-          'rgba(255, 0, 255, 0.8)',    // Magenta
-          'rgba(0, 255, 255, 0.8)',    // Cyan
-          'rgba(255, 128, 0, 0.8)',    // Orange-Red
-          'rgba(128, 0, 255, 0.8)',    // Purple-Blue
+          'rgba(252, 191, 73, 0.8)',   // #fcbf49 - Golden Yellow
+          'rgba(254, 95, 85, 0.8)',    // #fe5f55 - Coral Red
+          'rgba(148, 72, 188, 0.8)',   // #9448BC - Purple
         ];
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
         

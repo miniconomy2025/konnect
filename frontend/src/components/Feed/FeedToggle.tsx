@@ -18,17 +18,17 @@ export function FeedToggle({ mode, onModeChange }: FeedToggleProps) {
       justifyContent: 'center',
       alignItems: 'center',
     }}>
-      <section style={{
-        display: 'flex',
-        // background: Color.Background,
-        borderRadius: Radius.Large,
-        padding: Spacing.XSmall,
-        background: 'rgba(255, 255, 255, 0.7)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        border: `1px solid ${Color.Border}`,
-        position: 'relative',
-      }}>
+             <section style={{
+         display: 'flex',
+         // background: Color.Background,
+         borderRadius: Radius.Large,
+         padding: Spacing.XSmall,
+         background: 'rgba(255, 255, 255, 0.6)',
+         backdropFilter: 'blur(12px)',
+         WebkitBackdropFilter: 'blur(12px)',
+         border: `1px solid ${Color.Border}`,
+         position: 'relative',
+       }}>
         <section style={{
           position: 'absolute',
           top: Spacing.XSmall,

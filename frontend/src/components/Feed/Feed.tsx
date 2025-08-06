@@ -176,17 +176,17 @@ export function Feed({ mode }: FeedProps) {
       background: 'transparent',
     }}>
              {error && (
-         <section style={{
-           textAlign: 'center',
-           padding: Spacing.Medium,
-           color: Color.Error,
-           fontSize: FontSize.Base,
-           marginBottom: Spacing.Medium,
-           background: 'rgba(255, 255, 255, 0.8)',
-           borderRadius: '0.5rem',
-           backdropFilter: 'blur(8px)',
-           WebkitBackdropFilter: 'blur(8px)',
-         }}>
+                   <section style={{
+            textAlign: 'center',
+            padding: Spacing.Medium,
+            color: Color.Error,
+            fontSize: FontSize.Base,
+            marginBottom: Spacing.Medium,
+            background: 'rgba(255, 255, 255, 0.6)',
+            borderRadius: '0.5rem',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+          }}>
            <strong>{error}</strong>
          </section>
        )}
@@ -197,10 +197,10 @@ export function Feed({ mode }: FeedProps) {
            padding: Spacing.XLarge,
            color: Color.Muted,
            fontSize: FontSize.Base,
-           background: 'rgba(255, 255, 255, 0.8)',
+           background: 'rgba(255, 255, 255, 0.6)',
            borderRadius: '1rem',
-           backdropFilter: 'blur(8px)',
-           WebkitBackdropFilter: 'blur(8px)',
+           backdropFilter: 'blur(12px)',
+           WebkitBackdropFilter: 'blur(12px)',
          }}>
            <strong style={{ fontSize: 48, marginBottom: Spacing.Medium }}>👥</strong>
            <h3 style={{ margin: '0 0 1rem 0', color: Color.Text }}>No posts yet</h3>
@@ -222,10 +222,10 @@ export function Feed({ mode }: FeedProps) {
            padding: Spacing.Large,
            color: Color.Muted,
            fontSize: FontSize.Base,
-           background: 'rgba(255, 255, 255, 0.8)',
+           background: 'rgba(255, 255, 255, 0.6)',
            borderRadius: '0.5rem',
-           backdropFilter: 'blur(8px)',
-           WebkitBackdropFilter: 'blur(8px)',
+           backdropFilter: 'blur(12px)',
+           WebkitBackdropFilter: 'blur(12px)',
          }}>
            <strong>Loading more posts...</strong>
          </section>
@@ -237,10 +237,10 @@ export function Feed({ mode }: FeedProps) {
            padding: Spacing.Large,
            color: Color.Muted,
            fontSize: FontSize.Base,
-           background: 'rgba(255, 255, 255, 0.8)',
+           background: 'rgba(255, 255, 255, 0.6)',
            borderRadius: '0.5rem',
-           backdropFilter: 'blur(8px)',
-           WebkitBackdropFilter: 'blur(8px)',
+           backdropFilter: 'blur(12px)',
+           WebkitBackdropFilter: 'blur(12px)',
          }}>
            <strong>You&apos;ve reached the end! 🎉</strong>
          </section>
