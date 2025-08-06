@@ -96,6 +96,29 @@ export function addUndoListener(inboxListeners: any) {
           });
         }
       }
+    } else if (object.constructor.name === 'Like') {
+      try {
+        const actor = await undo.getActor(ctx);
+        const likedObject = await object.getObject(ctx);
+        
+        if (!actor?.id || !likedObject?.id) {
+          logger.warn(`Missing actor or object in Undo Like activity`);
+          return;
+        }
+
+        const { PostService } = await import("../../services/postserivce.ts");
+        const postService = new PostService();
+        await postService.processIncomingUnlike(
+          actor.id.toString(),
+          likedObject.id.toString()
+        );
+        
+        logger.info(`Processed incoming unlike from ${actor.id.toString()} on ${likedObject.id.toString()}`);
+      } catch (error) {
+        logger.error(`Failed to process undo like activity:`, { 
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
     } else {
       logger.warn(`Received Undo for unsupported object type: ${object.type}`);
     }

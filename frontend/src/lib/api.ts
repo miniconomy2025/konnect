@@ -68,9 +68,10 @@ export class ApiService {
 
   static async likePost(postId: string): Promise<ApiResponse<any>> {
     try {
-      const response = await fetch(`${API_BASE_URL}/posts/${postId}/like`, {
+      const response = await fetch(`${API_BASE_URL}/posts/like`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
+        body: JSON.stringify({ id: postId })
       });
       
       if (!response.ok) {
