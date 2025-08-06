@@ -31,7 +31,7 @@ export function addUpdateListener(inboxListeners: any) {
           updateData.displayName = object.name;
         }
         
-        if (object.summary !== undefined && object.summary !== existingUser.bio) {
+        if (object.summary && object.summary !== existingUser.bio) {
           const plainTextBio = object.summary.replace(/<[^>]*>/g, '').trim();
           updateData.bio = plainTextBio;
         }
@@ -98,7 +98,7 @@ export function addUpdateListener(inboxListeners: any) {
     try {
       const updateInboxActivity: CreateActivityObject = {
         type: "Update",
-        summary: `${actor.name || actor.preferredUsername || 'Someone'} updated ${object.type === 'Note' || object.type === 'Article' ? 'a post' : 'their profile'}`,
+        summary: `${actor.name || actor.preferredUsername || 'Someone'}`,
         actor: actor.id.toString(),
         object: object.id.toString(),
         activityId: update.id?.toString(),

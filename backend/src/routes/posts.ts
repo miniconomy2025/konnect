@@ -106,7 +106,7 @@ router.post('/', requireAuth, upload.single('image'), async (req, res) => {
       mediaType: req.file.mimetype,
     }, federationContext);
 
-    const populatedPost = await postService.getPostById(post._id.toString());
+    const populatedPost = await postService.getPostById(post.id);
     
     if (!populatedPost || !hasPopulatedAuthor(populatedPost)) {
       return res.status(500).json({ error: 'Failed to retrieve created post' });

@@ -77,7 +77,7 @@ export class PostNormalizationService {
     const author = this.extractAuthorInfo(localPost);
     
     return {
-      id: localPost._id.toString(),
+      id: localPost.id,
       type: 'local',
       author: {
         id: author._id.toString(),
@@ -104,7 +104,7 @@ export class PostNormalizationService {
       },
       createdAt: localPost.createdAt,
       updatedAt: localPost.updatedAt,
-      url: this.buildLocalPostUrl(localPost._id.toString()),
+      url: this.buildLocalPostUrl(localPost.id),
       isReply: false,
     };
   }

@@ -413,7 +413,7 @@ export class PostService {
     await like.save();
 
     await Post.findByIdAndUpdate(post._id, { $inc: { likesCount: 1 } });
-    await this.redisService.incrementLikes(post._id.toString());
+    await this.redisService.incrementLikes(post.id);
 
     console.log(`Added federated like to post ${post.activityId} from ${actorId}`);
   }
