@@ -3,7 +3,7 @@ import { Redis } from 'ioredis';
 export class RedisService {
   private client: Redis;
 
-  private constructor() {
+  constructor() {
     this.client = new Redis({
       host: process.env.REDIS_HOST,
       port: parseInt(process.env.REDIS_PORT || '6379'),
@@ -16,7 +16,6 @@ export class RedisService {
 
     this.client.on('error', (err: Error) => console.error('Redis Client Error:', err));
     this.client.on('connect', () => console.log('Redis Client Connected'));
-    
   }
 
   private isCacheEnabled(): boolean {
