@@ -188,7 +188,6 @@ export class PostNormalizationService {
         }
       }
     }
-    console.log(localPost);
     const author = this.extractAuthorInfo(localPost);
     
     return {
@@ -230,6 +229,9 @@ export class PostNormalizationService {
     const { User } = await import('../models/user.ts');
     const {UserService} = await import('../services/userService.ts');
     const userService = new UserService();
+
+    const federatedLikesCount = await Like.countDocuments({ 'object.id': externalPost.activityId });
+
     
     // Check if current user has liked this external post
     let isLiked = false;
@@ -238,7 +240,7 @@ export class PostNormalizationService {
       if (user) {
         const federatedLike = await Like.findOne({
           'actor.id': user.actorId,
-          'object.id': externalPost.id
+          'object.id': externalPost.objectId + '/activity'
         });
         isLiked = !!federatedLike;
       }
@@ -247,7 +249,6 @@ export class PostNormalizationService {
     const mediaAttachment = externalPost.attachments.find(att => 
       att.type === 'image' || att.type === 'video'
     );
-    console.log(externalPost);
     const author = await userService.findByActorId(externalPost.actorId)
     
     return {
@@ -274,9 +275,9 @@ export class PostNormalizationService {
         altText: mediaAttachment.description
       } : undefined,
       engagement: {
-        likesCount: 0, // External posts don't show total counts (privacy)
-        isLiked: isLiked, // Shows if current user liked it
-        canInteract: true // External posts are now interactive!
+        likesCount: federatedLikesCount, 
+        isLiked: isLiked, 
+        canInteract: true 
       },
       createdAt: externalPost.published,
       updatedAt: externalPost.updated,

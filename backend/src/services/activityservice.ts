@@ -261,7 +261,6 @@ export class ActivityService {
       const inboxService = new InboxService();
       const followService = new FollowService(userService, inboxService);
 
-      console.log(author.actorId);
       const followerActorIds = await followService.getFollowerActorIds(author.actorId);
       
       if (followerActorIds.length === 0) {
@@ -355,7 +354,6 @@ export class ActivityService {
   private async sendLikeToExternalPostAuthor(post: IPost, user: IUser, isLike: boolean, federationContext: any): Promise<void> {
 
     const postData = await this.fetchActivityPubObject(post.activityId);
-    console.log(postData);
     if (!postData?.object?.attributedTo) {
       logger.warn(`Could not get author for external post ${post.activityId}`);
       return;
@@ -409,8 +407,6 @@ export class ActivityService {
         }),
         published: dateToTemporal(new Date())
       });
-
-      console.log(undoActivity)
 
       await federationContext.sendActivity(
         { identifier: user.username },

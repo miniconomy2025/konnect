@@ -99,7 +99,6 @@ const ProfilePage: React.FC = () => {
 
     if(response.error){
         alert('Error updating display name');
-        console.log(response.error);
     }else{
         alert('Updated Display Name');
         setDisplayName(tempName);
@@ -115,7 +114,6 @@ const ProfilePage: React.FC = () => {
 
     if(response.error){
         alert('Error updating bio name');
-        console.log(response.error);
     }else{
         alert('Updated Bio');
         setBio(bio);
