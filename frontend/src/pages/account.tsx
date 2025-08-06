@@ -66,16 +66,7 @@ const ProfilePage: React.FC = () => {
             }
 
 
-            setUserProfile({
-                username: data.username,
-                displayName: data.displayName,
-                bio: data.bio,
-                avatar: data.avatarUrl,
-                postsCount: data.postsCount,
-                followersCount: data.followersCount,
-                followingCount: data.followingCount,
-                isFollowing: false, // server might give this too
-            });
+            setUserProfile(data);
             setDisplayName(data.displayName);
             setUserName(data.username);
             setTempName(data.displayName);

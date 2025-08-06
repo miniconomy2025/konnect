@@ -87,7 +87,6 @@ export class PostNormalizationService {
     
     return validPosts.map(post => {
       const isLiked = likeResult.userLikes.get(post.id) || false;
-      console.log(post)
       return {
         id: post.id,
         type: 'local' as const,
@@ -122,10 +121,10 @@ export class PostNormalizationService {
     });
   }
 
-  static async externalPostsToUnifiedWithLikes(externalPosts: any[], currentUserId?: string): Promise<UnifiedPostResponse[]> {
+  static async externalPostsToUnifiedWithLikes(externalPosts: any[], currentUserId?: string, isExternal = false): Promise<UnifiedPostResponse[]> {
     if (externalPosts.length === 0) return [];
 
-    const uniqueAuthorIds = [...new Set(externalPosts.map(post => post.actorId))];
+    const uniqueAuthorIds = [...new Set(externalPosts.map(post => isExternal ? post.author.actorId : post.actorId))];
     const authorsMap = await this.batchGetAuthors(uniqueAuthorIds);
     
     const activityIds = externalPosts.map(post => post.objectId + '/activity');
@@ -134,7 +133,7 @@ export class PostNormalizationService {
     const results: UnifiedPostResponse[] = [];
     
     for (const externalPost of externalPosts) {
-      const author = authorsMap.get(externalPost.actorId);
+      const author = authorsMap.get(isExternal ? externalPost.author.actorId : externalPost.actorId);
       if (!author) {
         continue;
       }
@@ -151,7 +150,7 @@ export class PostNormalizationService {
         id: externalPost.activityId,
         type: 'external' as const,
         author: {
-          id: author.actorId,
+          id: isExternal ? externalPost.author.actorId : author.actorId,
           username: author.username,
           domain: author.domain,
           displayName: author.displayName,

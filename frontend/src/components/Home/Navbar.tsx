@@ -50,7 +50,7 @@ const NavBar = () => {
               <Search size={24} />
             </section>
             <section style={isActive('/Discover') ? styles.labelActive : styles.label}>
-              Discover
+              Search
             </section>
           </section>
         </Link>

@@ -9,7 +9,7 @@ import type { IUser } from "../models/user.js";
 import type { ActorData, ExternalUser, UserResponse } from "../types/user.ts";
 import { FollowService } from "./followService.js";
 import { InboxService } from "./inboxService.js";
-import { UserService } from "./userService.js";
+import { UserService, type CreateExternalUserData } from "./userService.js";
 
 const logger = getLogger("search");
 
@@ -152,7 +152,7 @@ export class SearchService {
     actorData: ActorData, 
     username: string, 
     domain: string
-  ): Parameters<typeof this.userService.createExternalUser>[0] {
+  ): CreateExternalUserData {
     return {
       username: actorData.preferredUsername || username,
       domain,

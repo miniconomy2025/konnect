@@ -93,6 +93,7 @@ router.get('/posts/:username/:domain', optionalAuth, async (req, res) => {
   try {
     const { username, domain } = req.params;
     const { limit = '20' } = req.query;
+    const currentUserId = req.user?._id.toString();
     
     if (!username || !domain) {
       return res.status(400).json({ error: 'Username and domain are required' });
@@ -102,7 +103,7 @@ router.get('/posts/:username/:domain', optionalAuth, async (req, res) => {
     
     const externalPosts = await externalPostService.getUserPosts(username, domain, limitNum);
     
-    let unifiedPosts = await PostNormalizationService.externalPostsToUnifiedWithLikes(externalPosts);
+    let unifiedPosts = await PostNormalizationService.externalPostsToUnifiedWithLikes(externalPosts, currentUserId, true);
     
     res.json({
       user: `${username}@${domain}`,
