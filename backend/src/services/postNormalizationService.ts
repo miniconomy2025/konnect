@@ -1,14 +1,21 @@
 import type { IPost } from '../models/post.js';
+import type { IUser } from '../models/user.js';
 import type { UnifiedPostResponse } from '../types/unifiedPost.js';
 import { Types } from 'mongoose';
 
+interface PopulatedPost extends Omit<IPost, 'author'> {
+  author: IUser;
+}
+
+interface LikeCheckResult {
+  userLikes: Map<string, boolean>;
+  likeCounts: Map<string, number>;
+}
+
 export class PostNormalizationService {
   
-  private static extractAuthorInfo(post: IPost): any {
-    if (post.author instanceof Types.ObjectId) {
-      throw new Error('Post author must be populated for normalization');
-    }
-    return post.author;
+  private static isValidPopulatedPost(post: IPost): post is PopulatedPost {
+    return !(post.author instanceof Types.ObjectId);
   }
 
   private static getMediaType(mimeType: string): 'image' | 'video' | null {
@@ -53,60 +60,44 @@ export class PostNormalizationService {
   }
 
   static async localPostToUnifiedWithLikes(localPost: IPost, currentUserId?: string): Promise<UnifiedPostResponse> {
-    return (await this.localPostsToUnifiedWithLikes([localPost], currentUserId))[0];
+    const results = await this.localPostsToUnifiedWithLikes([localPost], currentUserId);
+    if (results.length === 0) {
+      throw new Error('Post author must be populated for normalization');
+    }
+    return results[0];
   }
 
   static async externalPostToUnifiedWithLikes(externalPost: any, currentUserId?: string): Promise<UnifiedPostResponse> {
-    return (await this.externalPostsToUnifiedWithLikes([externalPost], currentUserId))[0];
+    const results = await this.externalPostsToUnifiedWithLikes([externalPost], currentUserId);
+    if (results.length === 0) {
+      throw new Error(`Author not found for post ${externalPost.activityId}`);
+    }
+    return results[0];
   }
 
   static async localPostsToUnifiedWithLikes(localPosts: IPost[], currentUserId?: string): Promise<UnifiedPostResponse[]> {
     if (localPosts.length === 0) return [];
 
-    const { Like } = await import('../models/like.ts');
-    const { User } = await import('../models/user.ts');
-    
-    let userLikeData: Map<string, boolean> = new Map();
-    
-    if (currentUserId) {
-      const userObjectId = new Types.ObjectId(currentUserId);
-      const user = await User.findById(currentUserId);
-      
-      if (user) {
-        const postActivityIds = localPosts.map(post => post.activityId);
-        
-        const [localLikes, federatedLikes] = await Promise.all([
-          this.checkLocalLikes(localPosts, userObjectId),
-          this.checkFederatedLikes(postActivityIds, user.actorId)
-        ]);
-        
-        localLikes.forEach((isLiked, postId) => {
-          userLikeData.set(postId, isLiked);
-        });
-        
-        federatedLikes.forEach((isLiked, activityId) => {
-          const post = localPosts.find(p => p.activityId === activityId);
-          if (post && !userLikeData.get(post.id)) {
-            userLikeData.set(post.id, isLiked);
-          }
-        });
-      }
+    const validPosts = localPosts.filter(this.isValidPopulatedPost);
+    if (validPosts.length !== localPosts.length) {
+      throw new Error('Post author must be populated for normalization');
     }
 
-    return localPosts.map(post => {
-      const author = this.extractAuthorInfo(post);
-      const isLiked = userLikeData.get(post.id) || false;
-      
+    const likeResult = await this.checkLocalPostLikes(validPosts, currentUserId);
+    
+    return validPosts.map(post => {
+      const isLiked = likeResult.userLikes.get(post.id) || false;
+      console.log(post)
       return {
         id: post.id,
         type: 'local' as const,
         author: {
-          id: author._id.toString(),
-          username: author.username,
-          domain: author.domain,
-          displayName: author.displayName,
-          avatarUrl: author.avatarUrl,
-          isLocal: author.isLocal
+          id: post.author._id.toString(),
+          username: post.author.username,
+          domain: post.author.domain,
+          displayName: post.author.displayName,
+          avatarUrl: post.author.avatarUrl,
+          isLocal: post.author.isLocal
         },
         content: {
           text: post.caption,
@@ -134,48 +125,29 @@ export class PostNormalizationService {
   static async externalPostsToUnifiedWithLikes(externalPosts: any[], currentUserId?: string): Promise<UnifiedPostResponse[]> {
     if (externalPosts.length === 0) return [];
 
-    const { Like } = await import('../models/like.ts');
-    const { User } = await import('../models/user.ts');
-    const { UserService } = await import('../services/userService.ts');
-    const userService = new UserService();
-
+    const uniqueAuthorIds = [...new Set(externalPosts.map(post => post.actorId))];
+    const authorsMap = await this.batchGetAuthors(uniqueAuthorIds);
+    
     const activityIds = externalPosts.map(post => post.objectId + '/activity');
-    const federatedLikesCount = await this.batchCountFederatedLikes(activityIds);
+    const likeResult = await this.checkExternalPostLikes(activityIds, currentUserId);
     
-    let userLikeData: Map<string, boolean> = new Map();
+    const results: UnifiedPostResponse[] = [];
     
-    if (currentUserId) {
-      const user = await User.findById(currentUserId);
-      if (user) {
-        const userFederatedLikes = await Like.find({
-          'actor.id': user.actorId,
-          'object.id': { $in: activityIds }
-        }).lean();
-        
-        userFederatedLikes.forEach(like => {
-          userLikeData.set(like.object.id, true);
-        });
+    for (const externalPost of externalPosts) {
+      const author = authorsMap.get(externalPost.actorId);
+      if (!author) {
+        continue;
       }
-    }
-
-    const authorActorIds = [...new Set(externalPosts.map(post => post.actorId))];
-    const authorsMap = await this.batchGetAuthors(authorActorIds, userService);
-    
-    return Promise.all(externalPosts.map(async externalPost => {
-      const mediaAttachment = externalPost.attachments.find(att => 
+      
+      const mediaAttachment = externalPost.attachments?.find((att: any) => 
         att.type === 'image' || att.type === 'video'
       );
       
-      const author = authorsMap.get(externalPost.actorId);
-      if (!author) {
-        throw new Error(`Author not found for post ${externalPost.activityId}`);
-      }
-      
       const activityId = externalPost.objectId + '/activity';
-      const isLiked = userLikeData.get(activityId) || false;
-      const likesCount = federatedLikesCount.get(activityId) || 0;
+      const isLiked = likeResult.userLikes.get(activityId) || false;
+      const likesCount = likeResult.likeCounts.get(activityId) || 0;
       
-      return {
+      results.push({
         id: externalPost.activityId,
         type: 'external' as const,
         author: {
@@ -206,12 +178,84 @@ export class PostNormalizationService {
         createdAt: externalPost.published,
         updatedAt: externalPost.updated,
         url: externalPost.url,
-        isReply: externalPost.isReply,
-      };
-    }));
+        isReply: externalPost.isReply || false,
+      });
+    }
+    
+    return results;
   }
 
-  private static async checkLocalLikes(posts: IPost[], userObjectId: Types.ObjectId): Promise<Map<string, boolean>> {
+  private static async checkLocalPostLikes(posts: PopulatedPost[], currentUserId?: string): Promise<LikeCheckResult> {
+    const userLikes = new Map<string, boolean>();
+    const likeCounts = new Map<string, number>();
+    
+    if (!currentUserId) {
+      return { userLikes, likeCounts };
+    }
+
+    try {
+      const { User } = await import('../models/user.ts');
+      
+      const [userObjectId, user] = await Promise.all([
+        Promise.resolve(new Types.ObjectId(currentUserId)),
+        User.findById(currentUserId)
+      ]);
+      
+      if (!user) {
+        return { userLikes, likeCounts };
+      }
+
+      const postActivityIds = posts.map(post => post.activityId);
+      
+      const [localLikes, federatedLikes] = await Promise.all([
+        Promise.resolve(this.checkLocalLikesSync(posts, userObjectId)),
+        this.checkFederatedLikes(postActivityIds, user.actorId)
+      ]);
+      
+      localLikes.forEach((isLiked, postId) => {
+        userLikes.set(postId, isLiked);
+      });
+      
+      federatedLikes.forEach((isLiked, activityId) => {
+        const post = posts.find(p => p.activityId === activityId);
+        if (post && !userLikes.has(post.id)) {
+          userLikes.set(post.id, isLiked);
+        }
+      });
+      
+    } catch (error) {
+      console.warn('Failed to check local post likes:', error);
+    }
+    
+    return { userLikes, likeCounts };
+  }
+
+  private static async checkExternalPostLikes(activityIds: string[], currentUserId?: string): Promise<LikeCheckResult> {
+    const userLikes = new Map<string, boolean>();
+    const likeCounts = new Map<string, number>();
+    
+    try {
+      const [likeCountsResult, userLikesResult] = await Promise.all([
+        this.batchCountFederatedLikes(activityIds),
+        currentUserId ? this.getUserFederatedLikes(activityIds, currentUserId) : Promise.resolve(new Map())
+      ]);
+      
+      likeCountsResult.forEach((count, activityId) => {
+        likeCounts.set(activityId, count);
+      });
+      
+      userLikesResult.forEach((isLiked, activityId) => {
+        userLikes.set(activityId, isLiked);
+      });
+      
+    } catch (error) {
+      console.warn('Failed to check external post likes:', error);
+    }
+    
+    return { userLikes, likeCounts };
+  }
+
+  private static checkLocalLikesSync(posts: PopulatedPost[], userObjectId: Types.ObjectId): Map<string, boolean> {
     const likeMap = new Map<string, boolean>();
     
     for (const post of posts) {
@@ -238,6 +282,28 @@ export class PostNormalizationService {
     return likeMap;
   }
 
+  private static async getUserFederatedLikes(activityIds: string[], currentUserId: string): Promise<Map<string, boolean>> {
+    const { Like } = await import('../models/like.ts');
+    const { User } = await import('../models/user.ts');
+    
+    const user = await User.findById(currentUserId);
+    if (!user) {
+      return new Map();
+    }
+    
+    const userFederatedLikes = await Like.find({
+      'actor.id': user.actorId,
+      'object.id': { $in: activityIds }
+    }).lean();
+    
+    const likeMap = new Map<string, boolean>();
+    userFederatedLikes.forEach(like => {
+      likeMap.set(like.object.id, true);
+    });
+    
+    return likeMap;
+  }
+
   private static async batchCountFederatedLikes(activityIds: string[]): Promise<Map<string, number>> {
     const { Like } = await import('../models/like.ts');
     
@@ -254,19 +320,16 @@ export class PostNormalizationService {
     return countMap;
   }
 
-  private static async batchGetAuthors(actorIds: string[], userService: any): Promise<Map<string, any>> {
-    const authors = await Promise.all(
-      actorIds.map(async actorId => {
-        const author = await userService.findByActorId(actorId);
-        return { actorId, author };
-      })
-    );
+  private static async batchGetAuthors(actorIds: string[]): Promise<Map<string, any>> {
+    const { User } = await import('../models/user.ts');
+    
+    const authors = await User.find({ 
+      actorId: { $in: actorIds } 
+    }).lean();
     
     const authorMap = new Map();
-    authors.forEach(({ actorId, author }) => {
-      if (author) {
-        authorMap.set(actorId, author);
-      }
+    authors.forEach(author => {
+      authorMap.set(author.actorId, author);
     });
     
     return authorMap;
