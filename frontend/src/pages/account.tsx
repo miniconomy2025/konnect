@@ -12,6 +12,7 @@ import UserListItem from '@/components/account/UserListItem';
 import SettingsModal from '@/components/account/SettingsModal';
 import Layout from '@/layouts/Main';
 import { ApiService } from '@/lib/api';
+import PostModal from '@/components/Account/PostModal';
 
 const ProfilePage: React.FC = () => {
   // const [activeTab] = useState<string>('posts'); // TODO: Implement tab functionality
@@ -27,7 +28,7 @@ const ProfilePage: React.FC = () => {
   const [followers, setFollowers] = useState<Actor[]>([]);
   const [following, setFollowing] = useState<Actor[]>([]);
   const [posts, setPosts] = useState<PostsResponse | undefined>(undefined);
-
+    const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   const [tempName, setTempName] = useState<string>(userName);
   const [bio, setBio] = useState<string>('');
@@ -99,7 +100,6 @@ const ProfilePage: React.FC = () => {
 
     if(response.error){
         alert('Error updating display name');
-        console.log(response.error);
     }else{
         alert('Updated Display Name');
         setDisplayName(tempName);
@@ -115,7 +115,6 @@ const ProfilePage: React.FC = () => {
 
     if(response.error){
         alert('Error updating bio name');
-        console.log(response.error);
     }else{
         alert('Updated Bio');
         setBio(bio);
@@ -155,7 +154,8 @@ const ProfilePage: React.FC = () => {
         />
 
         <PostsGrid 
-            posts={posts?.posts || []} 
+            posts={posts?.posts || []}
+            onPostClick={(post) => setSelectedPost(post)}
         />
 
         {/* Modals */}
@@ -194,6 +194,26 @@ const ProfilePage: React.FC = () => {
                 onCancelName={handleNameCancel}
             />
         </Modal>
+        {selectedPost && (
+        <PostModal
+            post={selectedPost}
+            onClose={() => setSelectedPost(null)}
+            onPostDeleted={(id) => {
+            setPosts((prev) => ({
+                ...prev!,
+                posts: prev!.posts.filter((post) => post.id !== id),
+            }));
+            }}
+            onPostUpdated={(updatedPost) => {
+                setPosts((prev) => ({
+                    ...prev!,
+                    posts: prev!.posts.map((post) => post.id === updatedPost.id ? updatedPost : post),
+                })
+            );
+            setSelectedPost(updatedPost);
+            }}
+        />
+        )}
         </section>
     </Layout>
   );

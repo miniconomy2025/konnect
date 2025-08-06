@@ -7,15 +7,15 @@ import PostItem from './PostItem';
 
 interface PostsGridProps {
   posts: Post[];
+  onPostClick?: (post: Post) => void;
 }
 
-
-const PostsGrid: React.FC<PostsGridProps> = ({ posts }) => {
+const PostsGrid: React.FC<PostsGridProps> = ({ posts, onPostClick }) => {
   return (
     <section style={styles.postsGrid}>
-        {posts.map((post) =>
-            <PostItem key={post.id} post={post} />
-        )}
+      {posts.map((post) => (
+        <PostItem key={post.id} post={post} onClick={onPostClick} />
+      ))}
     </section>
   );
 };

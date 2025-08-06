@@ -73,7 +73,7 @@ router.get('/posts/:username/:domain', optionalAuth, async (req, res) => {
     
     const externalPosts = await externalPostService.getUserPosts(username, domain, limitNum);
     
-    let unifiedPosts = PostNormalizationService.externalPostsToUnified(externalPosts);
+    let unifiedPosts = await PostNormalizationService.externalPostsToUnifiedWithLikes(externalPosts);
     
     res.json({
       user: `${username}@${domain}`,
@@ -112,7 +112,7 @@ router.get('/post', optionalAuth, async (req, res) => {
       return res.status(404).json({ error: 'Post not found' });
     }
 
-    const unifiedPost = PostNormalizationService.externalPostToUnified(externalPost);
+    const unifiedPost = await PostNormalizationService.externalPostToUnifiedWithLikes(externalPost);
 
     res.json({ post: unifiedPost });
   } catch (error) {

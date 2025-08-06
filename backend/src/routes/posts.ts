@@ -4,7 +4,7 @@ import { PostService } from '../services/postserivce.js';
 import { PostNormalizationService } from '../services/postNormalizationService.js';
 import { requireAuth, optionalAuth } from '../middlewares/auth.js';
 import { Post, type IPost } from '../models/post.ts';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import type { IUser } from '../models/user.ts';
 
 const router = Router();
@@ -60,7 +60,7 @@ router.put('/:id', requireAuth, async (req, res) => {
       return res.status(500).json({ error: 'Something went wrong' });
     }
 
-    const unifiedPost = PostNormalizationService.localPostToUnified(
+    const unifiedPost = await PostNormalizationService.localPostToUnifiedWithLikes(
       updatedPost, 
       userId
     );
@@ -112,7 +112,7 @@ router.post('/', requireAuth, upload.single('image'), async (req, res) => {
       return res.status(500).json({ error: 'Failed to retrieve created post' });
     }
 
-    const unifiedPost = PostNormalizationService.localPostToUnified(
+    const unifiedPost = await PostNormalizationService.localPostToUnifiedWithLikes(
       populatedPost, 
       req.user!._id!.toString()
     );
@@ -137,7 +137,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
       return res.status(500).json({ error: 'Something went wrong' });
     }
 
-    const unifiedPost = PostNormalizationService.localPostToUnified(
+    const unifiedPost = await PostNormalizationService.localPostToUnifiedWithLikes(
       post, 
       req.user?._id?.toString()
     );
@@ -165,7 +165,7 @@ router.get('/user/:username', optionalAuth, async (req, res) => {
 
     const posts = await postService.getUserPosts(user._id.toString(), page, limit);
     
-    const unifiedPosts = PostNormalizationService.localPostsToUnified(
+    const unifiedPosts = await PostNormalizationService.localPostsToUnifiedWithLikes(
       posts,
       req.user?._id?.toString()
     );
@@ -220,17 +220,27 @@ router.get('/', optionalAuth, async (req, res) => {
   }
 });
 
-router.post('/:id/like', requireAuth, async (req, res) => {
+router.post('/like', requireAuth, async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
+    const federationContext = (req as any).federationContext;
     
-    const result = await postService.likePost(id, req.user!._id!.toString());
+    let result;
+    
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      result = await postService.likePost(id, req.user!._id!.toString(), federationContext);
+    } else {
+      result = await postService.likeExternalPost(id, req.user!._id!.toString(), federationContext);
+      result = { ...result, likesCount: 0 };
+    }
     
     res.json(result);
   } catch (error) {
     console.error('Like post error:', error);
     if (error instanceof Error && error.message === 'Post not found') {
       res.status(404).json({ error: 'Post not found' });
+    } else if (error instanceof Error && error.message.includes('Federation context required')) {
+      res.status(400).json({ error: 'Cannot like external posts without proper federation setup' });
     } else {
       res.status(500).json({ error: 'Failed to like/unlike post' });
     }
