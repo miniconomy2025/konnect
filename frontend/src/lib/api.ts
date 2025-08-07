@@ -45,18 +45,31 @@ export class ApiService {
   // Posts API
   static async getPosts(type: 'discover' | 'following', page: number = 1, limit: number = 10): Promise<ApiResponse<GetPostsResponse>> {
     try {
-      const feedType = type === 'discover' ? 'public' : 'following';
-      const response = await fetch(`${API_BASE_URL}/posts?page=${page}&limit=${limit}&type=${feedType}`, {
+      let endpoint;
+      if (type === 'discover') {
+        endpoint = `${API_BASE_URL}/discover`;
+      } else {
+        endpoint = `${API_BASE_URL}/posts?type=following`;
+      }
+
+      const url = `${endpoint}?page=${page}&limit=${limit}`;
+      console.log('Fetching posts from:', url);
+
+      const response = await fetch(url, {
         headers: this.getAuthHeaders(),
       });
       
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API error:', response.status, errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log('API response:', data);
       return { data };
     } catch (error) {
+      console.error('API error:', error);
       return { error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }

@@ -3,6 +3,7 @@ import { Error } from 'mongoose';
 import { User, type IUser } from '../models/user.ts';
 import type { DisplayPersonActor } from '../types/inbox.ts';
 import type { CreateUserData } from '../types/user.js';
+import { Neo4jService } from './neo4jService.ts';
 
 const RESERVED_USERNAMES = [
   'admin', 'api', 'www', 'mail', 'ftp', 'localhost', 'inbox', 'outbox',
@@ -35,6 +36,8 @@ export class UserService {
       return user;
     }
   }
+
+  private neo4jService = new Neo4jService();
 
   async findByGoogleId(googleId: string): Promise<IUser | null> {
     return this.sanitizeUserOutput(await User.findOne({ googleId }));
@@ -138,7 +141,16 @@ export class UserService {
       isPrivate: userData.isPrivate || false
     });
 
-    return await user.save();
+    const savedUser = await user.save();
+
+    // Sync to Neo4j
+    await this.neo4jService.createOrUpdateUser(
+      savedUser._id.toString(),
+      savedUser.username,
+      savedUser.actorId
+    );
+
+    return savedUser;
   }
 
   async updateExternalUser(id: string, updates: Partial<CreateExternalUserData>): Promise<IUser | null> {
@@ -155,11 +167,22 @@ export class UserService {
     
     updateData.updatedAt = new Date();
 
-    return await User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
       id,
       updateData,
       { new: true }
     );
+
+    if (updatedUser) {
+      // Sync to Neo4j
+      await this.neo4jService.createOrUpdateUser(
+        updatedUser._id.toString(),
+        updatedUser.username,
+        updatedUser.actorId
+      );
+    }
+
+    return updatedUser;
   }
 
   async findUserByActorId(actorId: string): Promise<IUser | null> {
@@ -232,15 +255,35 @@ export class UserService {
       bio: '',
     });
 
-    return await user.save();
+    const savedUser = await user.save();
+
+    // Sync to Neo4j
+    await this.neo4jService.createOrUpdateUser(
+      savedUser._id.toString(),
+      savedUser.username,
+      savedUser.actorId
+    );
+
+    return savedUser;
   }
 
   async updateUser(id: string, updates: Partial<IUser>): Promise<IUser | null> {
-    return await User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
       id,
       updates,
       { new: true }
     );
+
+    if (updatedUser) {
+      // Sync to Neo4j
+      await this.neo4jService.createOrUpdateUser(
+        updatedUser._id.toString(),
+        updatedUser.username,
+        updatedUser.actorId
+      );
+    }
+
+    return updatedUser;
   }
 
   async refreshExternalUser(username: string, domain: string): Promise<IUser | null> {
