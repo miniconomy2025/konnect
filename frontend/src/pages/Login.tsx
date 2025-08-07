@@ -13,6 +13,12 @@ const Login: React.FC = () => {
     setIsLoading(true);
     window.location.href = '/auth/google';
   };
+  
+    useEffect(() => {
+        if(localStorage.getItem('auth_token')){
+            window.location.href = '/Home';
+        }
+    }, []);
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
