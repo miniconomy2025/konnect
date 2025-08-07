@@ -50,17 +50,17 @@ const NavBar = () => {
               <Search size={24} />
             </section>
             <section style={isActive('/Discover') ? styles.labelActive : styles.label}>
-              Discover
+              Search
             </section>
           </section>
         </Link>
         
-        <Link href="/Account" style={styles.link}>
+        <Link href="/account" style={styles.link}>
           <section style={styles.navLink}>
-            <section style={isActive('/Account') ? styles.iconWrapperActive : styles.iconWrapper}>
+            <section style={isActive('/account') ? styles.iconWrapperActive : styles.iconWrapper}>
               <User size={24} />
             </section>
-            <section style={isActive('/Account') ? styles.labelActive : styles.label}>
+            <section style={isActive('/account') ? styles.labelActive : styles.label}>
               Account
             </section>
           </section>

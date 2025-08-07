@@ -2,10 +2,13 @@ import { Router } from 'express';
 import { AuthService } from '../services/authservice.js';
 import { UserService } from '../services/userService.js';
 import { requireAuth } from '../middlewares/auth.js';
+import type { UserResponse } from '../types/user.ts';
+import { SearchService } from '../services/searchService.ts';
 
 const router = Router();
 const authService = new AuthService();
 const userService = new UserService();
+const searchService = new SearchService();
 
 router.get('/google', (req, res) => {
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -63,7 +66,7 @@ router.get('/google/callback', async (req, res) => {
     });
 
     const token = authService.generateToken(user);
-    const frontendUrl = new URL('http://localhost:3000/Login');
+    const frontendUrl = new URL(`http://${process.env.DOMAIN || 'localhost:8000'}/Login`);
     frontendUrl.searchParams.set('token', token);
     frontendUrl.searchParams.set('user', JSON.stringify({
         id: user._id?.toString(),
@@ -95,6 +98,53 @@ router.get('/check-username/:username', async (req, res) => {
     res.json({ available });
   } catch (error) {
     res.status(500).json({ error: 'Failed to check username' });
+  }
+});
+
+router.put('/display-name', requireAuth, async (req, res) => {
+  try {
+    const { displayName } = req.body;
+    const user = req.user;
+    
+    if (!displayName || typeof displayName !== 'string') {
+      return res.status(400).json({ error: 'Display name is required' });
+    }
+
+    const trimmedDisplayName = displayName.trim();
+    
+    if (trimmedDisplayName.length === 0) {
+      return res.status(400).json({ error: 'Display name cannot be empty' });
+    }
+    
+    if (trimmedDisplayName.length > 100) {
+      return res.status(400).json({ error: 'Display name must be 100 characters or less' });
+    }
+    
+    const updatedUser = await userService.updateUser(user!._id?.toString()!, {
+      displayName: trimmedDisplayName
+    });
+    
+    if (updatedUser) {
+      const { ActivityService } = await import('../services/activityservice.js');
+      const activityService = new ActivityService();
+      const federationContext = (req as any).federationContext;
+      
+      if (federationContext) {
+        await activityService.publishUpdateActivity(updatedUser, federationContext);
+      }
+    }
+    
+    res.json({ 
+      success: true, 
+      user: {
+        id: updatedUser?._id?.toString(),
+        username: updatedUser?.username,
+        displayName: updatedUser?.displayName,
+        bio: updatedUser?.bio,
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update display name' });
   }
 });
 
@@ -146,25 +196,8 @@ router.put('/username', requireAuth, async (req, res) => {
 
 router.get('/me', requireAuth, async (req, res) => {
   const user = req.user;
-  
-  const { FollowService } = await import('../services/followService.js');
-  const { InboxService } = await import('../services/inboxService.js');
-  const followService = new FollowService(userService, new InboxService());
-  
-  const { followingCount, followersCount } = await followService.getFollowCounts(user!.actorId);
-  
-  res.json({
-    id: user!._id?.toString(),
-    username: user!.username,
-    displayName: user!.displayName,
-    email: user!.email,
-    bio: user!.bio,
-    avatarUrl: user!.avatarUrl,
-    actorId: user!.actorId,
-    followersCount,
-    followingCount,
-    postsCount: 0,
-  });
+  const userResponse: UserResponse = (await searchService.userToUserResponse(user!))
+  res.json(userResponse);
 });
 
 router.put('/bio', requireAuth, async (req, res) => {

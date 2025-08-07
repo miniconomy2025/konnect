@@ -8,13 +8,13 @@ import { UserCard } from '@/components/Discover/UserCard';
 import  PublicProfileView  from '@/components/Discover/PublicProfile';
 import { Header } from '@/components/Home/Header';
 import { ApiService } from '@/lib/api';
-import { DiscoverSearchResponse, DiscoverUser } from '@/types/discover';
 import { useSearchParams } from 'next/navigation';
 import router from 'next/router';
+import { UserProfile } from '@/types/account';
 
 const DiscoverPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [results, setResults] = useState<DiscoverUser[]>([]); 
+  const [results, setResults] = useState<UserProfile[]>([]); 
   const [usernameParam, setUsernameParam] = useState<string | null>(null);
     const searchParams = useSearchParams();
 
@@ -58,10 +58,7 @@ const DiscoverPage: React.FC = () => {
       >
         <Header/>
         {usernameParam ? (
-        <PublicProfileView username={usernameParam} onBack={() => {
-            setUsernameParam(null);
-            router.push('/Discover')
-        }}/>
+        <PublicProfileView username={usernameParam}/>
         ) : (
         <>
             <section
@@ -106,7 +103,7 @@ const DiscoverPage: React.FC = () => {
                 </p>
             ) : (
                 results.map(user => (
-                <UserCard key={user.actorId} user={user} />
+                <UserCard key={user.activityPubId} user={user} />
                 ))
             )}
             </section>

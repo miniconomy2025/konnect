@@ -62,7 +62,8 @@ const userSchema = new Schema<IUser>({
     default: ''
   },
   avatarUrl: {
-    type: String
+    type: String,
+    default: ''
   },
   inboxUrl: {
     type: String,
@@ -101,5 +102,7 @@ const userSchema = new Schema<IUser>({
 }, {
   timestamps: true
 });
+
+userSchema.index({ "actorId": 1, "isLocal": 1 })
 
 export const User = mongoose.model<IUser>('User', userSchema);

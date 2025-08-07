@@ -4,37 +4,34 @@ import React, { useEffect, useState } from 'react';
 import { UserProfile } from '@/types/account';
 import { PostsResponse } from '@/types/post';
 import { ApiService } from '@/lib/api';
-import ProfileSection from '@/components/Account/ProfileSection';
-import PostsGrid from '@/components/Account/PostsGrid';
+import ProfileSection from '@/components/account/ProfileSection';
+import PostsGrid from '@/components/account/PostsGrid';
 import { ArrowLeft } from 'lucide-react';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
+import router from 'next/router';
 
 interface PublicProfileProps {
   username: string;
-  onBack: () => void;
 }
-const PublicProfileView: React.FC<PublicProfileProps> = ({ username, onBack }) => {
+const PublicProfileView: React.FC<PublicProfileProps> = ({ username }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | undefined>();
   const [posts, setPosts] = useState<PostsResponse | undefined>();
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
   const [actorId, setActorId] = useState<string>();
-
+  const [loading, setLoading] = useState<boolean>(false);
   useEffect(() => {
     const fetchUserData = async () => {
       const { data } = await ApiService.getUserByUsername(username);
-      const postRes = await ApiService.getUserPosts(username);
       if (data) {
-        setUserProfile({
-          username: data.username,
-          displayName: data.displayName,
-          bio: data.bio,
-          avatar: data.avatarUrl,
-          postsCount: data.postsCount,
-          followersCount: data.followersCount,
-          followingCount: data.followingCount,
-          isFollowing: data.isFollowing,
-        });
-        setIsFollowing(data.isFollowing);
+        let postRes;
+        if(data.isLocal){
+          postRes = await ApiService.getUserPosts(username);
+        }else{
+          postRes = await ApiService.getExternalUserPosts(data.username, data.hostServer);
+        }
+
+        setUserProfile(data);
+        setIsFollowing(data.isFollowedByCurrentUser ?? false);
         setPosts(postRes.data);
         setActorId(data.activityPubId);
       }
@@ -44,14 +41,20 @@ const PublicProfileView: React.FC<PublicProfileProps> = ({ username, onBack }) =
   }, [username]);
 
   const toggleFollow = async () => {
+    setLoading(true);
     if (!userProfile || !actorId) return;
     if (isFollowing) {
         const response = await ApiService.unfollowUser(actorId);
-        setIsFollowing(response.data.following);
+        const updatedIsFollowing = response.data?.following ?? false;
+        setIsFollowing(updatedIsFollowing);
+        setUserProfile({...userProfile, isFollowedByCurrentUser: updatedIsFollowing});
     } else {
         const response = await ApiService.followUser(actorId);
-        setIsFollowing(response.data.following);
+        const updatedIsFollowing = response.data?.following ?? false;
+        setIsFollowing(updatedIsFollowing);
+        setUserProfile({...userProfile, isFollowedByCurrentUser: updatedIsFollowing});
     }
+    setLoading(false);
   };
 
   if (!userProfile) return <p>Loading...</p>;
@@ -59,7 +62,9 @@ const PublicProfileView: React.FC<PublicProfileProps> = ({ username, onBack }) =
   return (
     <section style={{ marginTop: 24 }}>
       <button
-        onClick={onBack}
+        onClick={() => {
+          router.back();
+        }}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -74,15 +79,16 @@ const PublicProfileView: React.FC<PublicProfileProps> = ({ username, onBack }) =
         }}
       >
         <ArrowLeft size={18} />
-        Back to Discover
+        Back
       </button>
 
       <ProfileSection
-        userProfile={{ ...userProfile, isFollowing }}
+        userProfile={userProfile}
         onFollowersClick={() => {}}
         onFollowingClick={() => {}}
         showFollowButton    
         onFollowToggle={toggleFollow}
+        disableFollowButton={loading}
       />
       <PostsGrid posts={posts?.posts || []} />
     </section>

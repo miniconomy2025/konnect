@@ -1,7 +1,9 @@
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import type { Post } from '@/types/post';
 import { Color, Spacing, FontSize, Radius, FontFamily } from '@/lib/presentation';
 import { ApiService } from '@/lib/api';
+import router from 'next/router';
 
 interface PostProps {
   post: Post;
@@ -103,7 +105,12 @@ export function Post({ post, children }: PostProps) {
         display: 'flex',
         alignItems: 'center',
         gap: Spacing.Small,
-      }}>
+        cursor: 'pointer',
+      }}
+        onClick={() => {
+          router.push(`/Discover?user=${post.author.username}`);
+        }}
+      >
         <figure style={{
           width: 40,
           height: 40,
@@ -118,13 +125,17 @@ export function Post({ post, children }: PostProps) {
           flexShrink: 0,
         }}>
           {post.author.avatarUrl ? (
-            <img 
+            <Image
+              width={40}
+              height={40} 
               src={post.author.avatarUrl} 
               alt={post.author.displayName}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
-            <img 
+            <Image
+              width={40}
+              height={40} 
               src="/assets/images/missingAvatar.jpg" 
               alt={post.author.displayName}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -195,9 +206,11 @@ export function Post({ post, children }: PostProps) {
             opacity: isLiking ? 0.6 : 1,
           }}
         >
-          <img 
+          <Image 
             src={isLiked ? "/assets/images/liked.png" : "/assets/images/notLiked.png"}
             alt={isLiked ? "Liked" : "Not liked"}
+            width={20}
+            height={20}
             style={{ width: 20, height: 20 }}
           />
           <strong>{likesCount}</strong>

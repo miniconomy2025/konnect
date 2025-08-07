@@ -10,11 +10,17 @@ export interface UserProfile {
   username: string;
   displayName: string;
   bio: string;
-  avatar: string;
-  postsCount: number;
-  followersCount: number;
+  avatarUrl: string;
+  joinDate: Date;
+  activityPubId: string;
+  isPrivate: boolean;
   followingCount: number;
-  isFollowing: boolean;
+  followersCount: number;
+  isFollowingCurrentUser: boolean;
+  isFollowedByCurrentUser: boolean;
+  isLocal: boolean;
+  hostServer: string;
+  handle: string;
 }
 
 export interface Actor {
@@ -27,7 +33,12 @@ export interface Actor {
 
 export interface Activity {
   inboxId: string;
-  object: any; 
+  object: {
+    actorId: string;
+    username?: string;
+    displayName?: string;
+    avatarUrl?: string;
+  }; 
 }
 
 export interface FollowingItem {

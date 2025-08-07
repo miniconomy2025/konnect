@@ -4,7 +4,7 @@ import React from 'react';
 import { styles } from '@/styles/account';
 
 interface ProfileStatsProps {
-  postsCount: number;
+  postsCount: number | undefined;
   followersCount: number;
   followingCount: number;
   onFollowersClick: () => void;
@@ -20,9 +20,11 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({
 }) => {
   return (
     <section style={styles.stats}>
-      <section>
-        <strong>{postsCount}</strong> posts
-      </section>
+      {postsCount && (
+        <section>
+          <strong>{postsCount}</strong> posts
+        </section>
+      )}
       <button onClick={onFollowersClick} style={styles.statButton}>
         <strong>{followersCount}</strong> followers
       </button>

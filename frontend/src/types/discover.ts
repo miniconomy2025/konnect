@@ -1,3 +1,5 @@
+import { UserProfile } from "./account";
+
 export interface DiscoverUser {
   actorId: string;
   avatarUrl: string;
@@ -14,5 +16,5 @@ export interface DiscoverSearchResponse {
   limit: number;
   page: number;
   query: string;
-  results: DiscoverUser[];
+  results: UserProfile[];
 }

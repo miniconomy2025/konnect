@@ -2,19 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { styles } from '@/styles/account';
-import { UserProfile, User, Actor } from '@/types/account';
-import { PostsResponse } from '@/types/post';
-import  Header  from '@/components/Account/Header';
-import ProfileSection from '@/components/Account/ProfileSection';
-import PostsGrid from '@/components/Account/PostsGrid';
-import Modal from '@/components/Account/Modal';
-import UserListItem from '@/components/Account/UserListItem';
-import SettingsModal from '@/components/Account/SettingsModal';
+import { UserProfile, Actor } from '@/types/account';
+import { Post, PostsResponse } from '@/types/post';
+import  Header  from '@/components/account/Header';
+import ProfileSection from '@/components/account/ProfileSection';
+import PostsGrid from '@/components/account/PostsGrid';
+import Modal from '@/components/account/Modal';
+import UserListItem from '@/components/account/UserListItem';
+import SettingsModal from '@/components/account/SettingsModal';
 import Layout from '@/layouts/Main';
 import { ApiService } from '@/lib/api';
+import PostModal from '@/components/account/PostModal';
 
 const ProfilePage: React.FC = () => {
-  const [activeTab] = useState<string>('posts');
+  // const [activeTab] = useState<string>('posts'); // TODO: Implement tab functionality
   const [showFollowers, setShowFollowers] = useState<boolean>(false);
   const [showFollowing, setShowFollowing] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
@@ -27,7 +28,7 @@ const ProfilePage: React.FC = () => {
   const [followers, setFollowers] = useState<Actor[]>([]);
   const [following, setFollowing] = useState<Actor[]>([]);
   const [posts, setPosts] = useState<PostsResponse | undefined>(undefined);
-
+    const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   const [tempName, setTempName] = useState<string>(userName);
   const [bio, setBio] = useState<string>('');
@@ -65,19 +66,10 @@ const ProfilePage: React.FC = () => {
             }
 
 
-            setUserProfile({
-                username: data.username,
-                displayName: data.displayName,
-                bio: data.bio,
-                avatar: data.avatarUrl,
-                postsCount: data.postsCount,
-                followersCount: data.followersCount,
-                followingCount: data.followingCount,
-                isFollowing: false, // server might give this too
-            });
+            setUserProfile(data);
             setDisplayName(data.displayName);
             setUserName(data.username);
-            setTempName(data.username);
+            setTempName(data.displayName);
             setBio(data.bio);
             setTempBio(data.bio);
         };
@@ -95,21 +87,32 @@ const ProfilePage: React.FC = () => {
     if (!userProfile) return;
 
     // Make API Call
-    const response = await ApiService.updateUsername(tempName);
+    const response = await ApiService.updateDisplayName(tempName);
 
     if(response.error){
         alert('Error updating display name');
-        console.log(response.error);
     }else{
-        alert('Updated User Name');
-        setUserName(tempName);
-        setUserProfile({ ...userProfile, username: tempName });
+        alert('Updated Display Name');
+        setDisplayName(tempName);
+        setUserProfile({ ...userProfile, displayName: tempName });
         setIsEditingName(false);        
     }
   };
 
-  const handleBioSave = () => {
+  const handleBioSave = async () => {
     if (!userProfile) return;
+
+    const response = await ApiService.updateBio(tempBio);
+
+    if(response.error){
+        alert('Error updating bio name');
+    }else{
+        alert('Updated Bio');
+        setBio(bio);
+        setUserProfile({ ...userProfile, bio: bio });
+        setIsEditingBio(false);        
+    }
+
     setUserProfile({ ...userProfile, bio: tempBio });
     setIsEditingBio(false);
   };
@@ -142,7 +145,8 @@ const ProfilePage: React.FC = () => {
         />
 
         <PostsGrid 
-            posts={posts?.posts || []} 
+            posts={posts?.posts || []}
+            onPostClick={(post) => setSelectedPost(post)}
         />
 
         {/* Modals */}
@@ -172,15 +176,35 @@ const ProfilePage: React.FC = () => {
             title="Settings"
         >
             <SettingsModal 
-            displayName={userName}
-            isEditingName={isEditingName}
-            tempName={tempName}
-            setTempName={setTempName}
-            onEditName={() => setIsEditingName(true)}
-            onSaveName={handleNameSave}
-            onCancelName={handleNameCancel}
+                displayName={displayName}
+                isEditingName={isEditingName}
+                tempName={tempName}
+                setTempName={setTempName}
+                onEditName={() => setIsEditingName(true)}
+                onSaveName={handleNameSave}
+                onCancelName={handleNameCancel}
             />
         </Modal>
+        {selectedPost && (
+        <PostModal
+            post={selectedPost}
+            onClose={() => setSelectedPost(null)}
+            onPostDeleted={(id) => {
+            setPosts((prev) => ({
+                ...prev!,
+                posts: prev!.posts.filter((post) => post.id !== id),
+            }));
+            }}
+            onPostUpdated={(updatedPost) => {
+                setPosts((prev) => ({
+                    ...prev!,
+                    posts: prev!.posts.map((post) => post.id === updatedPost.id ? updatedPost : post),
+                })
+            );
+            setSelectedPost(updatedPost);
+            }}
+        />
+        )}
         </section>
     </Layout>
   );

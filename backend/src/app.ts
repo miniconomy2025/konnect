@@ -3,6 +3,7 @@ import "@js-temporal/polyfill";
 import { integrateFederation } from "@fedify/express";
 import { getLogger } from "@logtape/logtape";
 import express from "express";
+import path from "path";
 
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -19,7 +20,6 @@ import discoverRoutes from './routes/discover.ts';
 import { attachFederationContext } from "./middlewares/federation.ts";
 
 dotenv.config();
-const logger = getLogger("backend");
 
 export const app = express();
 
@@ -42,9 +42,9 @@ await mongoConnect();
 
 // Fedify middleware should come before body parsing middleware
 app.use((req, res, next) => {
-  if (req.path === '/posts' && req.method === 'POST') {
-    return next();
-  }
+  if (req.path.startsWith('/posts') && (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE')) {
+  return next();
+}
 
   integrateFederation(federation, (req) => {
     const domain = process.env.DOMAIN || 'localhost:8000';
@@ -60,18 +60,27 @@ app.use(express.json());
 
 app.use('/auth', attachFederationContext, authRoutes);
 app.use('/posts', attachFederationContext, postRoutes);
-app.use('/search', searchRoutes);
+app.use('/search', attachFederationContext, searchRoutes);
 app.use('/follows', attachFederationContext, followRoutes);
 app.use('/inboxes', inboxRoutes);
 app.use('/discover', attachFederationContext, discoverRoutes);
 
 app.use('', webfingerRoutes);
-app.use('', userRoutes);
+app.use('', attachFederationContext, userRoutes);
 
-app.get("/", (req, res) => res.send("Hello, Fedify!"));
+const frontendPath = path.join(process.cwd(), '../frontend/out');
+app.use(express.static(frontendPath));
 
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/.well-known') || req.path.startsWith('/users') || req.path.startsWith('/posts') || req.path.startsWith('/auth') || req.path.startsWith('/search') || req.path.startsWith('/follows') || req.path.startsWith('/inboxes')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 export default app;

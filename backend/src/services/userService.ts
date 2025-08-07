@@ -41,7 +41,7 @@ export class UserService {
   }
 
   async findByUsername(username: string): Promise<IUser | null> {
-    return this.sanitizeUserOutput(await User.findOne({ username, isLocal: true }));
+    return this.sanitizeUserOutput(await User.findOne({ username }));
   }
 
   async findByUsernameUnsanitized(username: string): Promise<Omit<IUser, 'keyPairs'> & { keyPairs: { publicKey: JsonWebKey, privateKey: JsonWebKey }[] } | null> {
@@ -81,7 +81,7 @@ export class UserService {
   async searchLocalUsers(query: string, limit = 20): Promise<IUser[]> {
     const searchRegex = new RegExp(query.replace(/^@/, ''), 'i');
     
-    return await User.find({
+    return (await User.find({
       isLocal: true,
       $or: [
         { username: searchRegex },
@@ -89,7 +89,22 @@ export class UserService {
       ]
     })
     .limit(limit)
-    .sort({ username: 1 });
+    .sort({ username: 1 })).map(user => this.sanitizeUserOutput(user))
+    .filter(user => user !== null);
+  }
+
+  async searchUsersInLocalDatabase(query: string, limit = 20): Promise<IUser[]> {
+    const searchRegex = new RegExp(query.replace(/^@/, ''), 'i');
+    
+    return (await User.find({
+      $or: [
+        { username: searchRegex },
+        { displayName: searchRegex }
+      ]
+    })
+    .limit(limit)
+    .sort({ username: 1 })).map(user => this.sanitizeUserOutput(user))
+    .filter(user => user !== null);
   }
 
   async findExternalUser(username: string, domain: string): Promise<IUser | null> {

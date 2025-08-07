@@ -28,6 +28,10 @@ export function Feed({ mode }: FeedProps) {
     following: 1,
   });
   const [error, setError] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState({
+    discover: false,
+    following: false,
+  });
 
   // Fetch posts from API or fallback to mock data
   const fetchPosts = useCallback(async (pageNum: number, isInitial = false) => {
@@ -98,7 +102,7 @@ export function Feed({ mode }: FeedProps) {
           [mode]: apiResponse.data?.hasMore || false,
         }));
       }
-    } catch (error) {
+    } catch {
       setError('Failed to load posts');
     } finally {
       setLoading(false);
@@ -110,8 +114,7 @@ export function Feed({ mode }: FeedProps) {
   }, [mode]);
 
   useEffect(() => {
-    // Only fetch if we don't have any posts for the current mode
-    if (posts[mode].length === 0) {
+    if (!initialized[mode]) {
       setPages(prev => ({
         ...prev,
         [mode]: 1,
@@ -121,9 +124,20 @@ export function Feed({ mode }: FeedProps) {
         [mode]: true,
       }));
       setError(null);
+      setInitialized(prev => ({
+        ...prev,
+        [mode]: true,
+      }));
       fetchPosts(1, true);
     }
-  }, [mode, fetchPosts, posts]);
+  }, [mode, initialized, fetchPosts]);
+
+  useEffect(() => {
+    setInitialized(prev => ({
+      ...prev,
+      [mode]: false,
+    }));
+  }, [mode]);
 
   // Infinite scroll handler
   const handleScroll = useCallback(() => {
@@ -136,7 +150,7 @@ export function Feed({ mode }: FeedProps) {
     if (scrollTop + windowHeight >= documentHeight - 100) {
       fetchPosts(pages[mode] + 1);
     }
-  }, [loading, hasMore[mode], pages, mode, fetchPosts]);
+  }, [loading, hasMore, pages, mode, fetchPosts]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
@@ -209,7 +223,7 @@ export function Feed({ mode }: FeedProps) {
           color: Color.Muted,
           fontSize: FontSize.Base,
         }}>
-          <strong>You've reached the end! 🎉</strong>
+          <strong>You&apos;ve reached the end! 🎉</strong>
         </section>
       )}
     </main>

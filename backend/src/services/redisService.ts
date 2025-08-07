@@ -26,7 +26,7 @@ export class RedisService {
     }
     return RedisService.instance;
   }
-
+  
   private isCacheEnabled(): boolean {
     return process.env.ENABLE_REDIS_CACHE === 'true';
   }

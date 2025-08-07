@@ -1,10 +1,11 @@
 import React from 'react';
+import Image from 'next/image';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
-import { DiscoverUser } from '@/types/discover';
 import { useRouter } from 'next/router';
+import { UserProfile } from '@/types/account';
 
 interface UserCardProps {
-  user: DiscoverUser;
+  user: UserProfile;
 }
 
 export const UserCard: React.FC<UserCardProps> = ({ user }) => {
@@ -23,11 +24,13 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         transition: 'transform 0.2s ease',
       }}
       onClick={() => {
-        router.push(`/Discover?user=${user.username}`);
+        router.push(`/Discover?user=${user.handle}`);
       }}
     >
-      <img
-        src={user.avatarUrl || '/assets/images/default-profile.png'}
+      <Image
+        width={48}
+        height={48}
+        src={user.avatarUrl || '/assets/images/missingAvatar.jpg'}
         alt={`${user.username}'s avatar`}
         style={{
           width: 40,
@@ -35,6 +38,9 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
           borderRadius: '50%',
           objectFit: 'cover',
           marginRight: Spacing.Small,
+        }}
+        onError={(e) => {
+          e.currentTarget.src = '/assets/images/missingAvatar.jpg';
         }}
       />
       <section>
@@ -48,7 +54,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
           fontSize: FontSize.Small,
           fontFamily: FontFamily.Nunito,
           color: Color.Muted,
-        }}>@{user.username}</section>
+        }}>{user.handle}</section>
       </section>
     </section>
   );

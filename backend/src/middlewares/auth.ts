@@ -1,15 +1,7 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { AuthService } from '../services/authservice.js';
 import { UserService } from '../services/userService.js';
-import type { IUser } from '../models/user.ts';
-
-declare global {
-  namespace Express {
-    interface Request {
-      user?: IUser;
-    }
-  }
-}
+import '../types/express.d.ts';
 
 const authService = new AuthService();
 const userService = new UserService();

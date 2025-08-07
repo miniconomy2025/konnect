@@ -12,3 +12,9 @@ variable "vpc_id" {
   description = "VPC ID for the ALB"
   type        = string
 }
+
+variable "instance_ids" {
+  description = "List of EC2 instance IDs to register with the target group"
+  type        = list(string)
+  default     = []
+}
