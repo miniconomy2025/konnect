@@ -166,7 +166,7 @@ export class Neo4jService {
     }
   }
 
-  async getPostsLikedByFollowed(userId: string, limit: number = 10): Promise<string[]> {
+  async getPostsLikedByFollowed(userId: string, limit: number = 100): Promise<string[]> {
     const session = this.getSession();
     try {
       const result = await session.run(
@@ -183,7 +183,7 @@ export class Neo4jService {
     }
   }
 
-  async getSecondDegreeUserPosts(userId: string, limit: number = 10): Promise<string[]> {
+  async getSecondDegreeUserPosts(userId: string, limit: number = 100): Promise<string[]> {
     const session = this.getSession();
     try {
       const result = await session.run(
@@ -201,7 +201,7 @@ export class Neo4jService {
     }
   }
 
-  async getTrendingPosts(hours: number = 24, limit: number = 10): Promise<string[]> {
+  async getTrendingPosts(hours: number = 24, limit: number = 100): Promise<string[]> {
     const session = this.getSession();
     try {
       const cutoffTime = Date.now() - (hours * 60 * 60 * 1000);
