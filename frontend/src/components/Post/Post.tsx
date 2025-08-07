@@ -119,6 +119,15 @@ export function Post({ post, children }: PostProps) {
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    // Don't prevent default if touch is on the header (account bar)
+    const target = e.target as HTMLElement;
+    const header = postRef.current?.querySelector('header');
+    
+    if (header && header.contains(target)) {
+      // Allow header click to proceed normally
+      return;
+    }
+    
     e.preventDefault();
     handleDoubleTap();
   };
