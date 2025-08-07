@@ -1,3 +1,4 @@
+import { useToastHelpers } from '@/contexts/ToastContext';
 import { ApiResponse, ApiService } from '@/lib/api';
 import { Color, FontSize, Spacing } from '@/lib/presentation';
 import type { GetPostsResponse, Post, UnifiedPostResponse } from '@/types/post';
@@ -32,6 +33,7 @@ export function Feed({ mode }: FeedProps) {
     discover: false,
     following: false,
   });
+  const { error: showError } = useToastHelpers();
 
   // Fetch posts from API or fallback to mock data
   const fetchPosts = useCallback(async (pageNum: number, isInitial = false) => {
@@ -50,6 +52,7 @@ export function Feed({ mode }: FeedProps) {
       if (apiResponse.error) {
         console.warn('API failed, using mock data:', apiResponse.error);
         setError(`Failed to load posts: ${apiResponse.error}`);
+        showError(`Failed to load ${mode} posts. Please check your connection and try again.`);
       } else if (apiResponse.data) {
         const transformedPosts: Post[] = apiResponse.data.posts.map((apiPost: UnifiedPostResponse) => ({
           id: apiPost.id,
@@ -106,6 +109,7 @@ export function Feed({ mode }: FeedProps) {
       }
     } catch {
       setError('Failed to load posts');
+      showError('Unable to load posts. Please try again later.');
     } finally {
       setLoading(false);
       setPages(prev => ({

@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import PostsGrid from '@/components/account/PostsGrid';
+import ProfileSection from '@/components/account/ProfileSection';
+import { useToastHelpers } from '@/contexts/ToastContext';
+import { ApiService } from '@/lib/api';
+import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
 import { UserProfile } from '@/types/account';
 import { PostsResponse } from '@/types/post';
-import { ApiService } from '@/lib/api';
-import ProfileSection from '@/components/account/ProfileSection';
-import PostsGrid from '@/components/account/PostsGrid';
 import { ArrowLeft } from 'lucide-react';
-import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
 import router from 'next/router';
+import React, { useEffect, useState } from 'react';
 
 interface PublicProfileProps {
   username: string;
@@ -19,6 +20,7 @@ const PublicProfileView: React.FC<PublicProfileProps> = ({ username }) => {
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
   const [actorId, setActorId] = useState<string>();
   const [loading, setLoading] = useState<boolean>(false);
+  const { success, error: showError } = useToastHelpers();
   useEffect(() => {
     const fetchUserData = async () => {
       const { data } = await ApiService.getUserByUsername(username);
@@ -43,18 +45,34 @@ const PublicProfileView: React.FC<PublicProfileProps> = ({ username }) => {
   const toggleFollow = async () => {
     setLoading(true);
     if (!userProfile || !actorId) return;
-    if (isFollowing) {
+    
+    try {
+      if (isFollowing) {
         const response = await ApiService.unfollowUser(actorId);
-        const updatedIsFollowing = response.data?.following ?? false;
-        setIsFollowing(updatedIsFollowing);
-        setUserProfile({...userProfile, isFollowedByCurrentUser: updatedIsFollowing});
-    } else {
+        if (response.error) {
+          showError('Failed to unfollow user. Please try again.');
+        } else {
+          const updatedIsFollowing = response.data?.following ?? false;
+          setIsFollowing(updatedIsFollowing);
+          setUserProfile({...userProfile, isFollowedByCurrentUser: updatedIsFollowing});
+          success(`You have unfollowed ${userProfile.displayName}`);
+        }
+      } else {
         const response = await ApiService.followUser(actorId);
-        const updatedIsFollowing = response.data?.following ?? false;
-        setIsFollowing(updatedIsFollowing);
-        setUserProfile({...userProfile, isFollowedByCurrentUser: updatedIsFollowing});
+        if (response.error) {
+          showError('Failed to follow user. Please try again.');
+        } else {
+          const updatedIsFollowing = response.data?.following ?? false;
+          setIsFollowing(updatedIsFollowing);
+          setUserProfile({...userProfile, isFollowedByCurrentUser: updatedIsFollowing});
+          success(`You are now following ${userProfile.displayName}!`);
+        }
+      }
+    } catch (error) {
+      showError('Unable to process follow request. Please check your connection.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   if (!userProfile) return <p>Loading...</p>;

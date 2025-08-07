@@ -63,7 +63,7 @@ app.use('/posts', attachFederationContext, postRoutes);
 app.use('/search', attachFederationContext, searchRoutes);
 app.use('/follows', attachFederationContext, followRoutes);
 app.use('/inboxes', inboxRoutes);
-app.use('/discover', attachFederationContext, discoverRoutes);
+app.use('/recommended', attachFederationContext, discoverRoutes);
 
 app.use('', webfingerRoutes);
 app.use('', attachFederationContext, userRoutes);

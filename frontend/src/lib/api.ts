@@ -47,13 +47,12 @@ export class ApiService {
     try {
       let endpoint;
       if (type === 'discover') {
-        endpoint = `${API_BASE_URL}/discover`;
+        endpoint = `${API_BASE_URL}/recommended`;
       } else {
         endpoint = `${API_BASE_URL}/posts?type=following`;
       }
 
       const url = `${endpoint}?page=${page}&limit=${limit}`;
-      console.log('Fetching posts from:', url);
 
       const response = await fetch(url, {
         headers: this.getAuthHeaders(),
@@ -66,7 +65,6 @@ export class ApiService {
       }
       
       const data = await response.json();
-      console.log('API response:', data);
       return { data };
     } catch (error) {
       console.error('API error:', error);
