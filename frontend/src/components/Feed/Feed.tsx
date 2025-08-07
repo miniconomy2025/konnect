@@ -2,9 +2,8 @@ import { useToastHelpers } from '@/contexts/ToastContext';
 import { ApiResponse, ApiService } from '@/lib/api';
 import { Color, FontSize, Spacing } from '@/lib/presentation';
 import type { GetPostsResponse, Post, UnifiedPostResponse } from '@/types/post';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ImagePost } from '../Post/ImagePost';
-import { PostSkeleton } from '../Post/PostSkeleton';
 import { TextPost } from '../Post/TextPost';
 import { VideoPost } from '../Post/VideoPost';
 
@@ -35,7 +34,6 @@ export function Feed({ mode }: FeedProps) {
     following: false,
   });
   const { error: showError } = useToastHelpers();
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   // Fetch posts from API or fallback to mock data
   const fetchPosts = useCallback(async (pageNum: number, isInitial = false) => {
@@ -46,9 +44,9 @@ export function Feed({ mode }: FeedProps) {
       let apiResponse: ApiResponse<GetPostsResponse>;
       
       if (mode === 'discover') {
-        apiResponse = await ApiService.getPosts('discover', pageNum, 10);
+        apiResponse = await ApiService.getPosts('discover', pageNum, 5);
       } else {
-        apiResponse = await ApiService.getPosts('following', pageNum, 10);
+        apiResponse = await ApiService.getPosts('following', pageNum, 5);
       }
       
       if (apiResponse.error) {
@@ -147,30 +145,23 @@ export function Feed({ mode }: FeedProps) {
     }));
   }, [mode]);
 
-  // Infinite scroll with IntersectionObserver
+  // Infinite scroll handler
+  const handleScroll = useCallback(() => {
+    if (loading || !hasMore[mode]) return;
+    
+    const scrollTop = window.scrollY;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    
+    if (scrollTop + windowHeight >= documentHeight - 100) {
+      fetchPosts(pages[mode] + 1);
+    }
+  }, [loading, hasMore, pages, mode, fetchPosts]);
+
   useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !loading && hasMore[mode]) {
-            fetchPosts(pages[mode] + 1);
-          }
-        });
-      },
-      {
-        root: null,
-        // Start fetching when the sentinel is within two viewport heights
-        rootMargin: '200% 0px',
-        threshold: 0,
-      }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [loading, hasMore, mode, pages, fetchPosts]);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
 
   const renderPost = (post: Post) => {
     switch (post.media?.type) {
@@ -221,10 +212,14 @@ export function Feed({ mode }: FeedProps) {
       ))}
       
       {loading && (
-        <>
-          <PostSkeleton hasMedia />
-          <PostSkeleton />
-        </>
+        <section style={{
+          textAlign: 'center',
+          padding: Spacing.Large,
+          color: Color.Muted,
+          fontSize: FontSize.Base,
+        }}>
+          <strong>Loading more posts...</strong>
+        </section>
       )}
       
       {!hasMore[mode] && posts[mode].length > 0 && (
@@ -237,9 +232,6 @@ export function Feed({ mode }: FeedProps) {
           <strong>You&apos;ve reached the end! 🎉</strong>
         </section>
       )}
-
-      {/* Sentinel for IntersectionObserver-based infinite loading */}
-      <div ref={sentinelRef} style={{ height: 1 }} />
     </main>
   );
 } 
