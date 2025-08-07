@@ -24,8 +24,6 @@ export function addDeleteListener(inboxListeners: any) {
       return;
     }
 
-    await ensureExternalUserExists(actor.id.toString(), userService, searchService, logger);
-
     try {
       const { ExternalPost } = await import("../../models/externalPost.ts");
       
