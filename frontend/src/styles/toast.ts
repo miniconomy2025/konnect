@@ -1,38 +1,39 @@
 import { ToastType } from '@/types/toast';
 import { CSSProperties } from 'react';
+import { Spacing, ComponentSize, FontSizeRem, BorderWidth, Radius, FontFamily } from '@/lib/presentation';
 
 export const toastStyles = {
   container: {
     position: 'fixed' as const,
-    top: '20px',
-    right: '20px',
+    top: Spacing.Large,
+    right: Spacing.Large,
     zIndex: 9999,
-    maxWidth: '400px',
+    maxWidth: ComponentSize.ToastMaxWidth,
     pointerEvents: 'none' as const,
   },
 
   toastStack: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '8px',
+    gap: Spacing.Small,
     alignItems: 'flex-end',
   },
 
   toast: {
     position: 'relative' as const,
-    padding: '16px 20px',
-    borderRadius: '8px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-    fontSize: '14px',
+    padding: `${Spacing.Medium} ${Spacing.Large}`,
+    borderRadius: Radius.Medium,
+    boxShadow: '0 0.25rem 0.75rem rgba(0, 0, 0, 0.15)',
+    fontSize: FontSizeRem.ToastBase,
     lineHeight: '1.4',
     maxWidth: '100%',
-    minWidth: '280px',
+    minWidth: ComponentSize.ToastMinWidth,
     pointerEvents: 'auto' as const,
     cursor: 'pointer',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     transform: 'translateX(0) scale(1)',
     opacity: 1,
-    marginBottom: '0px',
+    marginBottom: '0',
     fontWeight: '400',
   },
 
@@ -44,17 +45,17 @@ export const toastStyles = {
   toastExiting: {
     transform: 'translateX(100%) scale(0.95)',
     opacity: 0,
-    maxHeight: '0px',
-    padding: '0 20px',
-    marginBottom: '-8px',
+    maxHeight: '0',
+    padding: `0 ${Spacing.Large}`,
+    marginBottom: `-${Spacing.Small}`,
   },
 
   // Collapsed state (stacked)
   toastCollapsed: {
     transform: 'translateX(0) scale(0.95)',
     opacity: 0.8,
-    marginBottom: '-45px', // Overlap previous toasts
-    filter: 'blur(0.5px)',
+    marginBottom: '-2.8125rem', // Overlap previous toasts
+    filter: 'blur(0.03125rem)',
   },
 
   // Hover state expansion
@@ -65,7 +66,7 @@ export const toastStyles = {
   toastHoveredExpanded: {
     transform: 'translateX(0) scale(1)',
     opacity: 1,
-    marginBottom: '8px',
+    marginBottom: Spacing.Small,
     filter: 'none',
   },
 
@@ -73,23 +74,23 @@ export const toastStyles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: '4px',
+    marginBottom: Spacing.XSmall,
   },
 
   toastTitle: {
     fontWeight: '700' as const,
-    fontSize: '15px',
-    marginBottom: '4px',
+    fontSize: FontSizeRem.ToastTitle,
+    marginBottom: Spacing.XSmall,
     color: 'inherit',
-    fontFamily: 'var(--font-nunito), Arial, Helvetica, sans-serif',
+    fontFamily: FontFamily.VarelaRound,
   },
 
   toastMessage: {
     color: 'inherit',
     opacity: 0.9,
     wordWrap: 'break-word' as const,
-    paddingRight: '8px',
-    fontFamily: 'var(--font-nunito), Arial, Helvetica, sans-serif',
+    paddingRight: Spacing.Small,
+    fontFamily: FontFamily.VarelaRound,
     fontWeight: '400',
   },
 
@@ -98,20 +99,20 @@ export const toastStyles = {
     border: 'none',
     color: 'inherit',
     cursor: 'pointer',
-    padding: '4px',
-    borderRadius: '4px',
+    padding: Spacing.XSmall,
+    borderRadius: Spacing.XSmall,
     opacity: 0.7,
-    fontSize: '18px',
+    fontSize: FontSizeRem.ToastIcon,
     lineHeight: '1',
-    minWidth: '24px',
-    height: '24px',
+    minWidth: ComponentSize.ToastButtonSize,
+    height: ComponentSize.ToastButtonSize,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'opacity 0.2s',
     flexShrink: 0,
-    marginLeft: '8px',
-    fontFamily: 'var(--font-nunito), Arial, Helvetica, sans-serif',
+    marginLeft: Spacing.Small,
+    fontFamily: FontFamily.VarelaRound,
     fontWeight: '400',
   },
 
@@ -125,15 +126,15 @@ export const toastStyles = {
     border: 'none',
     color: 'inherit',
     cursor: 'pointer',
-    padding: '6px 12px',
-    borderRadius: '4px',
-    fontSize: '13px',
+    padding: `${Spacing.XSmall} ${Spacing.Medium}`,
+    borderRadius: Spacing.XSmall,
+    fontSize: FontSizeRem.ToastSmall,
     fontWeight: '600' as const,
-    marginTop: '8px',
+    marginTop: Spacing.Small,
     marginLeft: 'auto',
     display: 'block',
     transition: 'background-color 0.2s',
-    fontFamily: 'var(--font-nunito), Arial, Helvetica, sans-serif',
+    fontFamily: FontFamily.VarelaRound,
   },
 
   actionButtonHover: {
@@ -144,9 +145,9 @@ export const toastStyles = {
     position: 'absolute' as const,
     bottom: '0',
     left: '0',
-    height: '3px',
+    height: ComponentSize.ToastProgressHeight,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: '0 0 8px 8px',
+    borderRadius: `0 0 ${Radius.Medium} ${Radius.Medium}`,
     transformOrigin: 'left',
     transition: 'transform linear',
   },
@@ -155,7 +156,7 @@ export const toastStyles = {
 export const getToastTypeStyles = (type: ToastType): CSSProperties => {
   const baseStyles = {
     color: 'white',
-    border: '1px solid',
+    border: `${BorderWidth.Thin} solid`,
   };
 
   switch (type) {

@@ -48,11 +48,6 @@ const Home: React.FC = () => {
 
   return (
     <Layout>
-        <main style={{
-        minHeight: '100vh',
-        background: Color.Background,
-        position: 'relative',
-        }}>
         <Header
             editProfile={false}
             onSettingsClick={()=>{}}
@@ -86,7 +81,7 @@ const Home: React.FC = () => {
             onClick={scrollToTop}
             style={{
             position: 'fixed',
-            bottom: `calc(${Spacing.Large} + 80px)`,
+            bottom: `calc(${Spacing.Large} + 6rem)`,
             right: Spacing.Large,
             width: 40,
             height: 40,
@@ -137,7 +132,6 @@ const Home: React.FC = () => {
             }}
             />
         </button>
-        </main>
     </Layout>
   );
 }

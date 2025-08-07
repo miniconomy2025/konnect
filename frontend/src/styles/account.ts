@@ -1,50 +1,51 @@
 import { CSSProperties } from 'react';
+import { Color, Spacing, ComponentSize, FontSizeRem, BorderWidth, Radius, FontFamily } from '@/lib/presentation';
 
 export const styles: { [key: string]: CSSProperties } = {
   container: {
     width: '100%',
     minWidth: '95vw',
-    backgroundColor: 'white',
+    backgroundColor: Color.Surface,
     minHeight: '100vh',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-    color: 'black',
+    fontFamily: FontFamily.VarelaRound,
+    color: Color.Text,
     colorScheme: 'light'
   },
   header: {
-    borderBottom: '1px solid #e5e7eb',
-    backgroundColor: 'white',
+    borderBottom: `${BorderWidth.Thin} solid ${Color.Border}`,
+    backgroundColor: Color.Surface,
     position: 'sticky',
     top: 0,
     zIndex: 10,
-    color: 'black'
+    color: Color.Text
   },
   headerContent: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '1rem'
+    padding: Spacing.Medium
   },
   headerTitle: {
     fontSize: '1.25rem',
     fontWeight: 'bold',
     margin: 0,
-    color: 'black'
+    color: Color.Text
   },
   iconButton: {
-    padding: '0.5rem',
+    padding: Spacing.Small,
     border: 'none',
     backgroundColor: 'transparent',
-    borderRadius: '4px',
+    borderRadius: Spacing.XSmall,
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: 'black',
+    color: Color.Text,
   },
   profileSection: {
-    padding: '1rem',
-    backgroundColor: 'white',
-    color: 'black'
+    padding: Spacing.Medium,
+    backgroundColor: Color.Surface,
+    color: Color.Text
   },
   profileHeader: {
     display: 'flex',
@@ -53,8 +54,8 @@ export const styles: { [key: string]: CSSProperties } = {
     marginBottom: '1rem'
   },
   avatar: {
-    width: '80px',
-    height: '80px',
+    width: ComponentSize.AvatarSize,
+    height: ComponentSize.AvatarSize,
     borderRadius: '50%',
     objectFit: 'cover',
     flexShrink: 0
@@ -80,13 +81,13 @@ export const styles: { [key: string]: CSSProperties } = {
     marginTop: '0.5rem'
   },
   messageButton: {
-    padding: '0.25rem 1rem',
-    backgroundColor: 'white',
-    border: '1px solid #d1d5db',
-    borderRadius: '4px',
+    padding: `${Spacing.XSmall} ${Spacing.Medium}`,
+    backgroundColor: Color.Surface,
+    border: `${BorderWidth.Thin} solid ${Color.Border}`,
+    borderRadius: Spacing.XSmall,
     fontWeight: '500',
     cursor: 'pointer',
-    color: 'black'
+    color: Color.Text
   },
   stats: {
     display: 'flex',
@@ -126,12 +127,12 @@ export const styles: { [key: string]: CSSProperties } = {
   bioTextarea: {
     flex: 1,
     padding: '0.5rem',
-    border: '1px solid #d1d5db',
-    borderRadius: '4px',
+    border: `${BorderWidth.Thin} solid ${Color.Border}`,
+    borderRadius: Spacing.XSmall,
     fontSize: '0.875rem',
     fontFamily: 'inherit',
     resize: 'vertical',
-    minHeight: '60px',
+    minHeight: ComponentSize.ProfileInputMinHeight,
     backgroundColor: 'white',
     color: 'black'
   },
@@ -139,7 +140,7 @@ export const styles: { [key: string]: CSSProperties } = {
     padding: '0.5rem',
     border: 'none',
     backgroundColor: 'transparent',
-    borderRadius: '4px',
+    borderRadius: Spacing.XSmall,
     cursor: 'pointer',
     color: '#6b7280'
   },
@@ -147,7 +148,7 @@ export const styles: { [key: string]: CSSProperties } = {
     padding: '0.5rem',
     border: 'none',
     backgroundColor: 'transparent',
-    borderRadius: '4px',
+    borderRadius: Spacing.XSmall,
     cursor: 'pointer',
     color: '#10b981'
   },
@@ -155,7 +156,7 @@ export const styles: { [key: string]: CSSProperties } = {
     padding: '0.5rem',
     border: 'none',
     backgroundColor: 'transparent',
-    borderRadius: '4px',
+    borderRadius: Spacing.XSmall,
     cursor: 'pointer',
     color: '#ef4444'
   },
@@ -165,8 +166,8 @@ export const styles: { [key: string]: CSSProperties } = {
     marginLeft: 'auto',
     marginRight: 'auto',
     gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '1px',
-    padding: '1px'
+    gap: '0.0625rem',
+    padding: '0.0625rem'
   },
   postItem: {
     position: 'relative',
@@ -213,11 +214,11 @@ export const styles: { [key: string]: CSSProperties } = {
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    backdropFilter: 'blur(4px)'
+    backdropFilter: 'blur(0.25rem)'
   },
   modalContent: {
     backgroundColor: 'white',
-    borderRadius: '8px',
+    borderRadius: Spacing.Small,
     width: '100%',
     maxWidth: '24rem',
     margin: '1rem',
@@ -229,7 +230,7 @@ export const styles: { [key: string]: CSSProperties } = {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '1rem',
-    borderBottom: '1px solid #e5e7eb'
+    borderBottom: `${BorderWidth.Thin} solid ${Color.Border}`
   },
   modalTitle: {
     fontSize: '1.125rem',
@@ -303,8 +304,8 @@ export const styles: { [key: string]: CSSProperties } = {
   settingInput: {
     flex: 1,
     padding: '0.5rem 0.75rem',
-    border: '1px solid #d1d5db',
-    borderRadius: '4px',
+    border: `${BorderWidth.Thin} solid ${Color.Border}`,
+    borderRadius: Spacing.XSmall,
     fontSize: '0.875rem',
     backgroundColor: 'white',
     color: 'black'
@@ -318,14 +319,14 @@ export const styles: { [key: string]: CSSProperties } = {
     color: 'black'
   },
   settingsMenu: {
-    borderTop: '1px solid #e5e7eb',
+    borderTop: `${BorderWidth.Thin} solid ${Color.Border}`,
     paddingTop: '1rem'
   },
   settingMenuButton: {
     width: '100%',
     textAlign: 'left',
     padding: '0.5rem 0.75rem',
-    borderRadius: '4px',
+    borderRadius: Spacing.XSmall,
     border: 'none',
     backgroundColor: 'white',
     cursor: 'pointer',

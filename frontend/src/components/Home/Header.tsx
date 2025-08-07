@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Color, Spacing, FontSize, FontFamily } from '@/lib/presentation';
+import { Color, Spacing, FontSize, FontFamily, textGradientStyle } from '@/lib/presentation';
 import { styles } from '@/styles/account';
 import { Settings } from 'lucide-react';
 
@@ -15,12 +15,12 @@ export function Header({ editProfile, onSettingsClick } : HeaderProps) {
     <header
     style={{
       position: 'sticky',
-      height:'2.5rem',
+      height:'4rem',
       top: 0,
       zIndex: 200,  
       background: Color.Surface,
       borderBottom: `1px solid ${Color.Border}`,
-      padding: `${Spacing.Medium} ${Spacing.Large}`,
+      padding: `${Spacing.Large} ${Spacing.Large}`,
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
@@ -37,9 +37,9 @@ export function Header({ editProfile, onSettingsClick } : HeaderProps) {
         <h1 style={{
           margin: 0,
           fontSize: FontSize.XLarge,
-          fontWeight: 400,
-          color: Color.Text,
+          fontWeight: 700,
           fontFamily: FontFamily.Playwrite,
+          ...textGradientStyle,
         }}>
           Konnect
         </h1>

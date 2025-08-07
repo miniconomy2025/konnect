@@ -1,13 +1,18 @@
 import { CSSProperties } from 'react';
+import { Color, FontFamily } from '@/lib/presentation';
 
 export const styles: { [key: string]: CSSProperties } = {
   container: {
-    minHeight: '100vh',
-    backgroundColor: '#f9fafb',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+    height: '100vh',
+    backgroundColor: Color.Background,
+    fontFamily: FontFamily.VarelaRound,
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden'
   },
   main: {
-    display: 'flexbox',
+    flex: 1,
+    overflowY: 'auto',
     paddingBottom: '0.5rem'
   }
 };
