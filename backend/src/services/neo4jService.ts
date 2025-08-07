@@ -129,27 +129,38 @@ export class Neo4jService {
          MATCH (p:Post {postId: $postId})
          MERGE (u)-[r:LIKED]->(p)
          ON CREATE SET p.likesCount = COALESCE(p.likesCount, 0) + 1
-         RETURN r`,
+         RETURN p`,
         { userActorId, postId }
       );
       
       if (result.records.length === 0) {
-        throw new Error(`Failed to create like relationship: ${userActorId} -> ${postId}`);
+        logger.warn('User or Post not found for like', { userActorId, postId });
       }
+    } catch (error) {
+      logger.error('Error creating like relationship', { error: error instanceof Error ? error.message : String(error) });
+      throw error;
     } finally {
       await session.close();
     }
   }
 
-  async unlikePost(userId: string, postId: string): Promise<void> {
+  async unlikePost(userActorId: string, postId: string): Promise<void> {
     const session = this.getSession();
     try {
-      await session.run(
-        `MATCH (u:User {userId: $userId})-[r:LIKED]->(p:Post {postId: $postId})
+      const result = await session.run(
+        `MATCH (u:User {actorId: $userActorId})-[r:LIKED]->(p:Post {postId: $postId})
          DELETE r
-         SET p.likesCount = p.likesCount - 1`,
-        { userId, postId }
+         SET p.likesCount = COALESCE(p.likesCount - 1, 0)
+         RETURN p`,
+        { userActorId, postId }
       );
+
+      if (result.records.length === 0) {
+        logger.warn('Like relationship not found', { userActorId, postId });
+      }
+    } catch (error) {
+      logger.error('Error removing like relationship', { error: error instanceof Error ? error.message : String(error) });
+      throw error;
     } finally {
       await session.close();
     }

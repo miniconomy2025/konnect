@@ -70,7 +70,7 @@ export class PostService {
       likesCount: 0,
     });
 
-    const savedPost = await post.save();
+    const savedPost = await post.save() as IPost & { _id: mongoose.Types.ObjectId };
     
     const author = await User.findById(postData.authorId);
     if (author && federationContext) {
@@ -281,31 +281,44 @@ export class PostService {
     const likeIndex = post.likes.indexOf(userIdObj);
     let isLiked = false;
 
-    if (likeIndex === -1) {
-      post.likes.push(userIdObj);
-      post.likesCount++;
-      isLiked = true;
-      
-      const domain = process.env.DOMAIN || 'localhost:8000';
-      const protocol = domain.includes('localhost') ? 'http' : 'https';
-      const likeActivityId = `${protocol}://${domain}/activities/like-${Date.now()}`;
+    const { Like } = await import('../models/like.ts');
 
-      const { Like } = await import('../models/like.ts');
-      const like = new Like({
-        actor: { id: user.actorId, ref: user._id },
-        object: { id: post.activityId, ref: post._id },
-        activityId: likeActivityId,
-        isLocal: true
+    if (likeIndex === -1) {
+      // Check if like already exists in the likes collection
+      const existingLike = await Like.findOne({
+        'actor.id': user.actorId,
+        'object.id': post.activityId
       });
-      console.log(like);
-      await like.save();
-      await this.redisService.incrementLikes(postId);
-      await this.neo4jService.likePost(userId, postId);
+
+      if (!existingLike) {
+        post.likes.push(userIdObj);
+        post.likesCount++;
+        isLiked = true;
+        
+        const domain = process.env.DOMAIN || 'localhost:8000';
+        const protocol = domain.includes('localhost') ? 'http' : 'https';
+        const likeActivityId = `${protocol}://${domain}/activities/like-${Date.now()}`;
+
+        const like = new Like({
+          actor: { id: user.actorId, ref: user._id },
+          object: { id: post.activityId, ref: post._id },
+          activityId: likeActivityId,
+          isLocal: true
+        });
+
+        await like.save();
+        await this.redisService.incrementLikes(postId);
+        await this.neo4jService.likePost(userId, postId);
+      } else {
+        // Like already exists in likes collection but not in post.likes
+        post.likes.push(userIdObj);
+        post.likesCount++;
+        isLiked = true;
+      }
     } else {
       post.likes.splice(likeIndex, 1);
       post.likesCount--;
       
-      const { Like } = await import('../models/like.ts');
       await Like.findOneAndDelete({
         'actor.id': user.actorId,
         'object.id': post.activityId
