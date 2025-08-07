@@ -38,6 +38,8 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
   onFollowToggle,
   disableFollowButton
 }) => {
+
+  const user = userProfile.handle.split('@');
   return (
     <section style={styles.profileSection}>
       <section style={styles.profileHeader}>
@@ -76,8 +78,8 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
 
         <section style={styles.profileInfo}>
           <section style={styles.profileTopRow}>
-            <h2 style={styles.username}>{userProfile.handle}</h2>
-
+            <h2 style={styles.username}>{`${user[1]}`}</h2>
+            <h6 style={styles.domain}>{`@${user[2]}`}</h6>
             {/* Follow/Unfollow Button */}
             {showFollowButton && (
               <button
