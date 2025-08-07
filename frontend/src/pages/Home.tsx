@@ -46,7 +46,10 @@ const Home: React.FC = () => {
         background: Color.Background,
         position: 'relative',
         }}>
-        <Header />
+        <Header
+            editProfile={false}
+            onSettingsClick={()=>{}}
+        />
         
         <nav style={{
             opacity: isScrolled ? 0 : 1,

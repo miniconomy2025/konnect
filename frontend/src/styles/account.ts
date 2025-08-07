@@ -3,7 +3,7 @@ import { CSSProperties } from 'react';
 export const styles: { [key: string]: CSSProperties } = {
   container: {
     width: '100%',
-    minWidth: '100vw',
+    minWidth: '95vw',
     backgroundColor: 'white',
     minHeight: '100vh',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
@@ -39,7 +39,7 @@ export const styles: { [key: string]: CSSProperties } = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: 'black'
+    color: 'black',
   },
   profileSection: {
     padding: '1rem',
@@ -161,6 +161,7 @@ export const styles: { [key: string]: CSSProperties } = {
   },
   postsGrid: {
     display: 'grid',
+    width: '95vw',
     marginLeft: 'auto',
     marginRight: 'auto',
     gridTemplateColumns: 'repeat(3, 1fr)',
