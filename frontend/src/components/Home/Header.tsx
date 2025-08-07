@@ -1,8 +1,17 @@
+"use client";
+
 import React from 'react';
 import { Color, Spacing, FontSize, FontFamily } from '@/lib/presentation';
+import { styles } from '@/styles/account';
+import { Settings } from 'lucide-react';
 
+interface HeaderProps {
+  editProfile: boolean;
+  onSettingsClick: () => void;
+}
 
-export function Header() {
+export function Header({ editProfile, onSettingsClick } : HeaderProps) {  
+    console.log(onSettingsClick);  
   return (
     <header
     style={{
@@ -22,10 +31,10 @@ export function Header() {
         left: 0,
         right: 0,
         display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        pointerEvents: 'none',
+        justifyContent: 'space-between',
+        alignItems: 'center'
       }}>
+        <section></section>
         <h1 style={{
           margin: 0,
           fontSize: FontSize.XLarge,
@@ -35,15 +44,15 @@ export function Header() {
         }}>
           Konnect
         </h1>
+        {editProfile ? 
+            <button onClick={onSettingsClick} style={styles.iconButton}>
+                <Settings size={24} />
+            </button> 
+            :
+            <section></section>      
+        }
+       
       </section>
-      
-      <nav style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: Spacing.Medium,
-        marginLeft: 'auto',
-      }}>
-      </nav>
     </header>
   );
 } 

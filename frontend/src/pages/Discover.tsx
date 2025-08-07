@@ -51,12 +51,14 @@ const DiscoverPage: React.FC = () => {
     <Layout>
       <main
         style={{
-          padding: Spacing.Medium,
           background: Color.Background,
-          minHeight: '100vh',
+          minHeight: '100vh'
         }}
       >
-        <Header/>
+        <Header
+            editProfile={false}
+            onSettingsClick={()=>{}}
+        />
         {usernameParam ? (
         <PublicProfileView username={usernameParam}/>
         ) : (
