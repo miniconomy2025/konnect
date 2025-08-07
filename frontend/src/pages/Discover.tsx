@@ -77,7 +77,8 @@ const DiscoverPage: React.FC = () => {
                 background: Color.Surface,
                 border: `1px solid ${Color.Border}`,
                 borderRadius: 8,
-                padding: Spacing.XSmall,
+                padding: Spacing.Small,
+                margin: Spacing.Medium,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
             }}
             >
@@ -95,6 +96,7 @@ const DiscoverPage: React.FC = () => {
                 fontSize: FontSize.Large,
                 background: 'transparent',
                 color: Color.Text,
+                marginLeft: Spacing.Small,
                 }}
             />
             </section>

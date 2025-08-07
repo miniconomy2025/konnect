@@ -17,6 +17,8 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         display: 'flex',
         alignItems: 'center',
         padding: Spacing.Small,
+        marginLeft: Spacing.Medium,
+        marginRight: Spacing.Medium,
         marginBottom: Spacing.Small,
         background: Color.Surface,
         borderRadius: 10,
