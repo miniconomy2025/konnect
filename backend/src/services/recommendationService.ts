@@ -26,6 +26,10 @@ export class RecommendationService {
         this.neo4jService.getTrendingPosts(limit)
       ]);
 
+      console.log(likedByFollowedIds);
+      console.log(secondDegreeIds);
+      console.log(trendingIds);
+
       // Combine and deduplicate post IDs
       const uniquePostIds = Array.from(new Set([
         ...likedByFollowedIds,
