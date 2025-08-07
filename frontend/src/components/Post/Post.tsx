@@ -93,8 +93,9 @@ export function Post({ post, children }: PostProps) {
   }
 
   const maxLen = 10;
-  const displayDomain = post.author.domain.length > maxLen ? post.author.domain.slice(0, maxLen) + "…" : post.author.domain;
-  const domainColor = stringToColor(post.author.domain);
+  const domain = post.author.domain;
+  const displayDomain = domain && domain.length > maxLen ? domain.slice(0, maxLen) + "…" : domain;
+  const domainColor = domain ? stringToColor(domain) : "#999";
 
   return (
     <article
@@ -174,30 +175,32 @@ export function Post({ post, children }: PostProps) {
             @{post.author.username} • {formatTimeAgo(post.createdAt)}
           </time>
         </section>
-        <mark
-          style={{
-            backgroundColor: domainColor,
-            color: "#fff",
-            borderRadius: "0.75em",
-            padding: "0.2em 0.7em",
-            fontSize: "0.85em",
-            marginLeft: "0.5em",
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-            display: "inline-block",
-          }}
-          title={post.author.domain}
-          aria-label={`Domain: ${post.author.domain}`}
-        >
-          {displayDomain}
-        </mark>
+        {domain && (
+          <mark
+            style={{
+              backgroundColor: domainColor,
+              color: "#fff",
+              borderRadius: "0.75em",
+              padding: "0.2em 0.7em",
+              fontSize: "0.85em",
+              marginLeft: "0.5em",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              display: "inline-block",
+            }}
+            title={domain}
+            aria-label={`Domain: ${domain}`}
+          >
+            {displayDomain}
+          </mark>
+        )}
       </header>
       
       <main style={{ background: Color.Background, padding: 0, textAlign: 'center' }}>
         {children}
       </main>
       
-      {post.content.text && post.media.type !== 'text' && (
+      {post.content.text && (!post.media || post.media.type !== 'image' && post.media.type !== 'video') && (
         <section style={{
           padding: `${Spacing.Medium} ${Spacing.Large}`,
           background: Color.Surface,

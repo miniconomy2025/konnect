@@ -75,7 +75,7 @@ export class PostService {
       await this.activityService.queueCreateActivity(savedPost, author, federationContext);
     }
 
-    const populatedPost = await savedPost.populate('author', 'username displayName avatarUrl');
+    const populatedPost = await savedPost.populate('author', 'username displayName avatarUrl domain isLocal');
     
     // Cache the new post
     await this.redisService.cachePost(postId.toString(), this.postToCache(populatedPost));
@@ -109,7 +109,7 @@ export class PostService {
     }
 
     // If not in cache, get from DB and cache it
-    const post = await Post.findById(id).populate('author', 'username displayName avatarUrl');
+    const post = await Post.findById(id).populate('author', 'username displayName avatarUrl domain isLocal');
     if (post) {
       await this.redisService.cachePost(id, this.postToCache(post));
     }
@@ -118,7 +118,7 @@ export class PostService {
   }
 
   async getPostByActivityId(activityId: string): Promise<IPost | null> {
-    return await Post.findOne({ activityId }).populate('author', 'username displayName avatarUrl');
+    return await Post.findOne({ activityId }).populate('author', 'username displayName avatarUrl domain isLocal');
   }
 
   async getUserPosts(userId: string, page = 1, limit = 20): Promise<IPost[]> {
@@ -148,7 +148,7 @@ export class PostService {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('author', 'username displayName avatarUrl');
+      .populate('author', 'username displayName avatarUrl domain isLocal');
 
     // Cache the results
     const postsToCache = posts as (IPost & { _id: mongoose.Types.ObjectId })[];
@@ -196,7 +196,7 @@ export class PostService {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('author', 'username displayName avatarUrl');
+      .populate('author', 'username displayName avatarUrl domain isLocal');
 
     // Cache the results
     const postsToCache = posts as (IPost & { _id: mongoose.Types.ObjectId })[];
@@ -240,7 +240,7 @@ export class PostService {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('author', 'username displayName avatarUrl');
+      .populate('author', 'username displayName avatarUrl domain isLocal');
 
     // Cache the results
     const postsToCache = posts as (IPost & { _id: mongoose.Types.ObjectId })[];
@@ -258,7 +258,7 @@ export class PostService {
   }
 
   async likePost(postId: string, userId: string, federationContext?: any): Promise<{ success: boolean; likesCount: number; isLiked: boolean }> {
-    const post = await Post.findById(postId).populate('author', 'username displayName avatarUrl');
+    const post = await Post.findById(postId).populate('author', 'username displayName avatarUrl domain isLocal');
     if (!post) {
       throw new Error('Post not found');
     }
@@ -382,7 +382,7 @@ export class PostService {
 
     await this.redisService.invalidatePost(postId);
 
-    const populatedPost = await Post.findById(postId).populate('author', 'username displayName avatarUrl');
+    const populatedPost = await Post.findById(postId).populate('author', 'username displayName avatarUrl domain isLocal');
     return populatedPost;
   }
 

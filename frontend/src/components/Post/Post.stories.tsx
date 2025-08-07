@@ -12,6 +12,8 @@ const examplePost = {
     username: 'alice',
     displayName: 'Alice Johnson',
     avatarUrl: '/assets/images/missingAvatar.jpg',
+    domain: 'konnect.social',
+    isLocal: true,
   },
   content: {
     text: 'A sample caption',
@@ -62,6 +64,13 @@ export const Text: Story = {
 export const Image: Story = {
   render: () => <ImagePost post={{
     ...examplePost,
+    author: {
+      ...examplePost.author,
+      username: 'jane',
+      displayName: 'Jane Smith',
+      domain: 'mastodon.social',
+      isLocal: false,
+    },
     content: {
       text: 'Amazing sunset at the beach today! 🌅',
       hasMedia: true,
@@ -82,6 +91,13 @@ export const Image: Story = {
 export const Video: Story = {
   render: () => <VideoPost post={{
     ...examplePost,
+    author: {
+      ...examplePost.author,
+      username: 'creator',
+      displayName: 'Video Creator',
+      domain: 'pixelfed.social',
+      isLocal: false,
+    },
     content: {
       text: 'Check out this cool trick! 🎯',
       hasMedia: true,
@@ -102,6 +118,13 @@ export const Video: Story = {
 export const LongText: Story = {
   render: () => <TextPost post={{
     ...examplePost,
+    author: {
+      ...examplePost.author,
+      username: 'philosopher',
+      displayName: 'Deep Thinker',
+      domain: 'lemmy.world',
+      isLocal: false,
+    },
     content: {
       text: 'Sometimes you just need to take a moment and appreciate the little things in life. Today I found this beautiful flower growing in the most unexpected place. It reminded me that beauty can be found anywhere if you look hard enough. 🌸\n\nLife has a way of surprising us when we least expect it. Whether it\'s a kind word from a stranger, a perfect cup of coffee, or a moment of clarity in the midst of chaos, these small moments make all the difference.',
       hasMedia: false,
@@ -122,6 +145,13 @@ export const LongText: Story = {
 export const PopularPost: Story = {
   render: () => <ImagePost post={{
     ...examplePost,
+    author: {
+      ...examplePost.author,
+      username: 'photographer',
+      displayName: 'Amazing Photographer',
+      domain: 'federated-photos-community.example.com',
+      isLocal: false,
+    },
     content: {
       text: 'Perfect timing! 📸',
       hasMedia: true,
