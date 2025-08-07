@@ -186,7 +186,10 @@ export function Post({ post, children }: PostProps) {
               marginLeft: "0.5em",
               cursor: "pointer",
               whiteSpace: "nowrap",
-              display: "inline-block",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              lineHeight: 1,
             }}
             title={domain}
             aria-label={`Domain: ${domain}`}
