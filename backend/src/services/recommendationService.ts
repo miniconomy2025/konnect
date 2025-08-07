@@ -3,6 +3,7 @@ import type { IPost } from '../models/post.ts';
 import { Post } from '../models/post.ts';
 import { PostService } from './postserivce.ts';
 import { Neo4jService } from './neo4jService.ts';
+import { ExternalPost, type IExternalPost } from '../models/externalPost.ts';
 
 const logger = getLogger('recommendation');
 
@@ -12,7 +13,7 @@ export class RecommendationService {
     private readonly neo4jService: Neo4jService
   ) {}
 
-  async getDiscoverFeed(userActorId: string, page: number = 1, limit: number = 20): Promise<IPost[]> {
+  async getDiscoverFeed(userActorId: string, page: number = 1, limit: number = 20): Promise<{posts: IPost[], externalPosts: IExternalPost[]}> {
     try {
       // Get post IDs from Neo4j in parallel
       const [
@@ -37,14 +38,19 @@ export class RecommendationService {
         .populate('author', 'username displayName avatarUrl')
         .sort({ createdAt: -1 });
 
+
+      const externalPosts = await ExternalPost.find({ _id: { $in: uniquePostIds } })
+        .populate('author', 'username displayName avatarUrl')
+        .sort({ createdAt: -1 });
+
       // Apply pagination
       const start = (page - 1) * limit;
       const end = start + limit;
-      return posts.slice(start, end);
+      return {posts: posts.slice(start, end), externalPosts: externalPosts.slice(start, end)};
 
     } catch (error) {
       logger.error('Failed to get discover feed', { error: error instanceof Error ? error.message : String(error) });
-      return [];
+      return {posts: [], externalPosts: []};
     }
   }
 

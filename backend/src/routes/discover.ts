@@ -4,9 +4,8 @@ import { requireAuth } from '../middlewares/auth.ts';
 import { PostService } from '../services/postserivce.ts';
 import { Neo4jService } from '../services/neo4jService.ts';
 import { RecommendationService } from '../services/recommendationService.ts';
-import type { IPost } from '../models/post.ts';
-import type { IUser } from '../models/user.ts';
 import type { Document } from 'mongoose';
+import { PostNormalizationService } from '../services/postNormalizationService.ts';
 
 const router = express.Router();
 const logger = getLogger('discover');
@@ -57,7 +56,7 @@ router.get('/', requireAuth, async (req, res) => {
     
     logger.info('Getting discover feed', { page, limit, userId: req.user!.actorId });
     
-    const posts = await recommendationService.getDiscoverFeed(
+    const { posts, externalPosts } = await recommendationService.getDiscoverFeed(
       req.user!.actorId,
       page,
       limit
@@ -68,8 +67,11 @@ router.get('/', requireAuth, async (req, res) => {
     // Transform posts to match frontend expectations
     const transformedPosts = posts.map(post => transformPost(post as Document & { author: Document }));
 
+    const unifiedPosts = await PostNormalizationService.localPostsToUnifiedWithLikes(posts, req.user?.id);
+    const unifiedExternalPosts = await PostNormalizationService.externalPostsToUnifiedWithLikes(externalPosts, req.user?.id);
+
     const response = {
-      posts: transformedPosts,
+      posts: [...unifiedPosts, ...unifiedExternalPosts],
       hasMore: posts.length === limit,
       page,
       limit,
