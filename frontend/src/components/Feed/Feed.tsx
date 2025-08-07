@@ -65,6 +65,8 @@ export function Feed({ mode }: FeedProps) {
             username: apiPost.author.username,
             displayName: apiPost.author.displayName,
             avatarUrl: apiPost.author.avatarUrl || '/assets/images/missingAvatar.jpg',
+            domain: apiPost.author.domain,
+            isLocal: apiPost.author.isLocal,
           },
           engagement: {
             canInteract: apiPost.engagement.canInteract,
@@ -158,7 +160,7 @@ export function Feed({ mode }: FeedProps) {
   }, [handleScroll]);
 
   const renderPost = (post: Post) => {
-    switch (post.media.type) {
+    switch (post.media?.type) {
       case 'text':
         return <TextPost post={post} />;
       case 'image':

@@ -31,8 +31,8 @@ export interface UnifiedPostResponse {
     canInteract: boolean;       
   };
   
-  createdAt: Date;
-  updatedAt?: Date | null;
+  createdAt: string;
+  updatedAt?: string | null;
   url?: string;                  
   isReply: boolean;
 }
