@@ -4,6 +4,8 @@ import type { CreateActivityObject } from '../types/inbox.ts';
 import { populateRemoteActivityActorReferences } from '../utils/mappers.ts';
 import { FollowService } from './followService.ts';
 import { UserService } from './userService.ts';
+import { Neo4jService } from './neo4jService.ts';
+import type { IExternalPost } from '../models/externalPost.js';
 
 export class InboxService {
   private readonly userService = new UserService();
@@ -11,7 +13,8 @@ export class InboxService {
   private readonly domain = process.env.DOMAIN || 'localhost:8000';
   private readonly protocol = this.domain.includes('localhost') ? 'http' : 'https';
   private readonly baseUrl = `${this.protocol}://${this.domain}`;
-  
+  private readonly neo4jService = new Neo4jService();
+
   async persistInboxActivityObject(activityObject: CreateActivityObject): Promise<IInboxActivityPopulated> {
     switch (activityObject.type) {
       case 'Follow':
@@ -242,7 +245,14 @@ async persistCreateActivity(activityObject: CreateActivityObject): Promise<IInbo
         platformType: parsedPost.platformType
       });
 
-      await externalPost.save();
+      const savedPost = await externalPost.save() as IExternalPost & { _id: mongoose.Types.ObjectId };;
+
+        await this.neo4jService.createPost(
+            savedPost._id.toString(),
+            savedPost!.actorId,
+            externalPost.createdAt.getTime()
+        );
+
       
     } catch (error) {
       throw error;
