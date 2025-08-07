@@ -56,6 +56,7 @@ export enum ComponentSize {
   ToastButtonSize = "1.5rem",   // 24px
   ToastProgressHeight = "0.1875rem", // 3px
   AvatarSize = "5rem",          // 80px
+  AvatarSmall = "2.5rem",       // 40px
   ProfileInputMinHeight = "3.75rem", // 60px
 }
 

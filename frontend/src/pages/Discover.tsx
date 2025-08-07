@@ -6,7 +6,7 @@ import { Header } from '@/components/Home/Header';
 import { useToastHelpers } from '@/contexts/ToastContext';
 import Layout from '@/layouts/Main';
 import { ApiService } from '@/lib/api';
-import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
+import { Color, FontFamily, FontSize, Spacing, Gradient, BorderWidth, Radius } from '@/lib/presentation';
 import { UserProfile } from '@/types/account';
 import { SearchIcon } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
@@ -53,14 +53,7 @@ const DiscoverPage: React.FC = () => {
   }, [searchQuery]);
 
   return (
-    
     <Layout>
-      <main
-        style={{
-          background: Color.Background,
-          minHeight: '100vh'
-        }}
-      >
         <Header
             editProfile={false}
             onSettingsClick={()=>{}}
@@ -69,45 +62,74 @@ const DiscoverPage: React.FC = () => {
         <PublicProfileView username={usernameParam}/>
         ) : (
         <>
+            {/* Sticky Search Bar */}
             <section
-            style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: Spacing.XSmall,
-                background: Color.Surface,
-                border: `1px solid ${Color.Border}`,
-                borderRadius: 8,
-                padding: Spacing.Small,
-                margin: Spacing.Medium,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-            }}
-            >
-            <SearchIcon size={20} color={Color.Secondary} />
-            <input
-                type="text"
-                placeholder="Search users..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
-                flex: 1,
-                border: 'none',
-                outline: 'none',
-                fontFamily: FontFamily.Nunito,
-                fontSize: FontSize.Large,
-                background: 'transparent',
-                color: Color.Text,
-                marginLeft: Spacing.Small,
+                    position: 'sticky',
+                    top: '4rem', // Header height
+                    zIndex: 100,
+                    background: Color.Background,
+                    paddingTop: Spacing.Medium,
+                    paddingBottom: Spacing.Small,
                 }}
-            />
+            >
+                <section
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: Spacing.XSmall,
+                    background: Color.Surface,
+                    border: `${BorderWidth.Thin} solid ${Color.Border}`,
+                    borderRadius: Radius.Medium,
+                    padding: Spacing.Small,
+                    margin: `0 ${Spacing.Medium}`,
+                    boxShadow: '0 0.125rem 0.5rem rgba(0,0,0,0.05)',
+                }}
+                >
+                <SearchIcon size={20} color={Color.Secondary} />
+                <input
+                    type="text"
+                    placeholder="Search users..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{
+                    flex: 1,
+                    border: 'none',
+                    outline: 'none',
+                    fontFamily: FontFamily.VarelaRound,
+                    fontSize: FontSize.Large,
+                    background: 'transparent',
+                    color: Color.Text,
+                    marginLeft: Spacing.Small,
+                    }}
+                />
+                </section>
+                
+                {/* Gradient Separator Line */}
+                <section
+                    style={{
+                        height: '0.125rem',
+                        background: Gradient.Brand,
+                        margin: `${Spacing.Medium} ${Spacing.Medium} 0 ${Spacing.Medium}`,
+                        borderRadius: '0.0625rem',
+                    }}
+                />
             </section>
 
-            <section style={{ marginTop: Spacing.Medium }}>
+            {/* Scrollable Results */}
+            <section 
+                style={{ 
+                    paddingTop: Spacing.Small,
+                    background: Color.Background,
+                }}
+            >
             {results.length === 0 && searchQuery.trim() ? (
                 <p style={{
-                fontFamily: FontFamily.Nunito,
+                fontFamily: FontFamily.VarelaRound,
                 fontSize: FontSize.Large,
                 color: Color.Muted,
-                marginTop: Spacing.Small,
+                marginTop: Spacing.Medium,
+                textAlign: 'center',
                 }}>
                 No users found.
                 </p>
@@ -119,7 +141,6 @@ const DiscoverPage: React.FC = () => {
             </section>
         </>
         )}
-      </main>
     </Layout>
   );
 };

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
-import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
+import { Color, FontFamily, FontSize, Spacing, Gradient, ComponentSize, BorderWidth } from '@/lib/presentation';
 import { useRouter } from 'next/router';
 import { UserProfile } from '@/types/account';
 import { generateAvatarColor, generateAvatarTextColor } from '@/lib/avatarUtils';
@@ -11,6 +11,7 @@ interface UserCardProps {
 
 export const UserCard: React.FC<UserCardProps> = ({ user }) => {
     const router = useRouter();
+    const [isHovered, setIsHovered] = useState(false);
   return (
     <section
       style={{
@@ -21,11 +22,17 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         marginRight: Spacing.Medium,
         marginBottom: Spacing.Small,
         background: Color.Surface,
-        borderRadius: 10,
-        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
+        borderRadius: Spacing.MediumSmall,
+        boxShadow: '0 0.125rem 0.375rem rgba(0, 0, 0, 0.05)',
         cursor: 'pointer',
-        transition: 'transform 0.2s ease',
+        transition: 'all 0.2s ease',
+        border: isHovered ? `${BorderWidth.Medium} solid transparent` : `${BorderWidth.Medium} solid transparent`,
+        backgroundImage: isHovered ? `${Gradient.Brand}, ${Color.Surface}` : 'none',
+        backgroundOrigin: isHovered ? 'border-box' : 'padding-box',
+        backgroundClip: isHovered ? 'padding-box, border-box' : 'padding-box',
       }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       onClick={() => {
         router.push(`/Discover?user=${user.handle}`);
       }}
@@ -37,8 +44,8 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
           src={user.avatarUrl}
           alt={`${user.username}'s avatar`}
           style={{
-            width: 40,
-            height: 40,
+            width: ComponentSize.AvatarSmall,
+            height: ComponentSize.AvatarSmall,
             borderRadius: '50%',
             objectFit: 'cover',
             marginRight: Spacing.Small,
@@ -51,21 +58,21 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         <abbr
           title={user.displayName}
           style={{
-            width: 40,
-            height: 40,
+            width: ComponentSize.AvatarSmall,
+            height: ComponentSize.AvatarSmall,
             borderRadius: '50%',
             marginRight: Spacing.Small,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '16px',
+            fontSize: FontSize.Base,
             fontWeight: '600',
-            fontFamily: FontFamily.Nunito,
+            fontFamily: FontFamily.VarelaRound,
             color: generateAvatarTextColor(user.handle),
             background: generateAvatarColor(user.handle),
             textDecoration: 'none',
             textTransform: 'uppercase',
-            border: `1px solid ${Color.Border}`,
+            border: `${BorderWidth.Thin} solid ${Color.Border}`,
             flexShrink: 0,
           }}
         >
@@ -75,13 +82,13 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
       <section>
         <section style={{
           fontSize: FontSize.Large,
-          fontFamily: FontFamily.Nunito,
+          fontFamily: FontFamily.VarelaRound,
           fontWeight: 600,
           color: Color.Text,
         }}>{user.displayName}</section>
         <section style={{
           fontSize: FontSize.Small,
-          fontFamily: FontFamily.Nunito,
+          fontFamily: FontFamily.VarelaRound,
           color: Color.Muted,
         }}>{user.handle}</section>
       </section>
