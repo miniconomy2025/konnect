@@ -75,6 +75,7 @@ const PublicProfileView: React.FC<PublicProfileProps> = ({ username }) => {
           cursor: 'pointer',
           fontFamily: FontFamily.Nunito,
           fontSize: FontSize.Large,
+          marginTop: Spacing.Small,
           marginBottom: Spacing.Small,
         }}
       >

@@ -51,9 +51,7 @@ const ProfilePage: React.FC = () => {
 
             const userPosts = (await ApiService.getUserPosts(data.username)).data;
             setPosts(userPosts);
-
             const userFollows = (await ApiService.getFollowers(data.username)).data;
-            
 
             if(userFollows){
                 const userFollowers = userFollows.followers || [];

@@ -79,15 +79,6 @@ export const styles: { [key: string]: CSSProperties } = {
     gap: '0.5rem',
     marginTop: '0.5rem'
   },
-  followButton: {
-    padding: '0.25rem 1rem',
-    backgroundColor: '#3b82f6',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontWeight: '500',
-    cursor: 'pointer'
-  },
   messageButton: {
     padding: '0.25rem 1rem',
     backgroundColor: 'white',
@@ -275,6 +266,13 @@ export const styles: { [key: string]: CSSProperties } = {
     fontSize: '0.875rem',
     margin: 0,
     color: 'black'
+  },
+  domain: {
+    fontWeight: '300',
+    fontSize: '0.8rem',
+    margin: 0,
+    fontStyle: 'italic',
+    color: 'grey'
   },
   userDisplayName: {
     color: '#6b7280',

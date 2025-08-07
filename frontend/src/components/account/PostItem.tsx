@@ -28,35 +28,10 @@ const PostItem: React.FC<PostItemProps> = ({ post, onClick }) => {
     if (onClick) onClick(post);
   };
 
-  const handleDoubleTap = () => {
-    const now = Date.now();
-    const timeSinceLastTap = now - lastTapRef.current;
-    
-    if (timeSinceLastTap < 200 && timeSinceLastTap > 0) {
-      if (tapTimeoutRef.current) {
-        clearTimeout(tapTimeoutRef.current);
-        tapTimeoutRef.current = null;
-      }
-    //   handleLike();
-    } else {
-      lastTapRef.current = now;
-      tapTimeoutRef.current = setTimeout(() => {
-        handleClick();
-        tapTimeoutRef.current = null;
-      }, 200);
-    }
-  };
-
-  const handleMouseDown = (e: React.MouseEvent<HTMLElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    handleDoubleTap();
-  };
-
   return (
     <section
       style={styles.postItem}
-        onMouseDown={handleMouseDown}
+        onClick={handleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -76,12 +51,11 @@ const PostItem: React.FC<PostItemProps> = ({ post, onClick }) => {
         <section
           style={{
             ...styles.postImage,
-            display: 'flex',
+            display: 'flex',    
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '1rem',
-            fontSize: '1rem',
-            fontWeight: '500',
+            fontSize: '0.8  rem',
+            fontWeight: '300',
             textAlign: 'center',
             backgroundColor: '#f5f5f5',
             color: '#333',
