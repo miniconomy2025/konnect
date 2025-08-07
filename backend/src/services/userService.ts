@@ -145,9 +145,8 @@ export class UserService {
 
     // Sync to Neo4j
     await this.neo4jService.createOrUpdateUser(
-      savedUser._id.toString(),
-      savedUser.username,
-      savedUser.actorId
+        savedUser.actorId,
+        savedUser.username
     );
 
     return savedUser;
@@ -176,9 +175,8 @@ export class UserService {
     if (updatedUser) {
       // Sync to Neo4j
       await this.neo4jService.createOrUpdateUser(
-        updatedUser._id.toString(),
-        updatedUser.username,
-        updatedUser.actorId
+        updatedUser.actorId,
+        updatedUser.username
       );
     }
 
@@ -259,9 +257,9 @@ export class UserService {
 
     // Sync to Neo4j
     await this.neo4jService.createOrUpdateUser(
-      savedUser._id.toString(),
+      savedUser.actorId,  
       savedUser.username,
-      savedUser.actorId
+      savedUser._id.toString(),
     );
 
     return savedUser;
@@ -277,9 +275,9 @@ export class UserService {
     if (updatedUser) {
       // Sync to Neo4j
       await this.neo4jService.createOrUpdateUser(
-        updatedUser._id.toString(),
+        updatedUser.actorId,
         updatedUser.username,
-        updatedUser.actorId
+        updatedUser._id.toString(),
       );
     }
 

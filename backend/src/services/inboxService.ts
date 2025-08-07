@@ -245,7 +245,7 @@ async persistCreateActivity(activityObject: CreateActivityObject): Promise<IInbo
         platformType: parsedPost.platformType
       });
 
-      const savedPost = await externalPost.save() as IExternalPost & { _id: mongoose.Types.ObjectId };;
+      const savedPost = await externalPost.save() as IExternalPost & { _id: mongoose.Types.ObjectId };
 
         await this.neo4jService.createPost(
             savedPost._id.toString(),
