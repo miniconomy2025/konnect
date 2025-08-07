@@ -97,7 +97,7 @@ router.post('/', requireAuth, upload.single('image'), async (req, res) => {
       req.user!._id!.toString()
     );
 
-    const federationContext = (req as any).federationContext;
+    const federationContext = req.federationContext;
 
     const post = await postService.createPost({
       authorId: req.user!._id!.toString(),
@@ -250,7 +250,7 @@ router.post('/like', requireAuth, async (req, res) => {
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const federationContext = (req as any).federationContext;
+    const federationContext = req.federationContext;
     
     const success = await postService.deletePost(id, req.user!._id!.toString(), federationContext);
     

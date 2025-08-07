@@ -1,4 +1,4 @@
-import { Create, Delete, Image, Note, Person, Update } from "@fedify/fedify";
+import { Create, Delete, Image, Note, Person, Update, type Context } from "@fedify/fedify";
 import { getLogger } from "@logtape/logtape";
 import type { IPost } from "../models/post.ts";
 import type { IUser } from "../models/user.ts";
@@ -11,7 +11,7 @@ const logger = getLogger("activity");
 
 export class ActivityService {
   
-  async queueCreateActivity(post: IPost, author: IUser, federationContext?: any): Promise<void> {
+  async queueCreateActivity(post: IPost, author: IUser, federationContext?: Context<void | unknown>): Promise<void> {
     try {
       if (!federationContext) {
         logger.warn(`No federation context available for post ${post.activityId}, activity will not be delivered`);
@@ -174,7 +174,7 @@ export class ActivityService {
     }
   }
 
-  async publishDeleteActivity(post: IPost, author: IUser, federationContext?: any): Promise<void> {
+  async publishDeleteActivity(post: IPost, author: IUser, federationContext?: Context<void | unknown>): Promise<void> {
     try {
       if (!federationContext) {
         logger.warn(`No federation context available for post ${post.activityId}, delete activity will not be delivered`);

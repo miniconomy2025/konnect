@@ -1,4 +1,4 @@
-import { FollowsResponse } from "@/types/account";
+import { FollowsResponse, UserProfile } from "@/types/account";
 import { DiscoverSearchResponse } from "@/types/discover";
 import { GetPostsResponse, PostsResponse } from "@/types/post";
 
@@ -14,21 +14,6 @@ export interface LikeResponse {
   success: boolean;
   likesCount: number;
   isLiked: boolean;
-}
-
-export interface UserResponse {
-  id: string;
-  username: string;
-  displayName: string;
-  email: string;
-  bio: string;
-  avatarUrl: string;
-  actorId: string;
-  activityPubId: string;
-  followersCount: number;
-  followingCount: number;
-  postsCount: number;
-  isFollowing?: boolean;
 }
 
 export interface FollowResponse {
@@ -93,6 +78,22 @@ export class ApiService {
     }
   }
 
+  static async getExternalUserPosts(username: string, domain: string): Promise<ApiResponse<PostsResponse>> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/search/posts/${username}/${domain}`, {
+        headers: this.getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
   static async likePost(postId: string): Promise<ApiResponse<LikeResponse>> {
     try {
       const response = await fetch(`${API_BASE_URL}/posts/like`, {
@@ -113,7 +114,7 @@ export class ApiService {
   }
 
   // Auth API
-  static async getCurrentUser(): Promise<ApiResponse<UserResponse>> {
+  static async getCurrentUser(): Promise<ApiResponse<UserProfile>> {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
         headers: this.getAuthHeaders(),
@@ -277,7 +278,7 @@ export class ApiService {
   // Search API
   static async searchUsers(query: string, page: number = 1, limit: number = 10): Promise<ApiResponse<DiscoverSearchResponse>> {
     try {
-      const response = await fetch(`${API_BASE_URL}/search/users?q=${query}&page=${page}&limit=${limit}`, {
+      const response = await fetch(`${API_BASE_URL}/search/users/federated?q=${query}&page=${page}&limit=${limit}`, {
         headers: this.getAuthHeaders(),
       });
       
@@ -292,7 +293,7 @@ export class ApiService {
     }
   }
 
-  static async getUserByUsername(username: string): Promise<ApiResponse<UserResponse>> {
+  static async getUserByUsername(username: string): Promise<ApiResponse<UserProfile>> {
     try {
       const response = await fetch(`${API_BASE_URL}/users/${username}`, {
         headers: this.getAuthHeaders(),

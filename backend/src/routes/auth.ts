@@ -2,10 +2,13 @@ import { Router } from 'express';
 import { AuthService } from '../services/authservice.js';
 import { UserService } from '../services/userService.js';
 import { requireAuth } from '../middlewares/auth.js';
+import type { UserResponse } from '../types/user.ts';
+import { SearchService } from '../services/searchService.ts';
 
 const router = Router();
 const authService = new AuthService();
 const userService = new UserService();
+const searchService = new SearchService();
 
 router.get('/google', (req, res) => {
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -193,25 +196,8 @@ router.put('/username', requireAuth, async (req, res) => {
 
 router.get('/me', requireAuth, async (req, res) => {
   const user = req.user;
-  
-  const { FollowService } = await import('../services/followService.js');
-  const { InboxService } = await import('../services/inboxService.js');
-  const followService = new FollowService(userService, new InboxService());
-  
-  const { followingCount, followersCount } = await followService.getFollowCounts(user!.actorId);
-  
-  res.json({
-    id: user!._id?.toString(),
-    username: user!.username,
-    displayName: user!.displayName,
-    email: user!.email,
-    bio: user!.bio,
-    avatarUrl: user!.avatarUrl,
-    actorId: user!.actorId,
-    followersCount,
-    followingCount,
-    postsCount: 0,
-  });
+  const userResponse: UserResponse = (await searchService.userToUserResponse(user!))
+  res.json(userResponse);
 });
 
 router.put('/bio', requireAuth, async (req, res) => {

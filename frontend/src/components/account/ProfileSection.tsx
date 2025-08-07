@@ -20,6 +20,7 @@ interface ProfileSectionProps {
   onFollowingClick: () => void;
   showFollowButton?: boolean;
   onFollowToggle?: () => void;
+  disableFollowButton?: boolean;
 }
 
 const ProfileSection: React.FC<ProfileSectionProps> = ({
@@ -33,22 +34,26 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
   onFollowersClick,
   onFollowingClick,
   showFollowButton,
-  onFollowToggle
+  onFollowToggle,
+  disableFollowButton
 }) => {
   return (
     <section style={styles.profileSection}>
       <section style={styles.profileHeader}>
         <Image 
-          src={userProfile.avatar} 
+          src={userProfile.avatarUrl || '/assets/images/missingAvatar.jpg'} 
           alt={userProfile.displayName}
           width={80}
           height={80}
           style={styles.avatar}
+          onError={(e) => {
+            e.currentTarget.src = '/assets/images/missingAvatar.jpg';
+          }}
         />
 
         <section style={styles.profileInfo}>
           <section style={styles.profileTopRow}>
-            <h2 style={styles.username}>{userProfile.username}</h2>
+            <h2 style={styles.username}>{userProfile.handle}</h2>
 
             {/* Follow/Unfollow Button */}
             {showFollowButton && (
@@ -59,23 +64,26 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
                     fontSize: FontSize.Large,
                     fontFamily: FontFamily.Nunito,
                     maxWidth: '10rem',
-                    backgroundColor: userProfile.isFollowing ? Color.Surface : Color.Primary,
-                    color: userProfile.isFollowing ? Color.Text : '#fff',
-                    border: `1px solid ${userProfile.isFollowing ? Color.Border : Color.Primary}`,
+                    backgroundColor: userProfile.isFollowedByCurrentUser ? Color.Surface : Color.Primary,
+                    color: userProfile.isFollowedByCurrentUser ? Color.Text : '#fff',
+                    border: `1px solid ${userProfile.isFollowedByCurrentUser ? Color.Border : Color.Primary}`,
                     borderRadius: 8,
                     cursor: 'pointer',
                     transition: 'all 0.2s ease-in-out',
+                    opacity: disableFollowButton ? 0.5 : 1,
+                    pointerEvents: disableFollowButton ? 'none' : 'auto',
                 }}
+                disabled={disableFollowButton}
               >
-                {userProfile.isFollowing ? 'Unfollow' : 'Follow'}
+                {userProfile.isFollowedByCurrentUser ? 'Unfollow' : 'Follow'}
               </button>
             )}
           </section>
 
           <ProfileStats 
-            postsCount={userProfile.postsCount}
-            followersCount={userProfile.followersCount}
-            followingCount={userProfile.followingCount}
+            postsCount={undefined}
+            followersCount={userProfile.followersCount ?? 0}
+            followingCount={userProfile.followingCount ?? 0}
             onFollowersClick={onFollowersClick}
             onFollowingClick={onFollowingClick}
           />

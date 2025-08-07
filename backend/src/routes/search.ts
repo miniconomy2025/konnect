@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { SearchService } from '../services/searchService.js';
+import { optionalAuth } from '../middlewares/auth.js';
+import { attachFederationContext } from '../middlewares/federation.ts';
 import { ExternalPostService } from '../services/externalPostService.js';
 import { PostNormalizationService } from '../services/postNormalizationService.js';
-import { optionalAuth } from '../middlewares/auth.js';
+import { SearchService } from '../services/searchService.js';
 
 const router = Router();
 const searchService = new SearchService();
@@ -15,10 +16,6 @@ router.get('/users', optionalAuth, async (req, res) => {
     if (!query || typeof query !== 'string') {
       return res.status(400).json({ error: 'Query parameter is required' });
     }
-
-    // if (query.length < 2) {
-    //   return res.status(400).json({ error: 'Query must be at least 2 characters' });
-    // }
 
     const pageNum = parseInt(page as string) || 1;
     const limitNum = Math.min(parseInt(limit as string) || 20, 50); // Max 50 results
@@ -35,6 +32,38 @@ router.get('/users', optionalAuth, async (req, res) => {
   } catch (error) {
     console.error('Search error:', error);
     res.status(500).json({ error: 'Search failed' });
+  }
+});
+
+router.get('/users/federated', optionalAuth, attachFederationContext, async (req, res) => {
+  try {
+    const { q: query, page = '1', limit = '20' } = req.query;
+    
+    if (!query || typeof query !== 'string') {
+      return res.status(400).json({ error: 'Query parameter is required' });
+    }
+
+    if (!req.federationContext) {
+      return res.status(500).json({ error: 'Federation context not available' });
+    }
+
+    const pageNum = parseInt(page as string) || 1;
+    const limitNum = Math.min(parseInt(limit as string) || 20, 50);
+
+    const currentUserActorId = req.user?.actorId;
+
+    const results = await searchService.searchAllUsers(query, pageNum, limitNum, req.federationContext, currentUserActorId);
+
+    res.json({
+      query,
+      results: results.users,
+      page: pageNum,
+      limit: limitNum,
+      hasMore: results.hasMore
+    });
+  } catch (error) {
+    console.error('Federated search error:', error);
+    res.status(500).json({ error: 'Federated search failed' });
   }
 });
 
@@ -64,6 +93,7 @@ router.get('/posts/:username/:domain', optionalAuth, async (req, res) => {
   try {
     const { username, domain } = req.params;
     const { limit = '20' } = req.query;
+    const currentUserId = req.user?._id.toString();
     
     if (!username || !domain) {
       return res.status(400).json({ error: 'Username and domain are required' });
@@ -73,7 +103,7 @@ router.get('/posts/:username/:domain', optionalAuth, async (req, res) => {
     
     const externalPosts = await externalPostService.getUserPosts(username, domain, limitNum);
     
-    let unifiedPosts = await PostNormalizationService.externalPostsToUnifiedWithLikes(externalPosts);
+    let unifiedPosts = await PostNormalizationService.externalPostsToUnifiedWithLikes(externalPosts, currentUserId, true);
     
     res.json({
       user: `${username}@${domain}`,

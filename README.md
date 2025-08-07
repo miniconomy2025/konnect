@@ -56,6 +56,41 @@ GET /search/users?q=alex&page=1&limit=20
 }
 ```
 
+#### Search Users (Federated - Local and External)
+```
+GET /search/users/federated?q=alex&page=1&limit=20
+```
+
+**Query Parameters:**
+- `q`: Search query (username, display name, or @user@domain format)
+- `page`: Page number (default: 1)
+- `limit`: Results per page (default: 20, max: 50)
+
+**Response:**
+```json
+{
+  "query": "alex",
+  "results": [
+    {
+      "username": "alex",
+      "displayName": "Alex Smith",
+      "avatarUrl": "https://...",
+      "actorId": "https://mastodon.social/users/alex",
+      "isLocal": false,
+      "bio": "test",
+      "isPrivate": false,
+      "isFollowingCurrentUser": false,
+      "isFollowedByCurrentUser": false,
+      "hostServer": "mastodon.social",
+      "handle": "@alex@mastodon.social",
+    }
+  ],
+  "page": 1,
+  "limit": 20,
+  "hasMore": false
+}
+```
+
 #### Lookup Specific External User
 ```
 GET /search/external/alex/mastodon.social
@@ -80,9 +115,16 @@ GET /users/username
   "activityPubId": "http://localhost:8000/users/johndoe",
   "isPrivate": false,
   "followingCount": 1,
-  "followersCount": 1
+  "followersCount": 1,
+  "isFollowingCurrentUser": false,
+  "isFollowedByCurrentUser": true,
+  "isLocal": true,
+  "hostServer": "localhost:8000",
+  "handle": "@johndoe@localhost:8000"
 }
 ```
+
+**Note:** This endpoint now supports both local and federated user lookups. When federation context is available, it will search for users across the federated network if not found locally.
 
 ### 4. Following System
 
@@ -325,7 +367,12 @@ GET /search/posts/alex/mastodon.social?limit=20
 
 ### Search and Follow External User
 
-1. **Search for user:**
+1. **Search for user (federated search):**
+   ```
+   GET /search/users/federated?q=alex@mastodon.social
+   ```
+   
+   **Or search locally only:**
    ```
    GET /search/users?q=alex@mastodon.social
    ```
@@ -333,6 +380,11 @@ GET /search/posts/alex/mastodon.social?limit=20
 2. **Display user in search results**
 
 3. **View user profile:**
+   ```
+   GET /users/alex
+   ```
+   
+   **Or lookup specific external user:**
    ```
    GET /search/external/alex/mastodon.social
    ```
