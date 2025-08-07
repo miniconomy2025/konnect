@@ -37,8 +37,9 @@ export enum Radius {
 
 // Font family
 export enum FontFamily {
-  Nunito = "var(--font-nunito), Arial, Helvetica, sans-serif",
-  Playwrite = "var(--font-playwrite), Inter, sans-serif"
+  VarelaRound = "var(--font-varela-round), Arial, Helvetica, sans-serif",
+  Playwrite = "var(--font-playwrite), cursive",
+  Nunito = "var(--font-nunito), Arial, Helvetica, sans-serif"
 }
 
 // Example usage object for inline styles

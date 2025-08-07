@@ -1,18 +1,26 @@
 import type { Metadata } from "next";
-import { Nunito, Playwrite_HU } from "next/font/google";
+import { Varela_Round, Playwrite_HU, Nunito } from "next/font/google";
 import "./globals.css";
 
-const nunito = Nunito({
+const varelaRound = Varela_Round({
   subsets: ["latin"],
-  variable: "--font-nunito",
+  variable: "--font-varela-round",
   display: "swap",
-  weight: ["400", "700"],
+  weight: ["400"],
 });
 
 const playwriteHU = Playwrite_HU({
   variable: "--font-playwrite",
   display: "swap",
-  weight: ["400"],
+  weight: ["100", "200", "300", "400"],
+});
+
+const nunito = Nunito({
+  subsets: ["latin"],
+  variable: "--font-nunito",
+  display: "swap",
+  weight: ["200", "300", "400", "500", "600", "700", "800", "900", "1000"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -27,7 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${nunito.variable} ${playwriteHU.variable}`}>
+      <body className={`${varelaRound.variable} ${playwriteHU.variable} ${nunito.variable}`}>
         {children}
       </body>
     </html>
