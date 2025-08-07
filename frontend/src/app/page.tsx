@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation';
 
 const Page: React.FC = () => {
-    redirect('/Home');
+    redirect('/Login');
 }
 
 export default Page;    
