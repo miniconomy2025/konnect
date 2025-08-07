@@ -47,7 +47,7 @@ export class ApiService {
     try {
       let endpoint;
       if (type === 'discover') {
-        endpoint = `${API_BASE_URL}/discover`;
+        endpoint = `${API_BASE_URL}/recommended`;
       } else {
         endpoint = `${API_BASE_URL}/posts?type=following`;
       }
