@@ -80,6 +80,8 @@ export interface Author {
   username: string;
   displayName: string;
   avatarUrl: string;
+  domain: string;
+  isLocal: boolean;
 }
 
 export interface Engagement {

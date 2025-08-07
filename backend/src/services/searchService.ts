@@ -107,28 +107,28 @@ export class SearchService {
 
     try {
       const inbox = await actor.getInbox();
-      inboxUrl = inbox?.toString();
+      inboxUrl = inbox?.id?.toString();
     } catch (error) {
       logger.debug(`Failed to get inbox for actor ${id}: ${error}`);
     }
 
     try {
       const outbox = await actor.getOutbox();
-      outboxUrl = outbox?.toString();
+      outboxUrl = outbox?.id?.toString();
     } catch (error) {
       logger.debug(`Failed to get outbox for actor ${id}: ${error}`);
     }
 
     try {
       const followers = await actor.getFollowers();
-      followersUrl = followers?.toString();
+      followersUrl = followers?.id?.toString();
     } catch (error) {
       logger.debug(`Failed to get followers for actor ${id}: ${error}`);
     }
 
     try {
       const following = await actor.getFollowing();
-      followingUrl = following?.toString();
+      followingUrl = following?.id?.toString();
     } catch (error) {
       logger.debug(`Failed to get following for actor ${id}: ${error}`);
     }
@@ -223,7 +223,6 @@ export class SearchService {
       }
 
       const foundActor = await this.tryFederationLookupWithFormats(username, domain, federationContext);
-      
       if (foundActor) {
         const actorData = await this.extractActorData(foundActor, federationContext);
         return this.createAndCacheExternalUser(actorData, username, domain, currentUserActorId);

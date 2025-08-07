@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import type { IUser } from '../models/user.ts';
 import { UserService } from './userService.js';
+import { exportJwk, generateCryptoKeyPair } from '@fedify/fedify';
 
 export interface GoogleProfile {
   id: string;
@@ -57,42 +58,36 @@ export class AuthService {
 
     const finalUsername = await this.ensureUniqueUsername(suggestedUsername);
 
-    const keyPair = await this.generateKeyPair();
+    const keyPairs = await this.generateKeyPairs();
     user = await this.userService.createUser({
       googleId: profile.id,
       email: profile.emails[0].value,
       username: finalUsername,
       displayName: `${profile.name.givenName} ${profile.name.familyName}`,
       avatarUrl: profile.photos[0]?.value,
-      keyPairs: [{
-        privateKey: keyPair.privateJwk,
-        publicKey: keyPair.publicJwk,
-      }]
+      keyPairs: keyPairs
     });
 
     return { user, isNewUser: true };
   }
 
-  private async generateKeyPair() {
-    const keyPair = await crypto.subtle.generateKey(
+  private async generateKeyPairs(): Promise<{
+    privateKey: JsonWebKey;
+    publicKey: JsonWebKey;
+  }[]> {
+    const keyPairRSA = await generateCryptoKeyPair("RSASSA-PKCS1-v1_5");
+    const keyPairED25519 = await generateCryptoKeyPair("Ed25519");
+  
+    return [
       {
-        name: "RSASSA-PKCS1-v1_5",
-        modulusLength: 2048,
-        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-        hash: "SHA-256",
+        privateKey: await exportJwk(keyPairRSA.privateKey),
+        publicKey: await exportJwk(keyPairRSA.publicKey),
       },
-      true,
-      ["sign", "verify"]
-    );
-  
-    const publicJwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
-    const privateJwk = await crypto.subtle.exportKey("jwk", keyPair.privateKey);
-  
-    const jwks = {
-      keys: [publicJwk],
-    };
-     
-    return { privateJwk, publicJwk, jwks };
+      {
+        privateKey: await exportJwk(keyPairED25519.privateKey),
+        publicKey: await exportJwk(keyPairED25519.publicKey),
+      }
+    ]
   }
 
   private generateUsername(firstName: string, lastName: string): string {

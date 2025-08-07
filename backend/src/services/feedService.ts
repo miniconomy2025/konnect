@@ -65,7 +65,7 @@ export class FeedService {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('author', 'username displayName avatarUrl');
+      .populate('author', 'username displayName avatarUrl domain isLocal');
 
     const unifiedPosts = await PostNormalizationService.localPostsToUnifiedWithLikes(localPosts, userId);
 
@@ -91,7 +91,7 @@ export class FeedService {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('author', 'username displayName avatarUrl');
+      .populate('author', 'username displayName avatarUrl domain isLocal');
   }
 
   private async getExternalPostsFromFollowing(followingActorIds: string[], page: number, limit: number): Promise<any[]> {
