@@ -94,7 +94,13 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
             {user.displayName.charAt(0)}
           </abbr>
         )}
-        <section>
+        <section style={{ 
+          flex: 1, 
+          minWidth: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.125rem'
+        }}>
           <section style={{
             fontSize: FontSize.Large,
             fontFamily: FontFamily.VarelaRound,
@@ -105,7 +111,11 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
             fontSize: FontSize.Small,
             fontFamily: FontFamily.VarelaRound,
             color: Color.Muted,
-          }}>{user.handle}</section>
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: '100%',
+          }} title={user.handle}>{user.handle}</section>
         </section>
       </section>
     </section>
