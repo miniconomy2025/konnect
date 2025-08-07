@@ -26,9 +26,6 @@ export class RecommendationService {
         this.neo4jService.getTrendingPosts(limit)
       ]);
 
-      console.log('Liked: ', likedByFollowedIds);
-      console.log('Second: ', secondDegreeIds);
-      console.log('Trending: ', trendingIds);
 
       // Combine and deduplicate post IDs
       const uniquePostIds = Array.from(new Set([
@@ -44,14 +41,10 @@ export class RecommendationService {
 
 
       const externalPosts = await ExternalPost.find({ _id: { $in: uniquePostIds } })
-        .populate('author', 'username displayName avatarUrl')
         .sort({ createdAt: -1 });
-
       // Apply pagination
       const start = (page - 1) * limit;
       const end = start + limit;
-      console.log('Posts: ', posts);
-      console.log('External Posts: ', externalPosts);
       return {posts: posts.slice(start, end), externalPosts: externalPosts.slice(start, end)};
 
     } catch (error) {

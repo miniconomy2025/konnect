@@ -13,6 +13,8 @@ await configure({
     { category: "inbox", lowestLevel: "debug", sinks: ["console"] },
     { category: "activity", lowestLevel: "debug", sinks: ["console"] },
     { category: "mongoose", lowestLevel: "debug", sinks: ["console"] },
+    { category: "recommendation", lowestLevel: "debug", sinks: ["console"] },
+    { category: "discover", lowestLevel: "debug", sinks: ["console"] },
     { category: ["logtape", "meta"], lowestLevel: "warning", sinks: ["console"] },
     { category: ["fedify", "sig"], lowestLevel: "debug", sinks: ["console"] },
   ],
