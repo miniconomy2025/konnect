@@ -519,7 +519,7 @@ export class PostService {
       'actor.id': user.actorId,
       'object.id': activityId
     });
-    console.log(existingLike);
+    
     if (existingLike) {
       await Like.findOneAndDelete({
         'actor.id': user.actorId,
