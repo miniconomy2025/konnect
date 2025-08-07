@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { Post } from '@/types/post';
-import { styles } from '@/styles/account';
+import { useToastHelpers } from '@/contexts/ToastContext';
 import { ApiService } from '@/lib/api';
-import { Edit2, Check, X } from 'lucide-react';
+import { styles } from '@/styles/account';
+import { Post } from '@/types/post';
+import { useEffect, useState } from 'react';
 
 interface PostModalProps {
   post: Post;
@@ -17,6 +17,7 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose, onPostDeleted, onP
   const [editing, setEditing] = useState(false);
   const [caption, setCaption] = useState(post.content.text);
   const [loading, setLoading] = useState(false);
+  const { success, error: showError } = useToastHelpers();
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -29,8 +30,12 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose, onPostDeleted, onP
   const handleCaptionSave = async () => {
     const { data, error } = await ApiService.updatePostCaption(post.id, caption);
 
-    if (error) return alert('Failed to update caption');
+    if (error) {
+      showError('Failed to update caption. Please try again.');
+      return;
+    }
 
+    success('Caption updated successfully!');
     onPostUpdated({ ...post, content: { ...post.content, text: caption } });
     setEditing(false);
   };
@@ -40,7 +45,12 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose, onPostDeleted, onP
     if (!confirm) return;
 
     const { error } = await ApiService.deletePost(post.id);
-    if (error) return alert('Failed to delete post');
+    if (error) {
+      showError('Failed to delete post. Please try again.');
+      return;
+    }
+    
+    success('Post deleted successfully!');
     onPostDeleted(post.id);
     onClose();
   };
@@ -59,9 +69,9 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose, onPostDeleted, onP
           <button style={styles.cancelButton} onClick={onClose}>Close</button>
         </section>
         <section style={{ padding: '1rem' }}>
-          {post.media.type === 'text' ? (
+          {post.media?.type === 'text' ? (
             <p>{caption}</p>
-          ) : (
+          ) : post.media?.url ? (
             <section style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
             <img
                 src={post.media.url}
@@ -76,6 +86,8 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose, onPostDeleted, onP
                 }}
             />
             </section>
+          ) : (
+            <p>{caption}</p>
           )}
 
           {editing ? (

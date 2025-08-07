@@ -7,6 +7,7 @@ import {
   MediaPreview,
   MediaUpload,
 } from '@/components/AddPost';
+import { useToastHelpers } from '@/contexts/ToastContext';
 import Layout from '@/layouts/Main';
 import { ApiService } from '@/lib/api';
 import { Layout as SharedLayout } from '@/lib/sharedStyles';
@@ -21,6 +22,7 @@ const AddPost: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [charCount, setCharCount] = useState(0);
+  const { success, error: showError } = useToastHelpers();
   
   const validMediaTypes = process.env.NEXT_PUBLIC_VALID_MEDIA_TYPES?.split(',') || ['image/jpeg', 'image/png', 'image/webp'];
   const MAX_CHARACTERS = Number(process.env.NEXT_PUBLIC_MAX_CHARACTERS) || 2200;
@@ -28,11 +30,16 @@ const AddPost: React.FC = () => {
 
   useEffect(() => {
     if (!localStorage.getItem('auth_token')) {
-      alert('Please Login first!');
+      showError('Please login first to create a post!', {
+        action: {
+          label: 'Go to Login',
+          onClick: () => router.push('/Login')
+        }
+      });
       router.push('/Login');
       return;
     }
-  }, [router]);
+  }, [router, showError]);
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
@@ -97,8 +104,10 @@ const AddPost: React.FC = () => {
       
       if (response.error) {
         setError(response.error);
+        showError('Failed to create post. Please try again.');
       } else {
         // Success - redirect to home
+        success('Post created successfully!');
         router.push('/');
       }
     } catch {

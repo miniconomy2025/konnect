@@ -11,7 +11,6 @@ interface HeaderProps {
 }
 
 export function Header({ editProfile, onSettingsClick } : HeaderProps) {  
-    console.log(onSettingsClick);  
   return (
     <header
     style={{

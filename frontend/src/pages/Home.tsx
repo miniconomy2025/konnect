@@ -6,18 +6,25 @@ import { Header } from '@/components/Home/Header';
 import Layout from '@/layouts/Main';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
 // import { useRouter } from 'next/navigation'; // TODO: Implement navigation functionality
-import React, { useEffect, useState } from 'react';
+import { useToastHelpers } from '@/contexts/ToastContext';
 import Image from 'next/image';
+import React, { useEffect, useState } from 'react';
 
 const Home: React.FC = () => {
   // const router = useRouter(); // TODO: Implement navigation functionality
   const [feedMode, setFeedMode] = useState<'discover' | 'following'>('discover');
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { error: showError } = useToastHelpers();
 
   useEffect(() => {
     if(!localStorage.getItem('auth_token')){
-        alert('Please Login first!') // TODO: Make nice toast
+        showError('Please login first to access your feed!', {
+            action: {
+                label: 'Go to Login',
+                onClick: () => window.location.href = '/Login'
+            }
+        });
         window.location.href = '/Login';
     }
 

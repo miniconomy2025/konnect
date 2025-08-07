@@ -14,6 +14,7 @@
     import Layout from '@/layouts/Main';
     import { ApiService } from '@/lib/api';
     import PostModal from '@/components/account/PostModal';
+import { useToastHelpers } from '@/contexts/ToastContext';
 
     const ProfilePage: React.FC = () => {
     // const [activeTab] = useState<string>('posts'); // TODO: Implement tab functionality
@@ -34,11 +35,17 @@
     const [tempName, setTempName] = useState<string>(userName);
     const [bio, setBio] = useState<string>('');
     const [tempBio, setTempBio] = useState<string>(bio);
+    const { success: showSuccess, error: showError } = useToastHelpers();
 
 
         useEffect(() => {
             if(!localStorage.getItem('auth_token')){
-                alert('Please Login first!') // TODO: Make nice toast
+                showError('Please login first to access your profile!', {
+                    action: {
+                        label: 'Go to Login',
+                        onClick: () => window.location.href = '/Login'
+                    }
+                });
                 window.location.href = '/Login';
             }
 
@@ -88,9 +95,9 @@
         const response = await ApiService.updateDisplayName(tempName);
 
         if(response.error){
-            alert('Error updating display name');
+            showError('Error updating display name');
         }else{
-            alert('Updated Display Name');
+            showSuccess('Updated Display Name');
             setDisplayName(tempName);
             setUserProfile({ ...userProfile, displayName: tempName });
             setIsEditingName(false);        
@@ -103,9 +110,9 @@
         const response = await ApiService.updateBio(tempBio);
 
         if(response.error){
-            alert('Error updating bio name');
+            showError('Error updating bio name');
         }else{
-            alert('Updated Bio');
+            showSuccess('Updated Bio');
             setBio(bio);
             setUserProfile({ ...userProfile, bio: bio });
             setIsEditingBio(false);        
