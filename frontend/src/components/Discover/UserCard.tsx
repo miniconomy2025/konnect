@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
 import { useRouter } from 'next/router';
 import { UserProfile } from '@/types/account';
+import { generateAvatarColor, generateAvatarTextColor } from '@/lib/avatarUtils';
 
 interface UserCardProps {
   user: UserProfile;
@@ -27,22 +28,48 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         router.push(`/Discover?user=${user.handle}`);
       }}
     >
-      <Image
-        width={48}
-        height={48}
-        src={user.avatarUrl || '/assets/images/missingAvatar.jpg'}
-        alt={`${user.username}'s avatar`}
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: '50%',
-          objectFit: 'cover',
-          marginRight: Spacing.Small,
-        }}
-        onError={(e) => {
-          e.currentTarget.src = '/assets/images/missingAvatar.jpg';
-        }}
-      />
+      {user.avatarUrl ? (
+        <Image
+          width={48}
+          height={48}
+          src={user.avatarUrl}
+          alt={`${user.username}'s avatar`}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            objectFit: 'cover',
+            marginRight: Spacing.Small,
+          }}
+          onError={(e) => {
+            e.currentTarget.src = '/assets/images/missingAvatar.jpg';
+          }}
+        />
+      ) : (
+        <abbr
+          title={user.displayName}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            marginRight: Spacing.Small,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '16px',
+            fontWeight: '600',
+            fontFamily: FontFamily.Nunito,
+            color: generateAvatarTextColor(user.handle),
+            background: generateAvatarColor(user.handle),
+            textDecoration: 'none',
+            textTransform: 'uppercase',
+            border: `1px solid ${Color.Border}`,
+            flexShrink: 0,
+          }}
+        >
+          {user.displayName.charAt(0)}
+        </abbr>
+      )}
       <section>
         <section style={{
           fontSize: FontSize.Large,

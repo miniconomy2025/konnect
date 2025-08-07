@@ -3,6 +3,7 @@ import Image from 'next/image';
 import type { Post } from '@/types/post';
 import { Color, Spacing, FontSize, Radius, FontFamily } from '@/lib/presentation';
 import { ApiService } from '@/lib/api';
+import { generateAvatarColor, generateAvatarTextColor } from '@/lib/avatarUtils';
 import router from 'next/router';
 
 interface PostProps {
@@ -133,13 +134,25 @@ export function Post({ post, children }: PostProps) {
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
-            <Image
-              width={40}
-              height={40} 
-              src="/assets/images/missingAvatar.jpg" 
-              alt={post.author.displayName}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
+            <abbr 
+              title={post.author.displayName}
+              style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '18px',
+                fontWeight: '600',
+                fontFamily: FontFamily.Nunito,
+                color: generateAvatarTextColor(post.author.username),
+                background: generateAvatarColor(post.author.username),
+                textDecoration: 'none',
+                textTransform: 'uppercase',
+              }}
+            >
+              {post.author.displayName.charAt(0)}
+            </abbr>
           )}
         </figure>
         <section style={{ flex: 1 }}>
@@ -165,7 +178,7 @@ export function Post({ post, children }: PostProps) {
         {children}
       </main>
       
-      {post.content.text && post.media.type !== 'text' && (
+      {post.content.text && post.media && post.media.type !== 'text' && (
         <section style={{
           padding: `${Spacing.Medium} ${Spacing.Large}`,
           background: Color.Surface,
