@@ -1,4 +1,4 @@
-import { Accept, Follow } from "@fedify/fedify";
+import { Accept, Follow, type Context } from "@fedify/fedify";
 import { getLogger } from "@logtape/logtape";
 import { UserService } from "../../services/userService.ts";
 import { InboxService } from "../../services/inboxService.ts";
@@ -12,7 +12,7 @@ const inboxService = new InboxService();
 const searchService = new SearchService();
 
 export function addFollowListener(inboxListeners: any) {
-  return inboxListeners.on(Follow, async (ctx: any, follow: any) => {
+  return inboxListeners.on(Follow, async (ctx: Context<void | unknown>, follow: Follow) => {
     if (follow.objectId == null) return;
 
     const actorBeingFollowed = await follow.getObject(ctx);

@@ -1,4 +1,4 @@
-import { Image, Person, importJwk } from "@fedify/fedify";
+import { Image, Person, importJwk, type Context } from "@fedify/fedify";
 import { getLogger } from "@logtape/logtape";
 import { User } from "../../models/user.ts";
 import { UserService } from "../../services/userService.ts";
@@ -7,7 +7,7 @@ const logger = getLogger("federation");
 const userService = new UserService();
 
 export function createActorDispatcher(federation: any) {
-  federation.setActorDispatcher("/users/{identifier}", async (ctx: any, identifier: string) => {
+  federation.setActorDispatcher("/users/{identifier}", async (ctx: Context<void | unknown>, identifier: string) => {
     logger.info(`Actor dispatcher called for: ${identifier}`);
     
     const user = await userService.findByUsername(identifier);
@@ -39,8 +39,9 @@ export function createActorDispatcher(federation: any) {
       indexable: !user.isPrivate,
       manuallyApprovesFollowers: user.isPrivate,
 
-      publicKey: keys[0]?.cryptographicKey,
-      assertionMethods: keys.map((key: any) => key.multikey),
+      // publicKey: keys[0].cryptographicKey,
+      publicKeys: keys.map((key) => key.cryptographicKey),
+      assertionMethods: keys.map((key) => key.multikey),
     });
   }).setKeyPairsDispatcher(async (ctx: any, identifier: string) => {
     const urlParts = identifier.split('/');
