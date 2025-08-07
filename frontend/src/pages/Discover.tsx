@@ -62,7 +62,6 @@ const DiscoverPage: React.FC = () => {
         <PublicProfileView username={usernameParam}/>
         ) : (
         <>
-            {/* Sticky Search Bar */}
             <section
                 style={{
                     position: 'sticky',
@@ -105,18 +104,16 @@ const DiscoverPage: React.FC = () => {
                 />
                 </section>
                 
-                {/* Gradient Separator Line */}
                 <section
                     style={{
                         height: '0.125rem',
                         background: Gradient.Brand,
                         margin: `${Spacing.Medium} ${Spacing.Medium} 0 ${Spacing.Medium}`,
-                        borderRadius: '0.0625rem',
+                        borderRadius: '0.1625rem',
                     }}
                 />
             </section>
 
-            {/* Scrollable Results */}
             <section 
                 style={{ 
                     paddingTop: Spacing.Small,
