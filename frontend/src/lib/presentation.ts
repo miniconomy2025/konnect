@@ -9,6 +9,9 @@ export enum Color {
   Muted = "#888",
   Error = "#FF3B30",
   Success = "#34C759",
+  // Gradient colors for branding
+  GradientStart = "#DF99F0",
+  GradientEnd = "#4361EE",
 }
 
 // Spacing (in rem)
@@ -42,10 +45,24 @@ export enum FontFamily {
   Nunito = "var(--font-nunito), Arial, Helvetica, sans-serif"
 }
 
+// Gradient utilities
+export const Gradient = {
+  Brand: `linear-gradient(135deg, ${Color.GradientStart} 0%, ${Color.GradientEnd} 100%)`,
+};
+
+// Text gradient utility for easy reuse
+export const textGradientStyle = {
+  background: Gradient.Brand,
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  backgroundClip: 'text',
+};
+
 // Example usage object for inline styles
 export const styleVars = {
   color: Color,
   spacing: Spacing,
   fontSize: FontSize,
   radius: Radius,
+  gradient: Gradient,
 };
