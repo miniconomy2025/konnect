@@ -128,6 +128,22 @@ export function Post({ post, children }: PostProps) {
     handleLike();
   };
 
+  // Utility: consistent color from domain string
+  function stringToColor(str: string) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    // Simple HSL color for better contrast
+    const hue = Math.abs(hash) % 360;
+    return `hsl(${hue}, 60%, 55%)`;
+  }
+
+  const maxLen = 10;
+  const domain = post.author.domain;
+  const displayDomain = domain && domain.length > maxLen ? domain.slice(0, maxLen) + "…" : domain;
+  const domainColor = domain ? stringToColor(domain) : "#999";
+
   return (
     <article
       ref={postRef}
@@ -208,6 +224,28 @@ export function Post({ post, children }: PostProps) {
             @{post.author.username} • {formatTimeAgo(post.createdAt)}
           </time>
         </section>
+        {domain && (
+          <mark
+            style={{
+              backgroundColor: domainColor,
+              color: "#fff",
+              borderRadius: "0.75em",
+              padding: "0.2em 0.7em",
+              fontSize: "0.85em",
+              marginLeft: "0.5em",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              lineHeight: 1,
+            }}
+            title={domain}
+            aria-label={`Domain: ${domain}`}
+          >
+            {displayDomain}
+          </mark>
+        )}
       </header>
       
       <main style={{ background: Color.Background, padding: 0, textAlign: 'center', position: 'relative' }}>

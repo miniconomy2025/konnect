@@ -113,8 +113,8 @@ export class PostNormalizationService {
           isLiked: isLiked,
           canInteract: true
         },
-        createdAt: post.createdAt,
-        updatedAt: post.updatedAt,
+        createdAt: post.createdAt.toISOString(),
+        updatedAt: post.updatedAt?.toISOString() || null,
         url: this.buildLocalPostUrl(post.id),
         isReply: false,
       };
@@ -174,8 +174,8 @@ export class PostNormalizationService {
           isLiked: isLiked, 
           canInteract: true 
         },
-        createdAt: externalPost.published,
-        updatedAt: externalPost.updated,
+        createdAt: externalPost.published instanceof Date ? externalPost.published.toISOString() : externalPost.published,
+        updatedAt: externalPost.updated ? (externalPost.updated instanceof Date ? externalPost.updated.toISOString() : externalPost.updated) : null,
         url: externalPost.url,
         isReply: externalPost.isReply || false,
       });
