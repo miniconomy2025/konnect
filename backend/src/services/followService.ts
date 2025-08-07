@@ -5,10 +5,12 @@ import { InboxService } from './inboxService.ts';
 import { UserService } from './userService.ts';
 import { RedisService } from './redisService.ts';
 import { ActivityService } from './activityservice.ts';
+import { Neo4jService } from './neo4jService.ts';
 
 export class FollowService {
   private activityService = new ActivityService();
   private redisService = RedisService.getInstance();
+  private neo4jService = new Neo4jService();
 
   constructor(private readonly userService: UserService, private readonly InboxService: InboxService) {
   }
@@ -28,6 +30,12 @@ export class FollowService {
 
     // Invalidate caches for both users
     await this.redisService.invalidateFollowCaches(
+      followCreateObject.actor.id,
+      followCreateObject.object.id
+    );
+
+    // Sync to Neo4j
+    await this.neo4jService.createFollowRelationship(
       followCreateObject.actor.id,
       followCreateObject.object.id
     );
@@ -52,6 +60,10 @@ export class FollowService {
     if (result.deletedCount > 0) {
       // Invalidate caches for both users
       await this.redisService.invalidateFollowCaches(actorId, objectId);
+      
+      // Remove from Neo4j
+      await this.neo4jService.removeFollowRelationship(actorId, objectId);
+      
       return true;
     }
     return false;

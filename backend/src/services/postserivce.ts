@@ -6,11 +6,13 @@ import { Post, type IPost } from '../models/post.js';
 import { User, type IUser} from '../models/user.js';
 import type { CreatePostData } from '../types/post.js';
 import type { Context } from '@fedify/fedify';
+import { Neo4jService } from './neo4jService.ts';
 
 export class PostService {
   private s3Service = new S3Service();
   private activityService = new ActivityService();
   private redisService = RedisService.getInstance();
+  private neo4jService = new Neo4jService();
 
   private async transformCachedPost(cached: Record<string, any>): Promise<IPost> {
     return {
@@ -49,7 +51,7 @@ export class PostService {
     };
   }
 
-  async createPost(postData: CreatePostData, federationContext?: Context<void | unknown>): Promise<IPost> {
+  async createPost(postData: CreatePostData, federationContext?: any): Promise<IPost> {
     const domain = process.env.DOMAIN || 'localhost:8000';
     const protocol = domain.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${domain}`;
@@ -97,6 +99,13 @@ export class PostService {
         [postId.toString(), ...currentPublicFeed]
       );
     }
+
+    // Sync to Neo4j
+    await this.neo4jService.createPost(
+      savedPost._id.toString(),
+      author!.actorId,
+      savedPost.createdAt.getTime()
+    );
 
     return populatedPost;
   }
@@ -288,9 +297,10 @@ export class PostService {
         activityId: likeActivityId,
         isLocal: true
       });
-
+      console.log(like);
       await like.save();
       await this.redisService.incrementLikes(postId);
+      await this.neo4jService.likePost(userId, postId);
     } else {
       post.likes.splice(likeIndex, 1);
       post.likesCount--;
@@ -302,6 +312,7 @@ export class PostService {
       });
 
       await this.redisService.decrementLikes(postId);
+      await this.neo4jService.unlikePost(userId, postId);
     }
 
     await post.save();
@@ -437,6 +448,7 @@ export class PostService {
 
     await Post.findByIdAndUpdate(post._id, { $inc: { likesCount: 1 } });
     await this.redisService.incrementLikes(post.id);
+    await this.neo4jService.likePost(actorId, post.id);
 
     console.log(`Added federated like to post ${post.activityId} from ${actorId}`);
   }
@@ -456,6 +468,7 @@ export class PostService {
 
     await Post.findByIdAndUpdate(like.object.ref, { $inc: { likesCount: -1 } });
     await this.redisService.decrementLikes(like.object.ref.toString());
+    await this.neo4jService.unlikePost(actorId, like.object.ref.toString());
 
     console.log(`Removed federated like from post ${objectId} by ${actorId}`);
   }
@@ -493,7 +506,7 @@ export class PostService {
       'actor.id': user.actorId,
       'object.id': activityId
     });
-    
+    console.log(existingLike);
     if (existingLike) {
       await Like.findOneAndDelete({
         'actor.id': user.actorId,
