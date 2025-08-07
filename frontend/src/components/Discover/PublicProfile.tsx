@@ -25,7 +25,7 @@ const PublicProfileView: React.FC<PublicProfileProps> = ({ username }) => {
       if (data) {
         let postRes;
         if(data.isLocal){
-          postRes = await ApiService.getUserPosts(username);
+          postRes = await ApiService.getUserPosts(data.username);
         }else{
           postRes = await ApiService.getExternalUserPosts(data.username, data.hostServer);
         }
