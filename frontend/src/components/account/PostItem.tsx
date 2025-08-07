@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useRef } from 'react';
 import Image from 'next/image';
 import { Heart } from 'lucide-react';
 import { styles } from '@/styles/account';
@@ -12,6 +12,8 @@ interface PostItemProps {
 }
 
 const PostItem: React.FC<PostItemProps> = ({ post, onClick }) => {
+    const lastTapRef = useRef(0);
+    const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
     const overlay = e.currentTarget.querySelector('.overlay') as HTMLElement;
     if (overlay) overlay.style.opacity = '1';
@@ -26,10 +28,35 @@ const PostItem: React.FC<PostItemProps> = ({ post, onClick }) => {
     if (onClick) onClick(post);
   };
 
+  const handleDoubleTap = () => {
+    const now = Date.now();
+    const timeSinceLastTap = now - lastTapRef.current;
+    
+    if (timeSinceLastTap < 200 && timeSinceLastTap > 0) {
+      if (tapTimeoutRef.current) {
+        clearTimeout(tapTimeoutRef.current);
+        tapTimeoutRef.current = null;
+      }
+    //   handleLike();
+    } else {
+      lastTapRef.current = now;
+      tapTimeoutRef.current = setTimeout(() => {
+        handleClick();
+        tapTimeoutRef.current = null;
+      }, 200);
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleDoubleTap();
+  };
+
   return (
     <section
       style={styles.postItem}
-      onClick={handleClick}
+        onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >

@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { styles } from '@/styles/account';
 import { Actor } from '@/types/account';
+import router from 'next/router';
 
 interface UserListItemProps {
   user: Actor;
@@ -12,7 +13,10 @@ interface UserListItemProps {
 
 const UserListItem: React.FC<UserListItemProps> = ({ user, following = false }) => {
   return (
-    <section style={styles.userListItem}>
+    <section style={styles.userListItem}
+        onClick={() => {
+          router.push(`/Discover?user=${user.username}`);
+        }}>
       <section style={styles.userInfo}>
         <Image 
           src={user.avatarUrl || '/assets/images/missingAvatar.jpg'} 
@@ -29,7 +33,6 @@ const UserListItem: React.FC<UserListItemProps> = ({ user, following = false }) 
           <p style={styles.userDisplayName}>{user.displayName}</p>
         </section>
       </section>
-        <button style={styles.followButton}>{following ? 'Follow' : 'Unfollow'}</button>
     </section>
   );
 };

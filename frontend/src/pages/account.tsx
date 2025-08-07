@@ -58,7 +58,7 @@ const ProfilePage: React.FC = () => {
             if(userFollows){
                 const userFollowers = userFollows.followers || [];
                 const userFollowing = userFollows.following || []; 
-                
+
                 const followers: Actor[] = userFollowers.map(user => user.actor);
                 const following: Actor[] = userFollowing.map(user => user.object);
                 setFollowing(following);
@@ -86,7 +86,6 @@ const ProfilePage: React.FC = () => {
   const handleNameSave = async () => {
     if (!userProfile) return;
 
-    // Make API Call
     const response = await ApiService.updateDisplayName(tempName);
 
     if(response.error){
