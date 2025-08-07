@@ -1,11 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
-import type { Post } from '@/types/post';
-import { Color, Spacing, FontSize, Radius, FontFamily } from '@/lib/presentation';
+import { useToastHelpers } from '@/contexts/ToastContext';
+import { useMobileDetection } from '@/hooks/useMobileDetection';
 import { ApiService } from '@/lib/api';
 import { generateAvatarColor, generateAvatarTextColor } from '@/lib/avatarUtils';
-import { useMobileDetection } from '@/hooks/useMobileDetection';
+import { Color, FontFamily, FontSize, Radius, Spacing } from '@/lib/presentation';
+import type { Post } from '@/types/post';
+import Image from 'next/image';
 import router from 'next/router';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface PostProps {
   post: Post;
@@ -21,6 +22,7 @@ export function Post({ post, children }: PostProps) {
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   const postRef = useRef<HTMLElement>(null);
   const isMobile = useMobileDetection();
+  const { error: showError } = useToastHelpers();
 
   // Handle heart animation timeout
   useEffect(() => {
@@ -48,6 +50,7 @@ export function Post({ post, children }: PostProps) {
       
       if (response.error) {
         console.error('Failed to like post:', response.error);
+        showError('Failed to like post. Please try again.');
         // Revert the UI state if API call fails
         setIsLiked(!isLiked);
         setLikesCount(isLiked ? likesCount + 1 : likesCount - 1);
@@ -58,6 +61,7 @@ export function Post({ post, children }: PostProps) {
       }
     } catch (error) {
       console.error('Error liking post:', error);
+      showError('Unable to like post. Please check your connection.');
       // Revert the UI state if API call fails
       setIsLiked(!isLiked);
       setLikesCount(isLiked ? likesCount + 1 : likesCount - 1);
