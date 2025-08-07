@@ -16,7 +16,7 @@ export function Post({ post, children }: PostProps) {
   const [isLiked, setIsLiked] = useState(post.engagement.isLiked);
   const [likesCount, setLikesCount] = useState(post.engagement.likesCount);
   const [isLiking, setIsLiking] = useState(false);
-  const [tiltStyle, setTiltStyle] = useState({});
+  const [hoverStyle, setHoverStyle] = useState({});
   const [lastTap, setLastTap] = useState(0);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   const postRef = useRef<HTMLElement>(null);
@@ -78,29 +78,20 @@ export function Post({ post, children }: PostProps) {
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    // Disable tilt effect on mobile devices
+    // Disable raise effect on mobile devices
     if (isMobile || !postRef.current) return;
     
-    const rect = postRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const rotateX = (y - centerY) / centerY * -5;
-    const rotateY = (x - centerX) / centerX * 5;
-    
-    setTiltStyle({
-      transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
-      boxShadow: `0 ${Math.abs(rotateX) * 2}px ${Math.abs(rotateX) * 4}px rgba(0, 0, 0, 0.1)`,
+    setHoverStyle({
+      transform: 'translateY(-8px)',
+      boxShadow: '0 12px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1)',
     });
   };
 
   const handleMouseLeave = () => {
-    // Only reset tilt on non-mobile devices
+    // Only reset raise effect on non-mobile devices
     if (!isMobile) {
-      setTiltStyle({
-        transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg)',
+      setHoverStyle({
+        transform: 'translateY(0px)',
         boxShadow: 'none',
       });
     }
@@ -169,9 +160,9 @@ export function Post({ post, children }: PostProps) {
         overflow: 'hidden',
         maxWidth: 480,
         margin: '0 auto 1.5rem auto',
-        transition: 'transform 0.1s ease, box-shadow 0.1s ease',
+        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
         cursor: 'pointer',
-        ...tiltStyle,
+        ...hoverStyle,
       }}>
       <header style={{
         background: Color.Surface,
