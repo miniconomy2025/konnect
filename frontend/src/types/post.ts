@@ -64,7 +64,7 @@ export interface Post {
   author: Author;
   engagement: Engagement;
   isReply: boolean;
-  media: Media;
+  media?: Media;
   type: string;
   url: string;
 }

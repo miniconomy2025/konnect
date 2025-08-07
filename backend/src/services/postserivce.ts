@@ -5,6 +5,7 @@ import { RedisService } from './redisService.ts';
 import { Post, type IPost } from '../models/post.js';
 import { User, type IUser} from '../models/user.js';
 import type { CreatePostData } from '../types/post.js';
+import type { Context } from '@fedify/fedify';
 
 export class PostService {
   private s3Service = new S3Service();
@@ -48,7 +49,7 @@ export class PostService {
     };
   }
 
-  async createPost(postData: CreatePostData, federationContext?: any): Promise<IPost> {
+  async createPost(postData: CreatePostData, federationContext?: Context<void | unknown>): Promise<IPost> {
     const domain = process.env.DOMAIN || 'localhost:8000';
     const protocol = domain.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${domain}`;
@@ -318,7 +319,29 @@ export class PostService {
     };
   }
 
-  async deletePost(postId: string, userId: string, federationContext?: any): Promise<boolean> {
+  private async updatePostInFeedCaches(post: IPost & { _id: mongoose.Types.ObjectId }): Promise<void> {
+    // Get all feed caches that might contain this post
+    const feedCaches = [
+      'public', // Public feed
+      post.author.toString(), // Author's feed
+    ];
+
+    // Update the post in each feed cache if it exists
+    await Promise.all(
+      feedCaches.map(async (feedId) => {
+        const feedPosts = await this.redisService.getFeedPosts(feedId);
+        if (feedPosts.includes(post._id.toString())) {
+          // If the post is in this feed cache, update the cache with the same post order
+          await this.redisService.cacheFeedPosts(
+            feedId,
+            feedPosts
+          );
+        }
+      })
+    );
+  }
+
+  async deletePost(postId: string, userId: string, federationContext?: Context<void | unknown>): Promise<boolean> {
     const post = await Post.findOne({ _id: postId, author: userId });
     if (!post) {
       return false;

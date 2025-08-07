@@ -3,6 +3,7 @@ import Image from 'next/image';
 import type { Post } from '@/types/post';
 import { Color, Spacing, FontSize, Radius, FontFamily } from '@/lib/presentation';
 import { ApiService } from '@/lib/api';
+import router from 'next/router';
 
 interface PostProps {
   post: Post;
@@ -104,7 +105,12 @@ export function Post({ post, children }: PostProps) {
         display: 'flex',
         alignItems: 'center',
         gap: Spacing.Small,
-      }}>
+        cursor: 'pointer',
+      }}
+        onClick={() => {
+          router.push(`/Discover?user=${post.author.username}`);
+        }}
+      >
         <figure style={{
           width: 40,
           height: 40,

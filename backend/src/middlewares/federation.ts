@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import federation from "../federation/setup.ts";
+import "../types/express.d.ts";
 
 /**
  * Middleware to attach federation context to requests
@@ -19,7 +20,7 @@ export function attachFederationContext(req: Request, res: Response, next: NextF
       }
     );
     
-    (req as any).federationContext = federationContext;
+    req.federationContext = federationContext;
     
     next();
   } catch (error) {

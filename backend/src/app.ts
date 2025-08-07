@@ -59,12 +59,12 @@ app.use(express.json());
 
 app.use('/auth', attachFederationContext, authRoutes);
 app.use('/posts', attachFederationContext, postRoutes);
-app.use('/search', searchRoutes);
+app.use('/search', attachFederationContext, searchRoutes);
 app.use('/follows', attachFederationContext, followRoutes);
 app.use('/inboxes', inboxRoutes);
 
 app.use('', webfingerRoutes);
-app.use('', userRoutes);
+app.use('', attachFederationContext, userRoutes);
 
 const frontendPath = path.join(process.cwd(), '../frontend/out');
 app.use(express.static(frontendPath));
