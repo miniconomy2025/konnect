@@ -80,6 +80,21 @@ export function Post({ post, children }: PostProps) {
     });
   };
 
+  // Utility: consistent color from domain string
+  function stringToColor(str: string) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    // Simple HSL color for better contrast
+    const hue = Math.abs(hash) % 360;
+    return `hsl(${hue}, 60%, 55%)`;
+  }
+
+  const maxLen = 10;
+  const displayDomain = post.author.domain.length > maxLen ? post.author.domain.slice(0, maxLen) + "…" : post.author.domain;
+  const domainColor = stringToColor(post.author.domain);
+
   return (
     <article
       ref={postRef}
@@ -153,6 +168,23 @@ export function Post({ post, children }: PostProps) {
             @{post.author.username} • {formatTimeAgo(post.createdAt)}
           </time>
         </section>
+        <mark
+          style={{
+            backgroundColor: domainColor,
+            color: "#fff",
+            borderRadius: "0.75em",
+            padding: "0.2em 0.7em",
+            fontSize: "0.85em",
+            marginLeft: "0.5em",
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+            display: "inline-block",
+          }}
+          title={post.author.domain}
+          aria-label={`Domain: ${post.author.domain}`}
+        >
+          {displayDomain}
+        </mark>
       </header>
       
       <main style={{ background: Color.Background, padding: 0, textAlign: 'center' }}>
