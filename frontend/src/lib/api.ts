@@ -49,12 +49,15 @@ export class ApiService {
       if (type === 'discover') {
         endpoint = `${API_BASE_URL}/recommended`;
       } else {
-        endpoint = `${API_BASE_URL}/posts?type=following`;
+        endpoint = `${API_BASE_URL}/posts`;
       }
 
-      const url = `${endpoint}?page=${page}&limit=${limit}`;
+      const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+      if (type === 'following') params.set('type', 'following');
 
-      const response = await fetch(url, {
+      const urlString = `${endpoint}${endpoint.includes('?') ? '&' : '?'}${params.toString()}`;
+
+      const response = await fetch(urlString, {
         headers: this.getAuthHeaders(),
       });
       
