@@ -69,7 +69,7 @@ export const styles: { [key: string]: CSSProperties } = {
   },
   labelActive: {
     fontSize: FontSizeRem.NavLabel,
-    color: Color.Primary,
+    color: Color.GradientEnd,
     fontWeight: '500',
     transition: 'color 0.2s ease',
     lineHeight: '1.1',
