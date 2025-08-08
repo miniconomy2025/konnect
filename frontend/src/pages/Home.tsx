@@ -18,7 +18,7 @@ const Home: React.FC = () => {
   const { error: showError } = useToastHelpers();
 
   useEffect(() => {
-    if(!localStorage.getItem('auth_token')){
+    if(!sessionStorage.getItem('auth_token')){
         showError('Please login first to access your feed!', {
             action: {
                 label: 'Go to Login',

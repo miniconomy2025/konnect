@@ -3,9 +3,11 @@ import { CSSProperties } from 'react';
 export const styles: { [key: string]: CSSProperties } = {
   container: {
     width: '100%',
-    minWidth: '95vw',
     backgroundColor: 'white',
     minHeight: '100vh',
+    maxWidth: '960px',
+    marginLeft: 'auto',
+    marginRight: 'auto',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
     color: 'black',
     colorScheme: 'light'
@@ -22,7 +24,7 @@ export const styles: { [key: string]: CSSProperties } = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '1rem'
+    padding: '0.75rem 1rem'
   },
   headerTitle: {
     fontSize: '1.25rem',
@@ -90,20 +92,22 @@ export const styles: { [key: string]: CSSProperties } = {
   },
   stats: {
     display: 'flex',
-    gap: '1.5rem',
-    marginBottom: '1rem',
-    fontSize: '0.875rem'
+    gap: '0.75rem',
+    marginBottom: '0.75rem',
+    fontSize: '0.9rem',
+    flexWrap: 'wrap'
   },
   statButton: {
     background: 'none',
     border: 'none',
     cursor: 'pointer',
-    fontSize: '0.875rem',
-    padding: 0,
+    fontSize: '0.9rem',
+    padding: '0.25rem 0.5rem',
+    borderRadius: 8,
     color: 'black'
   },
   bioSection: {
-    marginBottom: '1rem'
+    marginBottom: '0.75rem'
   },
   bioName: {
     fontWeight: '600',
@@ -136,42 +140,53 @@ export const styles: { [key: string]: CSSProperties } = {
     color: 'black'
   },
   editButton: {
-    padding: '0.5rem',
-    border: 'none',
-    backgroundColor: 'transparent',
-    borderRadius: '4px',
+    padding: '0.5rem 1rem',
+    border: '1px solid #d1d5db',
+    backgroundColor: '#f8fafc',
+    borderRadius: '6px',
     cursor: 'pointer',
-    color: '#6b7280'
+    color: '#374151',
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    transition: 'all 150ms ease',
   },
   saveButton: {
-    padding: '0.5rem',
-    border: 'none',
-    backgroundColor: 'transparent',
-    borderRadius: '4px',
+    padding: '0.5rem 1rem',
+    border: '1px solid #10b981',
+    backgroundColor: '#10b981',
+    borderRadius: '6px',
     cursor: 'pointer',
-    color: '#10b981'
+    color: 'white',
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    transition: 'all 150ms ease',
   },
   cancelButton: {
-    padding: '0.5rem',
-    border: 'none',
-    backgroundColor: 'transparent',
-    borderRadius: '4px',
+    padding: '0.5rem 1rem',
+    border: '1px solid #ef4444',
+    backgroundColor: '#fee2e2',
+    borderRadius: '6px',
     cursor: 'pointer',
-    color: '#ef4444'
+    color: '#dc2626',
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    transition: 'all 150ms ease',
   },
   postsGrid: {
     display: 'grid',
-    width: '95vw',
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '1px',
-    padding: '1px'
+    width: '100%',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+    gap: '4px',
+    padding: '4px'
   },
   postItem: {
     position: 'relative',
     aspectRatio: '1',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#f8f9fb',
+    border: '1px solid #eee'
   },
   postImage: {
     width: '100%',
@@ -184,7 +199,7 @@ export const styles: { [key: string]: CSSProperties } = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    background: 'linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.25))',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -208,7 +223,7 @@ export const styles: { [key: string]: CSSProperties } = {
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 50,
+    zIndex: 100,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -217,11 +232,10 @@ export const styles: { [key: string]: CSSProperties } = {
   },
   modalContent: {
     backgroundColor: 'white',
-    borderRadius: '8px',
-    width: '100%',
-    maxWidth: '24rem',
+    borderRadius: '12px',
+    width: 'min(95vw, 720px)',
     margin: '1rem',
-    maxHeight: '24rem',
+    maxHeight: '80vh',
     overflow: 'hidden'
   },
   modalHeader: {
@@ -239,7 +253,8 @@ export const styles: { [key: string]: CSSProperties } = {
   },
   modalBody: {
     overflowY: 'auto',
-    maxHeight: '20rem'
+    maxHeight: 'calc(80vh - 56px)',
+    padding: '1rem'
   },
   userListItem: {
     display: 'flex',

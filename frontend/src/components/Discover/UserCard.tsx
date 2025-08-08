@@ -1,12 +1,16 @@
-import React from 'react';
-import Image from 'next/image';
-import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
-import { useRouter } from 'next/router';
-import { UserProfile } from '@/types/account';
 import { generateAvatarColor, generateAvatarTextColor } from '@/lib/avatarUtils';
+import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
+import type { RecentUser } from '@/lib/sessionCache';
+import { addRecentlyViewedUser } from '@/lib/sessionCache';
+import { UserProfile } from '@/types/account';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+import React from 'react';
+
+type UserCardUser = UserProfile | RecentUser;
 
 interface UserCardProps {
-  user: UserProfile;
+  user: UserCardUser;
 }
 
 export const UserCard: React.FC<UserCardProps> = ({ user }) => {
@@ -16,16 +20,44 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
       style={{
         display: 'flex',
         alignItems: 'center',
-        padding: Spacing.Small,
-        marginBottom: Spacing.Small,
+        padding: Spacing.Medium,
         background: Color.Surface,
-        borderRadius: 10,
-        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
+        border: `1px solid ${Color.Border}`,
+        borderRadius: 12,
+        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.04)',
         cursor: 'pointer',
-        transition: 'transform 0.2s ease',
+        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+        minHeight: 72,
       }}
+      tabIndex={0}
+      role="button"
+      aria-label={`View ${user.displayName} profile`}
       onClick={() => {
+        addRecentlyViewedUser({
+          activityPubId: user.activityPubId,
+          displayName: user.displayName,
+          handle: user.handle,
+          avatarUrl: user.avatarUrl,
+          username: user.username,
+          hostServer: user.hostServer,
+          isLocal: user.isLocal,
+        });
         router.push(`/Discover?user=${user.handle}`);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          addRecentlyViewedUser({
+            activityPubId: user.activityPubId,
+            displayName: user.displayName,
+            handle: user.handle,
+            avatarUrl: user.avatarUrl,
+            username: user.username,
+            hostServer: user.hostServer,
+            isLocal: user.isLocal,
+          });
+          router.push(`/Discover?user=${user.handle}`);
+        }
       }}
     >
       {user.avatarUrl ? (
@@ -35,11 +67,11 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
           src={user.avatarUrl}
           alt={`${user.username}'s avatar`}
           style={{
-            width: 40,
-            height: 40,
+            width: 48,
+            height: 48,
             borderRadius: '50%',
             objectFit: 'cover',
-            marginRight: Spacing.Small,
+            marginRight: Spacing.Medium,
           }}
           onError={(e) => {
             e.currentTarget.src = '/assets/images/missingAvatar.jpg';
@@ -49,10 +81,10 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         <abbr
           title={user.displayName}
           style={{
-            width: 40,
-            height: 40,
+            width: 48,
+            height: 48,
             borderRadius: '50%',
-            marginRight: Spacing.Small,
+            marginRight: Spacing.Medium,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -70,17 +102,23 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
           {user.displayName.charAt(0)}
         </abbr>
       )}
-      <section>
-        <section style={{
+      <section style={{ minWidth: 0 }}>
+        <section title={user.displayName} style={{
           fontSize: FontSize.Large,
           fontFamily: FontFamily.Nunito,
-          fontWeight: 600,
+          fontWeight: 700,
           color: Color.Text,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         }}>{user.displayName}</section>
-        <section style={{
-          fontSize: FontSize.Small,
+        <section title={user.handle} style={{
+          fontSize: FontSize.Base,
           fontFamily: FontFamily.Nunito,
           color: Color.Muted,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         }}>{user.handle}</section>
       </section>
     </section>
