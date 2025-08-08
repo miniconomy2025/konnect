@@ -14,7 +14,7 @@ const Login: React.FC = () => {
   };
   
     useEffect(() => {
-        if(localStorage.getItem('auth_token')){
+        if(sessionStorage.getItem('auth_token')){
             window.location.href = '/Home';
         }
     }, []);
@@ -27,7 +27,7 @@ const Login: React.FC = () => {
         if (token && userString) {
         try {
                          JSON.parse(userString); // Validate JSON format
-            localStorage.setItem("auth_token", token);
+            sessionStorage.setItem("auth_token", token);
             router.push('/Home');
         } catch (err) {
             console.error("Error parsing user from query:", err);

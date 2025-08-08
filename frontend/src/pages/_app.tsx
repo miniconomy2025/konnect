@@ -3,6 +3,7 @@ import { ToastProvider } from '@/contexts/ToastContext';
 import { Varela_Round, Playwrite_HU, Nunito } from "next/font/google";
 import '@/app/globals.css';
 import type { AppProps } from 'next/app';
+import { useEffect } from 'react';
 
 const varelaRound = Varela_Round({
   subsets: ["latin"],
@@ -26,6 +27,18 @@ const nunito = Nunito({
 });
 
 export default function App({ Component, pageProps }: AppProps) {
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator && window.isSecureContext) {
+      const register = async () => {
+        try {
+          await navigator.serviceWorker.register('/service-worker.js');
+        } catch (e) {
+          // ignore registration errors
+        }
+      };
+      register();
+    }
+  }, []);
   return (
     <main className={`${varelaRound.variable} ${playwriteHU.variable} ${nunito.variable}`} style={{ fontFamily: 'var(--font-varela-round), Arial, Helvetica, sans-serif' }}>
       <ToastProvider>

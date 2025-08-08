@@ -6,6 +6,7 @@ import { useToastHelpers } from '@/contexts/ToastContext';
 import { ApiService } from '@/lib/api';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
 import Image from 'next/image';
+import { addRecentlyViewedUser } from '@/lib/sessionCache';
 import { UserProfile } from '@/types/account';
 import { PostsResponse } from '@/types/post';
 import { ArrowLeft } from 'lucide-react';
@@ -37,6 +38,15 @@ const PublicProfileView: React.FC<PublicProfileProps> = ({ username }) => {
         setIsFollowing(data.isFollowedByCurrentUser ?? false);
         setPosts(postRes.data);
         setActorId(data.activityPubId);
+        addRecentlyViewedUser({
+          activityPubId: data.activityPubId,
+          displayName: data.displayName,
+          handle: data.handle,
+          avatarUrl: data.avatarUrl,
+          username: data.username,
+          hostServer: data.hostServer,
+          isLocal: data.isLocal,
+        });
       }
     };
 

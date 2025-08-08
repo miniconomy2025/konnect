@@ -1,6 +1,7 @@
 import { FollowsResponse, UserProfile } from "@/types/account";
 import { DiscoverSearchResponse } from "@/types/discover";
 import { GetPostsResponse, PostsResponse } from "@/types/post";
+import { addRecentSearch, getSessionCache, setSessionCache } from "./sessionCache";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
@@ -24,7 +25,7 @@ export interface FollowResponse {
 
 export class ApiService {
   private static getAuthHeaders(): HeadersInit {
-    const token = localStorage.getItem('auth_token');
+    const token = sessionStorage.getItem('auth_token');
     return {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
@@ -222,7 +223,7 @@ export class ApiService {
   // Post creation
   static async createPost(formData: FormData): Promise<ApiResponse<{success: boolean; post: object}>> {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = sessionStorage.getItem('auth_token');
       const headers: Record<string, string> = {};
       
       if (token) {
@@ -290,17 +291,39 @@ export class ApiService {
 
 
   // Search API
-  static async searchUsers(query: string, page: number = 1, limit: number = 10): Promise<ApiResponse<DiscoverSearchResponse>> {
+  static async searchUsers(
+    query: string,
+    page: number = 1,
+    limit: number = 10,
+    signal?: AbortSignal,
+  ): Promise<ApiResponse<DiscoverSearchResponse>> {
     try {
-      const response = await fetch(`${API_BASE_URL}/search/users/federated?q=${query}&page=${page}&limit=${limit}`, {
-        headers: this.getAuthHeaders(),
-      });
+      // Attempt session cache first (5 minutes TTL)
+      const cacheKey = `searchUsers:${query}:${page}:${limit}`;
+      const cached = getSessionCache<DiscoverSearchResponse>(cacheKey, 5 * 60 * 1000);
+      if (cached) {
+        // Record recent even when served from cache
+        addRecentSearch(query);
+        return { data: cached };
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/search/users/federated?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`,
+        {
+          headers: this.getAuthHeaders(),
+          signal,
+        }
+      );
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const data = await response.json();
+      const data: DiscoverSearchResponse = await response.json();
+      // Store successful response in session cache
+      setSessionCache(cacheKey, data);
+      // Record recent query
+      addRecentSearch(query);
       return { data };
     } catch (error) {
       return { error: error instanceof Error ? error.message : 'Unknown error' };
