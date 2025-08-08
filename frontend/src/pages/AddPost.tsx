@@ -1,11 +1,11 @@
 'use client';
 
 import {
-  AddPostHeader,
-  CaptionInput,
-  ErrorMessage,
-  MediaPreview,
-  MediaUpload,
+    AddPostHeader,
+    CaptionInput,
+    ErrorMessage,
+    MediaPreview,
+    MediaUpload,
 } from '@/components/AddPost';
 import { useToastHelpers } from '@/contexts/ToastContext';
 import Layout from '@/layouts/Main';
@@ -29,7 +29,7 @@ const AddPost: React.FC = () => {
   const maxSizeMB = Number(process.env.NEXT_PUBLIC_MAX_FILE_SIZE_MB) || 10;
 
   useEffect(() => {
-    if (!localStorage.getItem('auth_token')) {
+    if (!sessionStorage.getItem('auth_token')) {
       showError('Please login first to create a post!', {
         action: {
           label: 'Go to Login',

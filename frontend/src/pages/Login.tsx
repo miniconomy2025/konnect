@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
+import Image from 'next/image';
+import React, { useEffect, useState } from 'react';
 // import { ApiService } from '@/lib/api'; // TODO: Implement API integration
 import { useRouter } from 'next/router';
 
@@ -15,7 +15,7 @@ const Login: React.FC = () => {
   };
   
     useEffect(() => {
-        if(localStorage.getItem('auth_token')){
+        if(sessionStorage.getItem('auth_token')){
             window.location.href = '/Home';
         }
     }, []);
@@ -28,7 +28,7 @@ const Login: React.FC = () => {
         if (token && userString) {
         try {
                          JSON.parse(userString); // Validate JSON format
-            localStorage.setItem("auth_token", token);
+            sessionStorage.setItem("auth_token", token);
             router.push('/Home');
         } catch (err) {
             console.error("Error parsing user from query:", err);
