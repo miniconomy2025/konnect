@@ -9,7 +9,8 @@ export const styles: { [key: string]: CSSProperties } = {
     minHeight: '100vh',
     fontFamily: FontFamily.VarelaRound,
     color: Color.Text,
-    colorScheme: 'light'
+    colorScheme: 'light',
+    margin: Spacing.Medium
   },
   header: {
     borderBottom: `${BorderWidth.Thin} solid ${Color.Border}`,

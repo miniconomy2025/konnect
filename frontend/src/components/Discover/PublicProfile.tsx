@@ -4,7 +4,8 @@ import PostsGrid from '@/components/account/PostsGrid';
 import ProfileSection from '@/components/account/ProfileSection';
 import { useToastHelpers } from '@/contexts/ToastContext';
 import { ApiService } from '@/lib/api';
-import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
+import { Color, FontFamily, FontSize, Gradient, Spacing } from '@/lib/presentation';
+import Image from 'next/image';
 import { UserProfile } from '@/types/account';
 import { PostsResponse } from '@/types/post';
 import { ArrowLeft } from 'lucide-react';
@@ -75,10 +76,33 @@ const PublicProfileView: React.FC<PublicProfileProps> = ({ username }) => {
     }
   };
 
-  if (!userProfile) return <p>Loading...</p>;
+  if (!userProfile) return (
+    <section style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: Color.Background,
+      zIndex: 1000,
+    }}>
+      <Image
+        src="/load.svg"
+        alt="Loading..."
+        width={120}
+        height={120}
+        style={{
+          filter: 'drop-shadow(0 0.25rem 0.5rem rgba(0, 0, 0, 0.1))',
+        }}
+      />
+    </section>
+  );
 
   return (
-    <section style={{ marginTop: 24 }}>
+    <section style={{ marginTop: Spacing.Large }}>
       <button
         onClick={() => {
           router.back();
@@ -86,18 +110,25 @@ const PublicProfileView: React.FC<PublicProfileProps> = ({ username }) => {
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 8,
-          background: 'none',
+          gap: Spacing.Small,
+          background: Gradient.Brand,
           border: 'none',
-          color: Color.Muted,
+          borderRadius: Spacing.Small,
+          color: Color.Text,
           cursor: 'pointer',
-          fontFamily: FontFamily.Nunito,
+          fontFamily: FontFamily.VarelaRound,
           fontSize: FontSize.Large,
           marginTop: Spacing.Small,
           marginBottom: Spacing.Small,
+          marginLeft: Spacing.Small,
+          marginRight: Spacing.Small,
+          padding: Spacing.Small,
+          paddingLeft: Spacing.Medium,
+          paddingRight: Spacing.Medium,
         }}
       >
         <ArrowLeft size={18} />
+
         Back
       </button>
 
