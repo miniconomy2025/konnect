@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { Color, FontFamily, FontSize, Spacing } from '@/lib/presentation';
-// import { ApiService } from '@/lib/api'; // TODO: Implement API integration
+import { Color, FontFamily, FontSize, Spacing, textGradientStyle } from '@/lib/presentation';
 import { useRouter } from 'next/router';
 
 const Login: React.FC = () => {
@@ -58,16 +57,35 @@ const Login: React.FC = () => {
             textAlign: 'center',
             marginBottom: Spacing.XLarge,
           }}>
-            <h1 style={{
-              fontSize: FontSize.XLarge,
-              fontWeight: 700,
-              fontFamily: FontFamily.Nunito,
-              color: Color.Text,
+              <hgroup style={{
               margin: 0,
               marginBottom: Spacing.Medium,
-            }}>
-              Welcome to Konnect
-            </h1>
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'baseline',
+              justifyContent: 'center',
+              gap: '0.3rem',
+              }}>
+                <h1 style={{
+                fontSize: FontSize.XLarge,
+                fontWeight: 400,
+                fontFamily: FontFamily.Nunito,
+                color: Color.Text,
+                margin: 0,
+              }}>
+                Welcome to
+              </h1>
+              <h1 style={{
+                fontSize: FontSize.XLarge,
+                fontWeight: 700,
+                fontFamily: FontFamily.Playwrite,
+                margin: 0,
+                ...textGradientStyle,
+              }}>
+                Konnect
+              </h1>
+            </hgroup>
             <p style={{
               fontSize: FontSize.Large,
               fontFamily: FontFamily.Nunito,
