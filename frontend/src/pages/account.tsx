@@ -7,6 +7,7 @@ import PostsGrid from '@/components/account/PostsGrid';
 import ProfileSection from '@/components/account/ProfileSection';
 import SettingsModal from '@/components/account/SettingsModal';
 import UserListItem from '@/components/account/UserListItem';
+import { Header } from '@/components/Home/Header';
 import { Skeleton } from '@/components/Skeleton/Skeleton';
 import { useToastHelpers } from '@/contexts/ToastContext';
 import Layout from '@/layouts/Main';
@@ -198,8 +199,8 @@ import React, { useEffect, useState } from 'react';
     return (
         <Layout>
             <section style={styles.container}>
-            <AccountHeader 
-                username={userProfile.username}
+            <Header 
+                editProfile={true}
                 onSettingsClick={() => setShowSettings(true)}   
             />
             {userProfile ? (

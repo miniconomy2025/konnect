@@ -37,7 +37,7 @@ const Login: React.FC = () => {
 
   return (
       <main style={{
-        minHeight: '90vh',
+        minHeight: '100vh',
         background: Color.Background,
         display: 'flex',
         alignItems: 'center',

@@ -4,7 +4,7 @@ export const styles: { [key: string]: CSSProperties } = {
   container: {
     width: '100%',
     backgroundColor: 'white',
-    minHeight: '100vdh',
+    minHeight: '100vh',
     maxWidth: '960px',
     marginLeft: 'auto',
     marginRight: 'auto',
