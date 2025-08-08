@@ -38,7 +38,7 @@ export class RedisService {
     await this.client.del(key); // Clear existing list
     if (followingIds.length > 0) {
       await this.client.sadd(key, ...followingIds);
-      await this.client.expire(key, 1800); // 30 minutes cache
+      await this.client.expire(key, 300); // 5 minutes cache
     }
   }
 
@@ -48,7 +48,7 @@ export class RedisService {
     await this.client.del(key); // Clear existing list
     if (followerIds.length > 0) {
       await this.client.sadd(key, ...followerIds);
-      await this.client.expire(key, 1800); // 30 minutes cache
+      await this.client.expire(key, 300); // 5 minutes cache
     }
   }
 
@@ -65,8 +65,8 @@ export class RedisService {
   async cacheFollowCounts(userId: string, followingCount: number, followersCount: number): Promise<void> {
     if (!this.isCacheEnabled()) return;
     const pipeline = this.client.pipeline();
-    pipeline.set(`following:count:${userId}`, followingCount.toString(), 'EX', 900); // 15 minutes cache
-    pipeline.set(`followers:count:${userId}`, followersCount.toString(), 'EX', 900); // 15 minutes cache
+    pipeline.set(`following:count:${userId}`, followingCount.toString(), 'EX', 300); // 5 minutes cache
+    pipeline.set(`followers:count:${userId}`, followersCount.toString(), 'EX', 300); // 5 minutes cache
     await pipeline.exec();
   }
 
@@ -101,7 +101,7 @@ export class RedisService {
   async cachePost(postId: string, postData: Record<string, any>): Promise<void> {
     if (!this.isCacheEnabled()) return;
     await this.client.hset(`post:${postId}`, postData);
-    await this.client.expire(`post:${postId}`, 1800); // 30 min cache
+    await this.client.expire(`post:${postId}`, 300); // 5 min cache
   }
 
   async getCachedPost(postId: string): Promise<Record<string, any> | null> {

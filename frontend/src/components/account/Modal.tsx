@@ -81,6 +81,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, maxWidt
       alignItems: 'flex-end',
       padding: 0,
     }),
+    zIndex: 1001
   };
 
   const contentBase = { ...styles.modalContent } as React.CSSProperties;
@@ -108,6 +109,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, maxWidt
       ? 'transform 250ms cubic-bezier(0.4, 0, 0.2, 1)' 
       : 'transform 150ms ease-out',
     outline: 'none',
+    zIndex: 9999
   };
 
   return (

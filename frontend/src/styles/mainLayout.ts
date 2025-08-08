@@ -3,7 +3,7 @@ import { Color, FontFamily } from '@/lib/presentation';
 
 export const styles: { [key: string]: CSSProperties } = {
   container: {
-    height: '100vh',
+    height: '100vdh',
     backgroundColor: Color.Background,
     fontFamily: FontFamily.VarelaRound,
     display: 'flex',
