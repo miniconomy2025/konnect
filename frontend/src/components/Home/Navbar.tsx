@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Home, User, Search, Plus } from 'lucide-react';
 import { styles } from '@/styles/navbar';
 import { usePathname, useRouter } from 'next/navigation';
+import { Color } from '@/lib/presentation';
 
 const NavBar = () => {
   const router = useRouter();
@@ -18,7 +19,17 @@ const NavBar = () => {
   };
 
   return (
-    <nav style={styles.navbar}>
+    <nav style={{
+      ...styles.navbar,
+      position: 'fixed',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 1000,
+      background: Color.Surface,
+      borderTop: `1px solid ${Color.Border}`,
+      boxShadow: '0 -2px 8px rgba(0,0,0,0.04)',
+    }}>
       <section style={styles.navContainer}>
         <Link href="/Home" style={styles.link}>
           <section style={styles.navLink}>
