@@ -10,10 +10,27 @@ import { addDeleteListener } from "./listeners/delete.ts";
 import { addUndoListener } from "./listeners/undo.ts";
 import { addUpdateListener } from "./listeners/update.ts";
 import { addLikeListener } from "./listeners/like.ts";
+import { Redis } from "ioredis";
+import { RedisKvStore, RedisMessageQueue } from "@fedify/redis";
+
+const redisOptions = {
+  host: process.env.REDIS_HOST,
+  port: parseInt(process.env.REDIS_PORT || '6379'),
+  password: process.env.REDIS_PASSWORD,
+  retryStrategy: (times: number) => {
+    const delay = Math.min(times * 50, 2000);
+    return delay;
+  },
+  maxRetriesPerRequest: 3,
+  keyPrefix: "fedify:",
+} as const;
+
+const kvClient = new Redis(redisOptions);
+const createQueueClient = () => new Redis(redisOptions);
 
 const federation = createFederation({
-  kv: new MemoryKvStore(),
-  queue: new InProcessMessageQueue(),
+  kv: new RedisKvStore(kvClient),
+  queue: new RedisMessageQueue(createQueueClient),
 });
 
 createActorDispatcher(federation);
