@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useRef } from 'react';
-import Image from 'next/image';
-import { Heart } from 'lucide-react';
 import { styles } from '@/styles/account';
 import { Post } from '@/types/post';
+import { Heart } from 'lucide-react';
+import Image from 'next/image';
+import React, { useRef } from 'react';
 
 interface PostItemProps {
   post: Post;
@@ -43,6 +43,13 @@ const PostItem: React.FC<PostItemProps> = ({ post, onClick }) => {
           width={300}
           height={200}
           style={styles.postImage}
+          loading="lazy"
+          decoding="async"
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 200px"
+          // Use blur placeholder only when supported (secure contexts)
+          {...(typeof window === 'undefined' || (typeof window !== 'undefined' && window.isSecureContext)
+            ? { placeholder: 'blur' as const, blurDataURL: '/assets/images/placeholder.webp' }
+            : {})}
           onError={(e) => {
             e.currentTarget.src = '/assets/images/placeholder.webp';
           }}
@@ -54,18 +61,21 @@ const PostItem: React.FC<PostItemProps> = ({ post, onClick }) => {
             display: 'flex',    
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '0.8  rem',
+            fontSize: '0.9rem',
             fontWeight: '300',
             textAlign: 'center',
             backgroundColor: '#f5f5f5',
             color: '#333',
+            padding: '0.75rem',
+            lineHeight: 1.3,
+            overflow: 'hidden',
           }}
         >
           {post.content.text}
         </section>       
       )}
 
-      <section className="overlay" style={styles.postOverlay}>
+      <section className="overlay" style={styles.postOverlay} aria-hidden={!onClick}>
         <section style={styles.overlayStats}>
           <section style={styles.overlayStat}>
             

@@ -46,6 +46,12 @@ export function ImagePost({ post }: ImagePostProps) {
             maxHeight: 'none',
             objectFit: 'contain',
           }}
+          priority={false}
+          loading="lazy"
+          decoding="async"
+          {...(typeof window === 'undefined' || (typeof window !== 'undefined' && window.isSecureContext)
+            ? { placeholder: 'blur' as const, blurDataURL: '/assets/images/placeholder.webp' }
+            : {})}
           onError={handleImageError}
           onLoadingComplete={() => setIsLoading(false)}
         />

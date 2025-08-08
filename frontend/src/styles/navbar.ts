@@ -1,17 +1,17 @@
 import { CSSProperties } from 'react';
+import { Color, Spacing, ComponentSize, FontSizeRem, BorderWidth } from '@/lib/presentation';
 
 export const styles: { [key: string]: CSSProperties } = {
   navbar: {
     position: 'sticky',
-    height: '4rem',
     bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'white',
-    borderTop: '1px solid #e5e7eb',
-    padding: '8px 16px',
+    height: '6rem',
+    backgroundColor: Color.Surface,
+    borderTop: `${BorderWidth.Thin} solid ${Color.Border}`,
+    padding: `${Spacing.Medium} ${Spacing.Medium} 0.75rem ${Spacing.Medium}`,
     zIndex: 50,
-    boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.1)'
+    boxShadow: '0 -0.125rem 0.5rem rgba(0, 0, 0, 0.1)',
+    flexShrink: 0
   },
   navContainer: {
     display: 'flex',
@@ -28,37 +28,51 @@ export const styles: { [key: string]: CSSProperties } = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '4px',
+    gap: Spacing.Small,
     textDecoration: 'none',
-    borderRadius: '8px',
+    borderRadius: Spacing.Small,
     transition: 'all 0.2s ease'
   },
   iconWrapper: {
-    padding: '8px',
-    borderRadius: '8px',
-    color: '#6b7280',
-    transition: 'all 0.2s ease'
+    padding: Spacing.MediumSmall,
+    borderRadius: Spacing.Small,
+    color: Color.Muted,
+    transition: 'all 0.2s ease',
+    width: ComponentSize.IconContainer,
+    height: ComponentSize.IconContainer,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   iconWrapperActive: {
-    padding: '8px',
-    borderRadius: '8px',
-    color: '#2563eb',
+    padding: Spacing.MediumSmall,
+    borderRadius: Spacing.Small,
+    color: Color.GradientEnd,
     backgroundColor: '#eff6ff',
-    transition: 'all 0.2s ease'
+    transition: 'all 0.2s ease',
+    width: ComponentSize.IconContainer,
+    height: ComponentSize.IconContainer,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   iconWrapperHover: {
-    color: '#374151'
+    color: Color.Text
   },
   label: {
-    fontSize: '10pt',
-    color: '#6b7280',
+    fontSize: FontSizeRem.NavLabel,
+    color: Color.Muted,
     fontWeight: '400',
-    transition: 'color 0.2s ease'
+    transition: 'color 0.2s ease',
+    lineHeight: '1.1',
+    textAlign: 'center'
   },
   labelActive: {
-    fontSize: '10pt',
-    color: '#2563eb',
+    fontSize: FontSizeRem.NavLabel,
+    color: Color.GradientEnd,
     fontWeight: '500',
-    transition: 'color 0.2s ease'
+    transition: 'color 0.2s ease',
+    lineHeight: '1.1',
+    textAlign: 'center'
   }
 };
