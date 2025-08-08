@@ -14,6 +14,7 @@ import { addLikeListener } from "./listeners/like.ts";
 const federation = createFederation({
   kv: new MemoryKvStore(),
   queue: new InProcessMessageQueue(),
+  skipSignatureVerification: true
 });
 
 createActorDispatcher(federation);
